@@ -1,6 +1,6 @@
 #pragma once
 
-#include "UObject/ObjectMacros.h"
+#include "CoreMinimal.h"
 #include "StateOfViews.generated.h"
 
 UENUM(BlueprintType)

@@ -1,6 +1,6 @@
 #pragma once
 
-#include "UObject/ObjectMacros.h"
+#include "CoreMinimal.h"
 #include "TypeOfWeapon.generated.h"
 
 UENUM(BlueprintType)
