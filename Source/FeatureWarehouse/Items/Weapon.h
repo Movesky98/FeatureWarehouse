@@ -7,6 +7,7 @@
 #include "Weapon.generated.h"
 
 enum class EUseTypeOfWeapon :uint8;
+enum class ETypeOfWeapon :uint8;
 
 /**
  * 
@@ -20,12 +21,19 @@ public:
 	void Interact(AActor* InteractActor) override;
 
 	UFUNCTION(BlueprintCallable)
-	void PickUp();
+	void TakeUp(AActor* NewOwner);
 
 	UFUNCTION(BlueprintCallable)
-	void PutDown(FVector Location);
+	void ThrowAway(FVector Location);
+
+	virtual void Attack();
+
+protected:
+	virtual bool CanAttack();
 
 private:
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = State, meta = (AllowPrivateAccess = "true"))
+	AActor* WeaponOwner;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = State, meta = (AllowPrivateAccess = "true"))
 	FName AttachSocketName;
@@ -33,6 +41,27 @@ private:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = State, meta = (AllowPrivateAccess = "true"))
 	EUseTypeOfWeapon UseType;
 
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = State, meta = (AllowPrivateAccess = "true"))
+	ETypeOfWeapon WeaponType;
+
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Attack, meta = (AllowPrivateAccess = "true"))
 	bool bIsAttacking;
+
+#pragma region GetterSetter
+public:
+	FORCEINLINE AActor* GetWeaponOwner() { return WeaponOwner; }
+	FORCEINLINE void SetWeaponOwner(AActor* NewOwner) { WeaponOwner = NewOwner; }
+
+	FORCEINLINE EUseTypeOfWeapon GetUseType() { return UseType; }
+
+	FORCEINLINE void SetUseType(EUseTypeOfWeapon Type) { UseType = Type; }
+
+	FORCEINLINE FName GetAttachSocketName() { return AttachSocketName; }
+
+	FORCEINLINE ETypeOfWeapon GetWeaponType() { return WeaponType; }
+
+	FORCEINLINE bool IsAttacking() { return bIsAttacking; }
+	FORCEINLINE void SetIsAttacking(bool IsAttacking) { bIsAttacking = IsAttacking; }
+
+#pragma endregion
 };

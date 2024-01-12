@@ -21,16 +21,21 @@ public:
 	UFUNCTION(BlueprintCallable)
 	void SaveWeaponInfo(AWeapon* NewWeapon);
 
+	UFUNCTION(BlueprintCallable)
+	void SwapWeapon();
+
+	UFUNCTION(BlueprintCallable)
+	void NotifyToAnimInstance();
+
 protected:
 	// Called when the game starts
 	virtual void BeginPlay() override;
 	
 private:
 	// Functions
-	void SetWeaponInfo(AWeapon* NewWeapon, bool IsFirst);
+	void SetWeaponInfo(AWeapon* NewWeapon);
 
-	UFUNCTION(BlueprintCallable)
-	void NotifyToAnimInstance();
+	void ChangeToNewWeapon(AWeapon* NewWeapon);
 
 	// Variables
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = State, meta = (AllowPrivateAccess = "true"))
@@ -51,11 +56,9 @@ private:
 #pragma region GetterSetter
 public:
 	FORCEINLINE AWeapon* GetFirstWeapon() const { return FirstWeapon; }
-
 	FORCEINLINE void SetFirstWeapon(AWeapon* NewWeapon) { FirstWeapon = NewWeapon; }
 
 	FORCEINLINE AWeapon* GetSecondWeapon() const { return SecondWeapon; }
-
 	FORCEINLINE void SetSecondWeapon(AWeapon* NewWeapon) { SecondWeapon = NewWeapon; }
 
 	FORCEINLINE int GetEquipNum() { return EquipNum; }

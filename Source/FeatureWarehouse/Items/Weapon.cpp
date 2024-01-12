@@ -4,6 +4,7 @@
 #include "Weapon.h"
 
 #include "../Enums/UseTypeOfWeapon.h"
+#include "../Enums/TypeOfWeapon.h"
 
 #include "../Characters/PlayerCharacter.h"
 #include "../Components/WeaponComponent.h"
@@ -20,18 +21,30 @@ void AWeapon::Interact(AActor* InteractActor)
 	}
 }
 
-void AWeapon::PickUp()
+void AWeapon::TakeUp(AActor* NewOwner)
 {
 	GetTriggerZone()->SetCollisionProfileName(FName("NoCollision"));
 
 	SetActorLocation(FVector(0.0f, 0.0f, 0.0f));
 }
 
-void AWeapon::PutDown(FVector Location)
+void AWeapon::ThrowAway(FVector Location)
 {
+	WeaponOwner = nullptr;
+
 	DetachFromActor(FDetachmentTransformRules::KeepWorldTransform);
 
 	GetTriggerZone()->SetCollisionProfileName(FName("Item"));
 
 	SetActorLocation(Location);
+}
+
+void AWeapon::Attack()
+{
+
+}
+
+bool AWeapon::CanAttack()
+{
+	return false;
 }

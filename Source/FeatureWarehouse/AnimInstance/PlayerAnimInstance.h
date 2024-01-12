@@ -61,4 +61,14 @@ private:
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Player, meta = (AllowPrivateAccess = "true"))
 	class UCharacterMovementComponent* MovementComponent;
+
+#pragma region GetterSetter
+public:
+	FORCEINLINE void SetHasWeapon(bool HasWeapon) { bHasWeapon = HasWeapon; }
+
+	FORCEINLINE void SetWeaponType(ETypeOfWeapon Type) { WeaponType = Type; }
+
+	FORCEINLINE void SetGunType(ETypeOfGun Type) { GunType = Type; }
+
+#pragma endregion
 };
