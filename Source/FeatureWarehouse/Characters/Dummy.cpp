@@ -3,12 +3,21 @@
 
 #include "Dummy.h"
 
+#include "../Components/HealthComponent.h"
+
+#include "Components/SkeletalMeshComponent.h"
+
 // Sets default values
 ADummy::ADummy()
 {
  	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
-	PrimaryActorTick.bCanEverTick = true;
+	PrimaryActorTick.bCanEverTick = false;
 
+	SkeletalMesh = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("SkeletalMesh"));
+	RootComponent = SkeletalMesh;
+	SkeletalMesh->SetCollisionProfileName(FName("Dummy"));
+
+	HealthComponent = CreateDefaultSubobject<UHealthComponent>(TEXT("HealthComponent"));
 }
 
 // Called when the game starts or when spawned
@@ -17,11 +26,3 @@ void ADummy::BeginPlay()
 	Super::BeginPlay();
 	
 }
-
-// Called every frame
-void ADummy::Tick(float DeltaTime)
-{
-	Super::Tick(DeltaTime);
-
-}
-

@@ -3,3 +3,10 @@
 
 #include "Gun.h"
 
+#include "../Enums/UseTypeOfWeapon.h"
+
+AGun::AGun()
+{
+
+
+}

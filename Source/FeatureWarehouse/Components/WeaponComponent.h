@@ -9,7 +9,7 @@
 class AWeapon;
 
 
-UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
+UCLASS(Blueprintable, BlueprintType, ClassGroup = (Custom), meta = (BlueprintSpawnableComponent))
 class FEATUREWAREHOUSE_API UWeaponComponent : public UActorComponent
 {
 	GENERATED_BODY()

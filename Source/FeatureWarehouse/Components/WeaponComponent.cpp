@@ -49,6 +49,7 @@ void UWeaponComponent::SaveWeaponInfo(AWeapon* NewWeapon)
 		switch (EquipNum)
 		{
 		case 0:
+			EquipNum++;
 			FirstWeapon = NewWeapon;
 			FirstWeapon->SetUseType(EUseTypeOfWeapon::Main);
 			SetWeaponInfo(FirstWeapon);
@@ -57,6 +58,7 @@ void UWeaponComponent::SaveWeaponInfo(AWeapon* NewWeapon)
 			NotifyToAnimInstance();
 			break;
 		case 1:
+			EquipNum++;
 			SecondWeapon = NewWeapon;
 			SecondWeapon->SetUseType(EUseTypeOfWeapon::Sub);
 			SetWeaponInfo(SecondWeapon);
@@ -73,7 +75,7 @@ void UWeaponComponent::SaveWeaponInfo(AWeapon* NewWeapon)
 
 void UWeaponComponent::ChangeToNewWeapon(AWeapon* NewWeapon)
 {
-	FVector DropLocation = GetOwner()->GetActorLocation();
+	FVector DropLocation = NewWeapon->GetActorLocation();
 
 	NewWeapon->SetUseType(EUseTypeOfWeapon::Main);
 
@@ -97,7 +99,7 @@ void UWeaponComponent::ChangeToNewWeapon(AWeapon* NewWeapon)
 void UWeaponComponent::SetWeaponInfo(AWeapon* NewWeapon)
 {
 	NewWeapon->TakeUp(GetOwner());
-	
+
 	if (PlayerCharacter)
 	{
 		NewWeapon->AttachToComponent(PlayerCharacter->GetMesh(), FAttachmentTransformRules::KeepRelativeTransform, NewWeapon->GetAttachSocketName());

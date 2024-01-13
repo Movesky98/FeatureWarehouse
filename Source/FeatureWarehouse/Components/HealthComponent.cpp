@@ -8,7 +8,7 @@ UHealthComponent::UHealthComponent()
 {
 	// Set this component to be initialized when the game starts, and to be ticked every frame.  You can turn these features
 	// off to improve performance if you don't need them.
-	PrimaryComponentTick.bCanEverTick = true;
+	PrimaryComponentTick.bCanEverTick = false;
 
 	// ...
 }
@@ -20,15 +20,31 @@ void UHealthComponent::BeginPlay()
 	Super::BeginPlay();
 
 	// ...
-	
 }
 
-
-// Called every frame
-void UHealthComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
+void UHealthComponent::GetDamaged(float Damage)
 {
-	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
+	if (!bIsDamagable) return;
 
-	// ...
+	bIsDamagable = false;
+
+	CurrentHP -= Damage;
+
+	if (CurrentHP <= 0.0f)
+	{
+		UActorComponent* ActorComponent = GetOwner()->GetComponentByClass(USkeletalMeshComponent::StaticClass());
+		
+		if (ActorComponent)
+		{
+			USkeletalMeshComponent* SkeletalMesh = Cast<USkeletalMeshComponent>(ActorComponent);
+
+			SkeletalMesh->SetSimulatePhysics(true);
+		}
+	}
+	else
+	{
+		FTimerHandle DamagableTimerHandle;
+		GetWorld()->GetTimerManager().SetTimer(DamagableTimerHandle, this, &UHealthComponent::SetDamagable, 0.2f);
+	}
 }
 

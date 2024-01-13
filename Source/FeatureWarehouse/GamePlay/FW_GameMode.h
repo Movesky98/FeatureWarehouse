@@ -3,24 +3,15 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "GameFramework/Actor.h"
+#include "GameFramework/GameModeBase.h"
 #include "FW_GameMode.generated.h"
 
 UCLASS()
-class FEATUREWAREHOUSE_API AFW_GameMode : public AActor
+class FEATUREWAREHOUSE_API AFW_GameMode : public AGameModeBase
 {
 	GENERATED_BODY()
 	
 public:	
 	// Sets default values for this actor's properties
 	AFW_GameMode();
-
-protected:
-	// Called when the game starts or when spawned
-	virtual void BeginPlay() override;
-
-public:	
-	// Called every frame
-	virtual void Tick(float DeltaTime) override;
-
 };

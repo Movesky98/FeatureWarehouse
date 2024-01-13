@@ -6,6 +6,7 @@
 #include "../Characters/PlayerCharacter.h"
 #include "../Characters/Dummy.h"
 #include "../AnimInstance/PlayerAnimInstance.h"
+#include "../Components/HealthComponent.h"
 
 #include "Animation/AnimMontage.h"
 #include "Kismet/KismetSystemLibrary.h"
@@ -112,6 +113,7 @@ void AMelee::AttackTrace()
 	FVector HalfSize = FVector(3.0f, 3.0f, 8.0f);
 
 	TArray<AActor*> IgnoreActor;
+	IgnoreActor.Add(GetWeaponOwner());
 	FHitResult Hit;
 	bool IsHit = UKismetSystemLibrary::BoxTraceSingle(
 		GetWorld(), 
@@ -133,6 +135,9 @@ void AMelee::AttackTrace()
 	if (IsHit)
 	{
 		// Dummy
-		;
+		UHealthComponent* HitActorComponent = Cast<UHealthComponent>(Hit.GetActor()->GetComponentByClass(UHealthComponent::StaticClass()));
+
+		if(HitActorComponent)
+			HitActorComponent->GetDamaged(30.0f);
 	}
 }

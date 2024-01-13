@@ -7,7 +7,7 @@
 #include "HealthComponent.generated.h"
 
 
-UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
+UCLASS(Blueprintable, BlueprintType, ClassGroup = (Custom), meta = (BlueprintSpawnableComponent))
 class FEATUREWAREHOUSE_API UHealthComponent : public UActorComponent
 {
 	GENERATED_BODY()
@@ -16,13 +16,45 @@ public:
 	// Sets default values for this component's properties
 	UHealthComponent();
 
+	UFUNCTION(BlueprintCallable)
+	void GetDamaged(float Damage);
+
 protected:
 	// Called when the game starts
 	virtual void BeginPlay() override;
 
-public:	
-	// Called every frame
-	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
+private:
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = State, meta = (AllowPrivateAccess = "true"))
+	float MaxHP;
 
-		
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = State, meta = (AllowPrivateAccess = "true"))
+	float CurrentHP;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = State, meta = (AllowPrivateAccess = "true"))
+	float MaxMP;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = State, meta = (AllowPrivateAccess = "true"))
+	float CurrentMP;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = State, meta = (AllowPrivateAccess = "true"))
+	bool bIsDamagable;
+
+#pragma region GetterSetter
+public:
+	FORCEINLINE float GetMaxHP() { return MaxHP; }
+	FORCEINLINE void SetMaxHP(float NewMaxHP) { MaxHP = NewMaxHP; }
+
+	FORCEINLINE float GetCurrentHP() { return CurrentHP; }
+	FORCEINLINE void SetCurrentHP(float NewCurrentHP) { CurrentHP = NewCurrentHP; }
+
+	FORCEINLINE float GetMaxMP() { return MaxMP; }
+	FORCEINLINE void SetMaxMP(float NewMaxMP) { MaxMP = NewMaxMP; }
+
+	FORCEINLINE float GetCurrentMP() { return CurrentMP; }
+	FORCEINLINE void SetCurrentMP(float NewCurrentMP) { CurrentMP = NewCurrentMP; }
+
+	FORCEINLINE void SetDamagable() { bIsDamagable = true; }
+
+#pragma endregion
+
 };

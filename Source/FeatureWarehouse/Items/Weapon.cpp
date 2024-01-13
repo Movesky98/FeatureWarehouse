@@ -11,6 +11,11 @@
 
 #include "Components/SphereComponent.h"
 
+AWeapon::AWeapon()
+{
+	UseType = EUseTypeOfWeapon::None;
+}
+
 void AWeapon::Interact(AActor* InteractActor)
 {
 	APlayerCharacter* PlayerCharacter = Cast<APlayerCharacter>(InteractActor);
@@ -26,6 +31,10 @@ void AWeapon::TakeUp(AActor* NewOwner)
 	GetTriggerZone()->SetCollisionProfileName(FName("NoCollision"));
 
 	SetActorLocation(FVector(0.0f, 0.0f, 0.0f));
+
+	SetActorRotation(FRotator(0.0f, 0.0f, 0.0f));
+
+	WeaponOwner = NewOwner;
 }
 
 void AWeapon::ThrowAway(FVector Location)

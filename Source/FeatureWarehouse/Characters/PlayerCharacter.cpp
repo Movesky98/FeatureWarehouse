@@ -18,6 +18,9 @@
 #include "../Enums/UseTypeOfWeapon.h"
 #include "../Components/HealthComponent.h"
 #include "../Components/WeaponComponent.h"
+
+#include "../Interfaces/InteractInterface.h"
+
 #include "../AnimInstance/PlayerAnimInstance.h"
 #include "../GamePlay/FW_PlayerController.h"
 
@@ -39,6 +42,10 @@ APlayerCharacter::APlayerCharacter()
 	GetCharacterMovement()->MaxWalkSpeed = 300.0f;
 	GetCharacterMovement()->MaxWalkSpeedCrouched = 200.0f;
 	GetCharacterMovement()->bCanWalkOffLedgesWhenCrouching = true;
+	GetCharacterMovement()->NavAgentProps.bCanCrouch = true;
+
+	HealthComponent = CreateDefaultSubobject<UHealthComponent>(TEXT("HealthComponent"));
+	WeaponComponent = CreateDefaultSubobject<UWeaponComponent>(TEXT("WeaponComponent"));
 
 	static ConstructorHelpers::FObjectFinder<USkeletalMesh> SKM_Manny(TEXT("/Game/Characters/Mannequins/Meshes/SKM_Manny"));
 	if (SKM_Manny.Succeeded())
@@ -193,7 +200,14 @@ void APlayerCharacter::Interact(const FInputActionValue& Value)
 		FVector Start = Camera->GetComponentLocation();
 		FVector End = Camera->GetComponentLocation() + Camera->GetForwardVector() * 1000.0f;
 
-		FindInteractableActor(Start, End);
+		AActor* Actor = FindInteractableActor(Start, End);
+
+		IInteractInterface* InteractableActor = Cast<IInteractInterface>(Actor);
+
+		if (InteractableActor)
+		{
+			InteractableActor->Interact(this);
+		}
 	}
 }
 
@@ -259,11 +273,11 @@ void APlayerCharacter::EquipFirstWeapon()
 	if (!WeaponComponent->GetFirstWeapon())
 		return;
 
-	MainWeapon = WeaponComponent->GetFirstWeapon();
-
-	if (MainWeapon->GetUseType() == EUseTypeOfWeapon::Sub)
+	if (WeaponComponent->GetFirstWeapon()->GetUseType() == EUseTypeOfWeapon::Sub)
 	{
 		WeaponComponent->SwapWeapon();
+
+		MainWeapon = WeaponComponent->GetFirstWeapon();
 
 		MainWeapon->AttachToComponent(GetMesh(), FAttachmentTransformRules::KeepRelativeTransform, MainWeapon->GetAttachSocketName());
 
@@ -276,11 +290,11 @@ void APlayerCharacter::EquipSecondWeapon()
 	if (!WeaponComponent->GetSecondWeapon())
 		return;
 
-	MainWeapon = WeaponComponent->GetSecondWeapon();
-
-	if (MainWeapon->GetUseType() == EUseTypeOfWeapon::Sub)
+	if (WeaponComponent->GetSecondWeapon()->GetUseType() == EUseTypeOfWeapon::Sub)
 	{
 		WeaponComponent->SwapWeapon();
+
+		MainWeapon = WeaponComponent->GetSecondWeapon();
 
 		MainWeapon->AttachToComponent(GetMesh(), FAttachmentTransformRules::KeepRelativeTransform, MainWeapon->GetAttachSocketName());
 
@@ -290,6 +304,8 @@ void APlayerCharacter::EquipSecondWeapon()
 
 void APlayerCharacter::Attack()
 {
+	if (!MainWeapon) return;
+
 	MainWeapon->Attack();
 }
 
@@ -307,10 +323,11 @@ void APlayerCharacter::SetTPV()
 void APlayerCharacter::SetFPV()
 {
 	ViewState = EStateOfViews::FPV;
+	
+	bool IsSuccess = SpringArm->AttachToComponent(GetMesh(), FAttachmentTransformRules::SnapToTargetIncludingScale, FName("CameraSocket"));
 
 	GetMesh()->HideBoneByName(FName("head"), EPhysBodyOp::PBO_None);
 	SpringArm->bUsePawnControlRotation = true;
-	bool IsSuccess = SpringArm->AttachToComponent(GetMesh(), FAttachmentTransformRules::SnapToTargetIncludingScale, FName("head"));
 
 	if (IsSuccess)
 	{
@@ -328,7 +345,7 @@ void APlayerCharacter::SetTopView()
 	SpringArm->bUsePawnControlRotation = false;
 	SpringArm->AttachToComponent(GetMesh(), FAttachmentTransformRules::KeepRelativeTransform, FName("None")); // 차이가 있는지 확인해야할 듯.
 	SpringArm->SetRelativeLocation(FVector(0.0f, 0.0f, 150.0f));
-	SpringArm->SetRelativeRotation(FRotator(0.0f, -90.0f, 90.0f));
+	SpringArm->SetRelativeRotation(FRotator(-90.0f, 0.0f, 90.0f));
 	SpringArm->TargetArmLength = 1000.0f;
 }
 

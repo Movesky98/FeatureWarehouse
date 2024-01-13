@@ -6,6 +6,9 @@
 #include "GameFramework/Actor.h"
 #include "Dummy.generated.h"
 
+class UHealthComponent;
+class USkeletalMeshComponent;
+
 UCLASS()
 class FEATUREWAREHOUSE_API ADummy : public AActor
 {
@@ -19,8 +22,10 @@ protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
 
-public:	
-	// Called every frame
-	virtual void Tick(float DeltaTime) override;
+private:
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = Components, meta = (AllowPrivateAccess = "true"))
+	USkeletalMeshComponent* SkeletalMesh;
 
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = Components, meta = (AllowPrivateAccess = "true"))
+	UHealthComponent* HealthComponent;
 };

@@ -18,6 +18,8 @@ class FEATUREWAREHOUSE_API AWeapon : public AItem
 	GENERATED_BODY()
 	
 public:
+	AWeapon();
+
 	void Interact(AActor* InteractActor) override;
 
 	UFUNCTION(BlueprintCallable)
@@ -53,7 +55,6 @@ public:
 	FORCEINLINE void SetWeaponOwner(AActor* NewOwner) { WeaponOwner = NewOwner; }
 
 	FORCEINLINE EUseTypeOfWeapon GetUseType() { return UseType; }
-
 	FORCEINLINE void SetUseType(EUseTypeOfWeapon Type) { UseType = Type; }
 
 	FORCEINLINE FName GetAttachSocketName() { return AttachSocketName; }

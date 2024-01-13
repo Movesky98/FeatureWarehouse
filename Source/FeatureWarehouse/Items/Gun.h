@@ -15,7 +15,9 @@ UCLASS()
 class FEATUREWAREHOUSE_API AGun : public AWeapon
 {
 	GENERATED_BODY()
-	
+public:
+	AGun();
+
 private:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = State, meta = (AllowPrivateAccess = "true"))
 	ETypeOfGun GunType;
