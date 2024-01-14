@@ -3,15 +3,15 @@
 
 #include "WeaponComponent.h"
 
-#include "../Characters/PlayerCharacter.h"
-#include "../AnimInstance/PlayerAnimInstance.h"
+#include "Characters/PlayerCharacter.h"
+#include "AnimInstance/PlayerAnimInstance.h"
 
-#include "../Items/Weapon.h"
-#include "../Items/Gun.h"
-#include "../Items/Melee.h"
+#include "Items/Weapon.h"
+#include "Items/Gun.h"
+#include "Items/Melee.h"
 
-#include "../Enums/UseTypeOfWeapon.h"
-#include "../Enums/TypeOfWeapon.h"
+#include "Enums/UseTypeOfWeapon.h"
+#include "Enums/TypeOfWeapon.h"
 
 // Sets default values for this component's properties
 UWeaponComponent::UWeaponComponent()

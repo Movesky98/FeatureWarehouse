@@ -3,11 +3,11 @@
 
 #include "Weapon.h"
 
-#include "../Enums/UseTypeOfWeapon.h"
-#include "../Enums/TypeOfWeapon.h"
+#include "Enums/UseTypeOfWeapon.h"
+#include "Enums/TypeOfWeapon.h"
 
-#include "../Characters/PlayerCharacter.h"
-#include "../Components/WeaponComponent.h"
+#include "Characters/PlayerCharacter.h"
+#include "Components/WeaponComponent.h"
 
 #include "Components/SphereComponent.h"
 

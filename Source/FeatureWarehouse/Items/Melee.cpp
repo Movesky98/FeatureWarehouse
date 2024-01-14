@@ -3,10 +3,10 @@
 
 #include "Melee.h"
 
-#include "../Characters/PlayerCharacter.h"
-#include "../Characters/Dummy.h"
-#include "../AnimInstance/PlayerAnimInstance.h"
-#include "../Components/HealthComponent.h"
+#include "Characters/PlayerCharacter.h"
+#include "Characters/Dummy.h"
+#include "AnimInstance/PlayerAnimInstance.h"
+#include "Components/HealthComponent.h"
 
 #include "Animation/AnimMontage.h"
 #include "Kismet/KismetSystemLibrary.h"

@@ -23,6 +23,11 @@ protected:
 	// Called when the game starts
 	virtual void BeginPlay() override;
 
+	void ChangeDamagedMaterial();
+
+	UFUNCTION()
+	void RestoreOriginalMaterial(bool bIsStaticMeshComponent);
+
 private:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = State, meta = (AllowPrivateAccess = "true"))
 	float MaxHP;
@@ -56,5 +61,4 @@ public:
 	FORCEINLINE void SetDamagable() { bIsDamagable = true; }
 
 #pragma endregion
-
 };

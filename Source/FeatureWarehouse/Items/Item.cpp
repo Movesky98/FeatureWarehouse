@@ -3,7 +3,7 @@
 
 #include "Item.h"
 
-#include "../Enums/TypeOfItem.h"
+#include "Enums/TypeOfItem.h"
 
 #include "Components/SphereComponent.h"
 

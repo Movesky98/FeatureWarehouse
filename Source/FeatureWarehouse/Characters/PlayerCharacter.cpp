@@ -13,16 +13,16 @@
 #include "EnhancedInputComponent.h"
 #include "EnhancedInputSubsystems.h"
 
-#include "../Items/Weapon.h"
-#include "../Enums/StateOfViews.h"
-#include "../Enums/UseTypeOfWeapon.h"
-#include "../Components/HealthComponent.h"
-#include "../Components/WeaponComponent.h"
+#include "Items/Weapon.h"
+#include "Enums/StateOfViews.h"
+#include "Enums/UseTypeOfWeapon.h"
+#include "Components/HealthComponent.h"
+#include "Components/WeaponComponent.h"
 
-#include "../Interfaces/InteractInterface.h"
+#include "Interfaces/InteractInterface.h"
 
-#include "../AnimInstance/PlayerAnimInstance.h"
-#include "../GamePlay/FW_PlayerController.h"
+#include "AnimInstance/PlayerAnimInstance.h"
+#include "GamePlay/FW_PlayerController.h"
 
 // Sets default values
 APlayerCharacter::APlayerCharacter()
