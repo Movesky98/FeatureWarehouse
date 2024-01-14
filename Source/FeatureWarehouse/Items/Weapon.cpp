@@ -53,6 +53,11 @@ void AWeapon::Attack()
 
 }
 
+void AWeapon::StopAttack()
+{
+
+}
+
 bool AWeapon::CanAttack()
 {
 	return false;

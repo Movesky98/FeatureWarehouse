@@ -6,6 +6,7 @@
 #include "Components/HealthComponent.h"
 
 #include "GameFramework/ProjectileMovementComponent.h"
+#include "Kismet/KismetSystemLibrary.h"
 
 // Sets default values
 AProjectile::AProjectile()
@@ -15,7 +16,7 @@ AProjectile::AProjectile()
 
 	AmmoMesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("AmmoMesh"));
 	RootComponent = AmmoMesh;
-	AmmoMesh->SetCollisionProfileName(FName("BlockAllDynamic"));
+	AmmoMesh->SetCollisionProfileName(FName("Projectile"));
 	
 	ProjectileMovementComponent = CreateDefaultSubobject<UProjectileMovementComponent>(TEXT("ProjectileMovementComponent"));
 	ProjectileMovementComponent->SetUpdatedComponent(AmmoMesh);
@@ -31,6 +32,7 @@ void AProjectile::BeginPlay()
 {
 	Super::BeginPlay();
 	
+	AmmoMesh->OnComponentHit.AddDynamic(this, &AProjectile::OnBulletHit);
 }
 
 // Called every frame
@@ -42,6 +44,8 @@ void AProjectile::Tick(float DeltaTime)
 
 void AProjectile::OnBulletHit(UPrimitiveComponent* HitComponent, AActor* OtherActor, UPrimitiveComponent* OtherComponent, FVector NomalImpulse, const FHitResult& Hit)
 {
+	FString DebugMessage = FString("OnBulletHit :: Hit Actor is ") + UKismetSystemLibrary::GetDisplayName(Hit.GetActor());
+
 	if (!Hit.GetActor()) return;
 
 	AActor* HitActor = Hit.GetActor();

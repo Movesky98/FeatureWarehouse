@@ -49,6 +49,10 @@ protected:
 	UFUNCTION(BlueprintCallable)
 	void Attack();
 
+	UFUNCTION(BlueprintCallable)
+	void StopAttack();
+
+	
 private:
 	// Variables
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = Camera, meta = (AllowPrivateAccess = "true"))

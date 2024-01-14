@@ -46,7 +46,7 @@ void UHealthComponent::GetDamaged(float Damage)
 	else
 	{
 		FTimerHandle DamagableTimerHandle;
-		GetWorld()->GetTimerManager().SetTimer(DamagableTimerHandle, this, &UHealthComponent::SetDamagable, 0.2f);
+		GetWorld()->GetTimerManager().SetTimer(DamagableTimerHandle, this, &UHealthComponent::SetDamagable, 0.1f);
 	}
 }
 
@@ -66,7 +66,7 @@ void UHealthComponent::ChangeDamagedMaterial()
 		StaticMeshComponent->SetVectorParameterValueOnMaterials(FName("Tint"), FVector(1.0f, 0.0f, 0.0f));
 
 		RestoreTimerDel.BindUFunction(this, FName("RestoreOriginalMaterial"), IsStaticMesh);
-		GetWorld()->GetTimerManager().SetTimer(RestoreTimerHandle, RestoreTimerDel, 0.5f, false);
+		GetWorld()->GetTimerManager().SetTimer(RestoreTimerHandle, RestoreTimerDel, 0.1f, false);
 
 		return;
 	}
@@ -80,7 +80,7 @@ void UHealthComponent::ChangeDamagedMaterial()
 		SkeletalMeshComponent->SetVectorParameterValueOnMaterials(FName("Tint"), FVector(1.0f, 0.0f, 0.0f));
 
 		RestoreTimerDel.BindUFunction(this, FName("RestoreOriginalMaterial"), IsStaticMesh);
-		GetWorld()->GetTimerManager().SetTimer(RestoreTimerHandle, RestoreTimerDel, 0.5f, false);
+		GetWorld()->GetTimerManager().SetTimer(RestoreTimerHandle, RestoreTimerDel, 0.1f, false);
 
 		return;
 	}

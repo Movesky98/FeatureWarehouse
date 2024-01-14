@@ -78,6 +78,7 @@ void APlayerCharacter::BeginPlay()
 	SetTPV();
 }
 
+#pragma region InputAction
 // Called to bind functionality to input
 void APlayerCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 {
@@ -235,11 +236,20 @@ void APlayerCharacter::AttackTriggered(const FInputActionValue& Value)
 {
 	bool IsPressed = Value.Get<bool>();
 
-	if (IsPressed && Controller != nullptr)
+	if (Controller != nullptr)
 	{
-		Attack();
+		if (IsPressed)
+		{
+			Attack();
+		}
+		else
+		{
+			StopAttack();
+		}
 	}
 }
+
+#pragma endregion
 
 AActor* APlayerCharacter::FindInteractableActor(const FVector Start, const FVector End)
 {
@@ -307,6 +317,13 @@ void APlayerCharacter::Attack()
 	if (!MainWeapon) return;
 
 	MainWeapon->Attack();
+}
+
+void APlayerCharacter::StopAttack()
+{
+	if (!MainWeapon) return;
+
+	MainWeapon->StopAttack();
 }
 
 #pragma region View

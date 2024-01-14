@@ -30,6 +30,8 @@ public:
 
 	virtual void Attack();
 
+	virtual void StopAttack();
+
 protected:
 	virtual bool CanAttack();
 

@@ -55,6 +55,8 @@ public:
 protected:
 	virtual void Attack() override;
 
+	virtual void StopAttack() override;
+
 	UFUNCTION()
 	void Fire();
 
@@ -75,6 +77,12 @@ private:
 	FGunInfo Info;
 
 	FTimerHandle FireTimerHandle;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Fire, meta = (AllowPrivateAccess = "true"))
+	int BurstIndex;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = Fire, meta = (AllowPrivateAccess = "true"))
+	float FireRate;
 
 #pragma region GetterSetter
 public:

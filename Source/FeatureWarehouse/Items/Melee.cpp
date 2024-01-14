@@ -98,12 +98,16 @@ void AMelee::OnNextAttackChecked()
 
 void AMelee::StartAttackTrace()
 {
+	IgnoreActor.Add(GetWeaponOwner());
+
 	GetWorldTimerManager().SetTimer(AttackTraceTimer, this, &AMelee::AttackTrace, 0.01f, true);
 }
 
 void AMelee::StopAttackTrace()
 {
 	GetWorldTimerManager().ClearTimer(AttackTraceTimer);
+
+	IgnoreActor.Empty();
 }
 
 void AMelee::AttackTrace()
@@ -112,8 +116,6 @@ void AMelee::AttackTrace()
 	FVector End = GetSkeletalMesh()->GetSocketLocation(FName("BladeTop"));
 	FVector HalfSize = FVector(3.0f, 3.0f, 8.0f);
 
-	TArray<AActor*> IgnoreActor;
-	IgnoreActor.Add(GetWeaponOwner());
 	FHitResult Hit;
 	bool IsHit = UKismetSystemLibrary::BoxTraceSingle(
 		GetWorld(), 
@@ -137,7 +139,11 @@ void AMelee::AttackTrace()
 		// Dummy
 		UHealthComponent* HitActorComponent = Cast<UHealthComponent>(Hit.GetActor()->GetComponentByClass(UHealthComponent::StaticClass()));
 
-		if(HitActorComponent)
+		if (HitActorComponent)
+		{
+			IgnoreActor.Add(Hit.GetActor());
+
 			HitActorComponent->GetDamaged(30.0f);
+		}
 	}
 }

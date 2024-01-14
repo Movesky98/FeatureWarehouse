@@ -51,6 +51,9 @@ private:
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = Montage, meta = (AllowPrivateAccess = "true"))
 	int MontageIndex;
+	
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Montage, meta = (AllowPrivateAccess = "true"))
+	TArray<AActor*> IgnoreActor;
 
 	FTimerHandle AttackTraceTimer;
 };
