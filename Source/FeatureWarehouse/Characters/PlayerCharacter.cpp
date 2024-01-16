@@ -1,6 +1,7 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 #include "PlayerCharacter.h"
+#include "GamePlay/FW_PlayerController.h"
 
 #include "Camera/CameraComponent.h"
 #include "Components/CapsuleComponent.h"
@@ -28,7 +29,7 @@
 APlayerCharacter::APlayerCharacter()
 {
  	// Set this character to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
-	PrimaryActorTick.bCanEverTick = false;
+	PrimaryActorTick.bCanEverTick = true;
 
 	SpringArm = CreateDefaultSubobject<USpringArmComponent>(TEXT("SpringArm"));
 	SpringArm->SetupAttachment(GetMesh());
@@ -75,7 +76,13 @@ void APlayerCharacter::BeginPlay()
 		}
 	}
 
-	SetTPV();
+	PlayerController->SetView(EStateOfViews::TopView);
+	SetTopView();
+}
+
+void APlayerCharacter::Tick(float DeltaSeconds)
+{
+	Super::Tick(DeltaSeconds);
 }
 
 #pragma region InputAction
@@ -119,7 +126,23 @@ void APlayerCharacter::MoveForward(const FInputActionValue& Value)
 
 	if (Controller != nullptr)
 	{
-		FVector RightVector = UKismetMathLibrary::GetRightVector(GetMesh()->GetComponentRotation());
+		AFW_PlayerController* PlayerController = Cast<AFW_PlayerController>(Controller);
+		
+		if (!PlayerController) return;
+
+		FVector RightVector;
+		if (PlayerController->GetView() == EStateOfViews::TopView)
+		{
+			FRotator ControlRotation = GetControlRotation();
+			ControlRotation.Pitch = 0.0f;
+
+			RightVector = UKismetMathLibrary::GetForwardVector(ControlRotation);
+		}
+		else
+		{
+			RightVector = UKismetMathLibrary::GetForwardVector(GetActorRotation());
+		}
+
 		AddMovementInput(RightVector, Movement);
 	}
 }
@@ -130,8 +153,24 @@ void APlayerCharacter::MoveRight(const FInputActionValue& Value)
 
 	if (Controller != nullptr)
 	{
-		FVector ForwardVector = UKismetMathLibrary::GetForwardVector(GetMesh()->GetComponentRotation());
-		AddMovementInput(ForwardVector, Movement);
+		AFW_PlayerController* PlayerController = Cast<AFW_PlayerController>(Controller);
+
+		if (!PlayerController) return;
+
+		FVector RightVector;
+		if (PlayerController->GetView() == EStateOfViews::TopView)
+		{
+			FRotator ControlRotation = GetControlRotation();
+			ControlRotation.Pitch = 0.0f;
+
+			RightVector = UKismetMathLibrary::GetRightVector(ControlRotation);
+		}
+		else
+		{
+			RightVector = UKismetMathLibrary::GetRightVector(GetActorRotation());
+		}
+
+		AddMovementInput(RightVector, Movement);
 	}
 }
 
@@ -240,6 +279,11 @@ void APlayerCharacter::AttackTriggered(const FInputActionValue& Value)
 	{
 		if (IsPressed)
 		{
+			AFW_PlayerController* PlayerController = Cast<AFW_PlayerController>(Controller);
+
+			if (!PlayerController) return;
+
+			// PlayerController->ViewClickLocation();
 			Attack();
 		}
 		else
@@ -249,6 +293,95 @@ void APlayerCharacter::AttackTriggered(const FInputActionValue& Value)
 	}
 }
 
+#pragma endregion
+
+
+#pragma region View
+void APlayerCharacter::SetTPV()
+{
+	AFW_PlayerController* PlayerController = Cast<AFW_PlayerController>(GetController());
+
+	if (!PlayerController) return;
+
+	PlayerController->bShowMouseCursor = false;
+	PlayerController->SetView(EStateOfViews::TPV);
+
+	SpringArm->AttachToComponent(GetMesh(), FAttachmentTransformRules::KeepRelativeTransform);
+
+	SpringArm->bUsePawnControlRotation = true;
+	SpringArm->bInheritRoll = true;
+	SpringArm->bInheritYaw = true;
+
+	SpringArm->SetRelativeLocation(FVector(0.0f, 0.0f, 150.0f));
+	SpringArm->SetRelativeRotation(FRotator(0.0f, 0.0f, 90.0f));
+	SpringArm->TargetArmLength = 300.0f;
+}
+
+void APlayerCharacter::SetFPV()
+{
+	AFW_PlayerController* PlayerController = Cast<AFW_PlayerController>(GetController());
+	if (!PlayerController) return;
+	
+	PlayerController->bShowMouseCursor = false;
+	PlayerController->SetView(EStateOfViews::FPV);
+	
+	bool IsSuccess = SpringArm->AttachToComponent(GetMesh(), FAttachmentTransformRules::SnapToTargetIncludingScale, FName("CameraSocket"));
+
+	GetMesh()->HideBoneByName(FName("head"), EPhysBodyOp::PBO_None);
+	SpringArm->bUsePawnControlRotation = true;
+	SpringArm->bInheritRoll = true;
+	SpringArm->bInheritYaw = true;
+
+	if (IsSuccess)
+	{
+		SpringArm->SetRelativeLocation(FVector(20.0f, 0.0f, 0.0f));
+		SpringArm->TargetArmLength = 0.0f;
+	}
+}
+
+void APlayerCharacter::SetTopView()
+{
+	AFW_PlayerController* PlayerController = Cast<AFW_PlayerController>(GetController());
+	
+	if (!PlayerController) return;
+	
+	PlayerController->SetView(EStateOfViews::TopView);
+	PlayerController->bShowMouseCursor = true;
+
+	GetMesh()->UnHideBoneByName(FName("head"));
+
+	SpringArm->AttachToComponent(GetCapsuleComponent(), FAttachmentTransformRules::KeepRelativeTransform);
+
+	SpringArm->bUsePawnControlRotation = false;
+	SpringArm->bInheritRoll = false;
+	SpringArm->bInheritYaw = false;
+	
+	SpringArm->SetRelativeLocation(FVector(0.0f, 0.0f, 150.0f));
+	SpringArm->SetRelativeRotation(FRotator(-90.0f, 0.0f, 90.0f));
+	SpringArm->TargetArmLength = 1000.0f;
+}
+
+void APlayerCharacter::SwitchView()
+{
+	AFW_PlayerController* PlayerController = Cast<AFW_PlayerController>(GetController());
+
+	if (!PlayerController) return;
+
+	switch (PlayerController->GetView())
+	{
+	case EStateOfViews::TPV:
+		SetFPV();
+		break;
+	case EStateOfViews::FPV:
+		SetTopView();
+		break;
+	case EStateOfViews::TopView:
+		SetTPV();
+		break;
+	default:
+		break;
+	}
+}
 #pragma endregion
 
 AActor* APlayerCharacter::FindInteractableActor(const FVector Start, const FVector End)
@@ -325,65 +458,6 @@ void APlayerCharacter::StopAttack()
 
 	MainWeapon->StopAttack();
 }
-
-#pragma region View
-void APlayerCharacter::SetTPV()
-{
-	ViewState = EStateOfViews::TPV;
-
-	SpringArm->bUsePawnControlRotation = true;
-	SpringArm->SetRelativeLocation(FVector(0.0f, 0.0f, 150.0f));
-	SpringArm->SetRelativeRotation(FRotator(0.0f, 0.0f, 90.0f));
-	SpringArm->TargetArmLength = 300.0f;
-}
-
-void APlayerCharacter::SetFPV()
-{
-	ViewState = EStateOfViews::FPV;
-	
-	bool IsSuccess = SpringArm->AttachToComponent(GetMesh(), FAttachmentTransformRules::SnapToTargetIncludingScale, FName("CameraSocket"));
-
-	GetMesh()->HideBoneByName(FName("head"), EPhysBodyOp::PBO_None);
-	SpringArm->bUsePawnControlRotation = true;
-
-	if (IsSuccess)
-	{
-		SpringArm->SetRelativeLocation(FVector(20.0f, 0.0f, 0.0f));
-		SpringArm->TargetArmLength = 0.0f;
-	}
-}
-
-void APlayerCharacter::SetTopView()
-{
-	ViewState = EStateOfViews::TopView;
-
-	GetMesh()->UnHideBoneByName(FName("head"));
-
-	SpringArm->bUsePawnControlRotation = false;
-	SpringArm->AttachToComponent(GetMesh(), FAttachmentTransformRules::KeepRelativeTransform, FName("None")); // 차이가 있는지 확인해야할 듯.
-	SpringArm->SetRelativeLocation(FVector(0.0f, 0.0f, 150.0f));
-	SpringArm->SetRelativeRotation(FRotator(-90.0f, 0.0f, 90.0f));
-	SpringArm->TargetArmLength = 1000.0f;
-}
-
-void APlayerCharacter::SwitchView()
-{
-	switch (ViewState)
-	{
-	case EStateOfViews::TPV:
-		SetFPV();
-		break;
-	case EStateOfViews::FPV:
-		SetTopView();
-		break;
-	case EStateOfViews::TopView:
-		SetTPV();
-		break;
-	default:
-		break;
-	}
-}
-#pragma endregion
 
 void APlayerCharacter::PlayMontage(UAnimMontage* Montage)
 {

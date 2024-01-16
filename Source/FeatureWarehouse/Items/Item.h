@@ -18,6 +18,7 @@ public:
 	// Sets default values for this actor's properties
 	AItem();
 
+	UFUNCTION(BlueprintCallable)
 	FORCEINLINE USkeletalMeshComponent* GetSkeletalMesh() { return SkeletalMesh; }
 
 	FORCEINLINE class USphereComponent* GetTriggerZone() { return TriggerZone; }
