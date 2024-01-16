@@ -18,9 +18,6 @@ public:
 	AFW_PlayerController();
 
 	void ViewClickLocation();
-	
-protected:
-	virtual void Tick(float DeltaSecond) override;
 
 private:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = State, meta = (AllowPrivateAccess = "true"))

@@ -66,7 +66,7 @@ void APlayerCharacter::BeginPlay()
 {
 	Super::BeginPlay();
 
-	AFW_PlayerController* PlayerController = Cast<AFW_PlayerController>(Controller);
+	PlayerController = Cast<AFW_PlayerController>(Controller);
 
 	if (PlayerController)
 	{
@@ -76,13 +76,13 @@ void APlayerCharacter::BeginPlay()
 		}
 	}
 
-	PlayerController->SetView(EStateOfViews::TopView);
-	SetTopView();
+	SetTPV();
 }
 
 void APlayerCharacter::Tick(float DeltaSeconds)
 {
 	Super::Tick(DeltaSeconds);
+
 }
 
 #pragma region InputAction
@@ -93,6 +93,7 @@ void APlayerCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCom
 	
 	if (UEnhancedInputComponent* EnhancedInputComponent = CastChecked<UEnhancedInputComponent>(PlayerInputComponent))
 	{
+		GEngine->AddOnScreenDebugMessage(-1, 3.0f, FColor::Green, FString("setting up player input components."));
 		// Move forward.
 		EnhancedInputComponent->BindAction(MoveForwardAction, ETriggerEvent::Triggered, this, &APlayerCharacter::MoveForward);
 
@@ -123,27 +124,32 @@ void APlayerCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCom
 void APlayerCharacter::MoveForward(const FInputActionValue& Value)
 {
 	float Movement = Value.Get<float>();
+	FVector Start = GetActorLocation() + FVector(0, 0, 50);
 
 	if (Controller != nullptr)
 	{
-		AFW_PlayerController* PlayerController = Cast<AFW_PlayerController>(Controller);
-		
-		if (!PlayerController) return;
-
-		FVector RightVector;
+		FVector ForwardVector;
 		if (PlayerController->GetView() == EStateOfViews::TopView)
 		{
+			GEngine->AddOnScreenDebugMessage(-1, 3.0f, FColor::Green, FString("MoveForward :: PlayerController"));
 			FRotator ControlRotation = GetControlRotation();
 			ControlRotation.Pitch = 0.0f;
+			ControlRotation.Roll = 0.0f;
 
-			RightVector = UKismetMathLibrary::GetForwardVector(ControlRotation);
+			ForwardVector = UKismetMathLibrary::GetForwardVector(ControlRotation);
+
+			FVector ActorEnd = Start + GetActorRotation().Vector() * 500;
+			FVector ControlEnd = Start + ControlRotation.Vector() * 500;
+
+			DrawDebugLine(GetWorld(), Start, ActorEnd, FColor::Red, false, 0, 0, 10);
+			DrawDebugLine(GetWorld(), Start, ControlEnd, FColor::Blue, false, 0, 0, 10);
 		}
 		else
 		{
-			RightVector = UKismetMathLibrary::GetForwardVector(GetActorRotation());
+			ForwardVector = UKismetMathLibrary::GetForwardVector(GetActorRotation());
 		}
 
-		AddMovementInput(RightVector, Movement);
+		AddMovementInput(ForwardVector, Movement);
 	}
 }
 
@@ -151,12 +157,9 @@ void APlayerCharacter::MoveRight(const FInputActionValue& Value)
 {
 	float Movement = Value.Get<float>();
 
+	FVector Start = GetActorLocation() + FVector(0, 0, 50);
 	if (Controller != nullptr)
 	{
-		AFW_PlayerController* PlayerController = Cast<AFW_PlayerController>(Controller);
-
-		if (!PlayerController) return;
-
 		FVector RightVector;
 		if (PlayerController->GetView() == EStateOfViews::TopView)
 		{
@@ -164,6 +167,12 @@ void APlayerCharacter::MoveRight(const FInputActionValue& Value)
 			ControlRotation.Pitch = 0.0f;
 
 			RightVector = UKismetMathLibrary::GetRightVector(ControlRotation);
+
+			FVector ActorEnd = Start + GetActorRotation().Vector() * 500;
+			FVector ControlEnd = Start + ControlRotation.Vector() * 500;
+
+			DrawDebugLine(GetWorld(), Start, ActorEnd, FColor::Red, false, 0, 0, 10);
+			DrawDebugLine(GetWorld(), Start, ControlEnd, FColor::Blue, false, 0, 0, 10);
 		}
 		else
 		{
@@ -177,8 +186,8 @@ void APlayerCharacter::MoveRight(const FInputActionValue& Value)
 void APlayerCharacter::Turn(const FInputActionValue& Value)
 {
 	float Movement = Value.Get<float>();
-
-	if (Controller != nullptr)
+	
+	if (PlayerController != nullptr && PlayerController->GetView() != EStateOfViews::TopView)
 	{
 		AddControllerYawInput(Movement);
 	}
@@ -188,7 +197,7 @@ void APlayerCharacter::LookUp(const FInputActionValue& Value)
 {
 	float Movement = Value.Get<float>();
 
-	if (Controller != nullptr)
+	if (PlayerController != nullptr && PlayerController->GetView() != EStateOfViews::TopView)
 	{
 		AddControllerPitchInput(Movement);
 	}
@@ -279,11 +288,6 @@ void APlayerCharacter::AttackTriggered(const FInputActionValue& Value)
 	{
 		if (IsPressed)
 		{
-			AFW_PlayerController* PlayerController = Cast<AFW_PlayerController>(Controller);
-
-			if (!PlayerController) return;
-
-			// PlayerController->ViewClickLocation();
 			Attack();
 		}
 		else
@@ -299,41 +303,49 @@ void APlayerCharacter::AttackTriggered(const FInputActionValue& Value)
 #pragma region View
 void APlayerCharacter::SetTPV()
 {
-	AFW_PlayerController* PlayerController = Cast<AFW_PlayerController>(GetController());
-
 	if (!PlayerController) return;
 
-	PlayerController->bShowMouseCursor = false;
 	PlayerController->SetView(EStateOfViews::TPV);
 
-	SpringArm->AttachToComponent(GetMesh(), FAttachmentTransformRules::KeepRelativeTransform);
+	bool IsSuccess = SpringArm->AttachToComponent(GetMesh(), FAttachmentTransformRules::KeepRelativeTransform);
 
-	SpringArm->bUsePawnControlRotation = true;
-	SpringArm->bInheritRoll = true;
-	SpringArm->bInheritYaw = true;
+	if (IsSuccess)
+	{
+		GEngine->AddOnScreenDebugMessage(-1, 3.0f, FColor::Green, FString("Successed springarm attach to skeletalmesh."));
 
-	SpringArm->SetRelativeLocation(FVector(0.0f, 0.0f, 150.0f));
-	SpringArm->SetRelativeRotation(FRotator(0.0f, 0.0f, 90.0f));
-	SpringArm->TargetArmLength = 300.0f;
+		bUseControllerRotationYaw = true;
+		PlayerController->bShowMouseCursor = false;
+		GetCharacterMovement()->bOrientRotationToMovement = false;
+		SpringArm->bUsePawnControlRotation = true;
+		SpringArm->bInheritPitch = true;
+		SpringArm->bInheritYaw = true;
+
+		SpringArm->SetRelativeLocation(FVector(0.0f, 0.0f, 150.0f));
+		SpringArm->SetRelativeRotation(FRotator(0.0f, 90.0f, 0.0f));
+		SpringArm->TargetArmLength = 300.0f;
+	}
 }
 
 void APlayerCharacter::SetFPV()
 {
-	AFW_PlayerController* PlayerController = Cast<AFW_PlayerController>(GetController());
 	if (!PlayerController) return;
-	
-	PlayerController->bShowMouseCursor = false;
+
 	PlayerController->SetView(EStateOfViews::FPV);
 	
 	bool IsSuccess = SpringArm->AttachToComponent(GetMesh(), FAttachmentTransformRules::SnapToTargetIncludingScale, FName("CameraSocket"));
 
-	GetMesh()->HideBoneByName(FName("head"), EPhysBodyOp::PBO_None);
-	SpringArm->bUsePawnControlRotation = true;
-	SpringArm->bInheritRoll = true;
-	SpringArm->bInheritYaw = true;
-
 	if (IsSuccess)
 	{
+		GEngine->AddOnScreenDebugMessage(-1, 3.0f, FColor::Green, FString("Successed springarm attach to skeletalmesh's CameraSocket."));
+
+		PlayerController->bShowMouseCursor = false;
+		GetMesh()->HideBoneByName(FName("head"), EPhysBodyOp::PBO_None);
+
+		bUseControllerRotationYaw = true;
+		GetCharacterMovement()->bOrientRotationToMovement = false;
+		SpringArm->bUsePawnControlRotation = true;
+		SpringArm->bInheritYaw = true;
+
 		SpringArm->SetRelativeLocation(FVector(20.0f, 0.0f, 0.0f));
 		SpringArm->TargetArmLength = 0.0f;
 	}
@@ -341,30 +353,35 @@ void APlayerCharacter::SetFPV()
 
 void APlayerCharacter::SetTopView()
 {
-	AFW_PlayerController* PlayerController = Cast<AFW_PlayerController>(GetController());
-	
 	if (!PlayerController) return;
 	
+	PlayerController->SetControlRotation(FRotator::ZeroRotator);
 	PlayerController->SetView(EStateOfViews::TopView);
-	PlayerController->bShowMouseCursor = true;
 
-	GetMesh()->UnHideBoneByName(FName("head"));
+	bool IsSuccess = SpringArm->AttachToComponent(GetCapsuleComponent(), FAttachmentTransformRules::KeepRelativeTransform);
 
-	SpringArm->AttachToComponent(GetCapsuleComponent(), FAttachmentTransformRules::KeepRelativeTransform);
+	if (IsSuccess)
+	{
+		GEngine->AddOnScreenDebugMessage(-1, 3.0f, FColor::Green, FString("Successed springarm attach to the CapsuleComponent."));
 
-	SpringArm->bUsePawnControlRotation = false;
-	SpringArm->bInheritRoll = false;
-	SpringArm->bInheritYaw = false;
-	
-	SpringArm->SetRelativeLocation(FVector(0.0f, 0.0f, 150.0f));
-	SpringArm->SetRelativeRotation(FRotator(-90.0f, 0.0f, 90.0f));
-	SpringArm->TargetArmLength = 1000.0f;
+		PlayerController->bShowMouseCursor = true;
+		GetMesh()->UnHideBoneByName(FName("head"));
+
+		GetCharacterMovement()->bOrientRotationToMovement = true;
+		SpringArm->bUsePawnControlRotation = false;
+		SpringArm->bInheritRoll = false;
+		SpringArm->bInheritPitch = false;
+		SpringArm->bInheritYaw = false;
+		bUseControllerRotationYaw = false;
+
+		SpringArm->SetRelativeLocation(FVector(0.0f, 0.0f, 150.0f));
+		SpringArm->SetRelativeRotation(FRotator(-90.0f, 0.0f, 0.0f));
+		SpringArm->TargetArmLength = 1400.0f;
+	}
 }
 
 void APlayerCharacter::SwitchView()
 {
-	AFW_PlayerController* PlayerController = Cast<AFW_PlayerController>(GetController());
-
 	if (!PlayerController) return;
 
 	switch (PlayerController->GetView())
@@ -447,8 +464,10 @@ void APlayerCharacter::EquipSecondWeapon()
 
 void APlayerCharacter::Attack()
 {
-	if (!MainWeapon) return;
+	if (!PlayerController) return;
+	PlayerController->ViewClickLocation();
 
+	if (!MainWeapon) return;
 	MainWeapon->Attack();
 }
 

@@ -75,6 +75,9 @@ private:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Weapon, meta = (AllowPrivateAccess = "true"))
 	class AWeapon* MainWeapon;
 
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = GamePlay, meta = (AllowPrivateAccess = "true"))
+	class AFW_PlayerController* PlayerController;
+
 #pragma region GetterSetter
 public:
 	FORCEINLINE UWeaponComponent* GetWeaponComponent() { return WeaponComponent; }
