@@ -340,9 +340,12 @@ void APlayerCharacter::SetTPV()
 		SpringArm->bInheritPitch = true;
 		SpringArm->bInheritYaw = true;
 
+		MaxArmLength = 300.0f;
+		MinArmLength = 200.0f;
+
 		SpringArm->SetRelativeLocation(FVector(-80.0f, 0.0f, 160.0f));
 		SpringArm->SetRelativeRotation(FRotator(0.0f, 90.0f, 0.0f));
-		SpringArm->TargetArmLength = 300.0f;
+		SpringArm->TargetArmLength = MaxArmLength;
 	}
 }
 
@@ -366,8 +369,11 @@ void APlayerCharacter::SetFPV()
 		SpringArm->bUsePawnControlRotation = true;
 		SpringArm->bInheritYaw = true;
 
+		MaxArmLength = 0.0f;
+		MinArmLength = 0.0f;
+
 		SpringArm->SetRelativeLocation(FVector(20.0f, 0.0f, 0.0f));
-		SpringArm->TargetArmLength = 0.0f;
+		SpringArm->TargetArmLength = MaxArmLength;
 	}
 }
 
@@ -394,9 +400,12 @@ void APlayerCharacter::SetTopView()
 		SpringArm->bInheritYaw = false;
 		bUseControllerRotationYaw = false;
 
+		MaxArmLength = 1400.0f;
+		MinArmLength = 800.0f;
+
 		SpringArm->SetRelativeLocation(FVector(0.0f, 0.0f, 150.0f));
 		SpringArm->SetRelativeRotation(FRotator(-50.0f, 0.0f, 0.0f));
-		SpringArm->TargetArmLength = 1400.0f;
+		SpringArm->TargetArmLength = MaxArmLength;
 	}
 }
 
@@ -510,21 +519,100 @@ void APlayerCharacter::PlayMontage(UAnimMontage* Montage)
 	}
 }
 
+void APlayerCharacter::ZoomIn()
+{
+	if (!PlayerController) return;
+
+	switch (PlayerController->GetView())
+	{
+	case EStateOfViews::FPV:
+		// Adjust the camera's FOV value.
+		
+
+		break;
+	case EStateOfViews::TopView:
+	case EStateOfViews::TPV:
+		// Adjust SpringArm's length value.
+		SpringArm->TargetArmLength -= MaxArmLength * 0.1f;
+
+		if (SpringArm->TargetArmLength <= MinArmLength)
+		{
+			SpringArm->TargetArmLength = MinArmLength;
+			GetWorldTimerManager().ClearTimer(ZoomTimerHandle);
+		}
+		break;
+	}
+}
+
+void APlayerCharacter::ZoomOut()
+{
+	if (!PlayerController) return;
+
+	switch (PlayerController->GetView())
+	{
+	case EStateOfViews::FPV:
+		// Adjust the camera's FOV value.
+
+
+		break;
+	case EStateOfViews::TopView:
+	case EStateOfViews::TPV:
+		// Adjust SpringArm's length value.
+		SpringArm->TargetArmLength += MaxArmLength * 0.1f;
+
+		if (SpringArm->TargetArmLength >= MaxArmLength)
+		{
+			SpringArm->TargetArmLength = MaxArmLength;
+			GetWorldTimerManager().ClearTimer(ZoomTimerHandle);
+		}
+		break;
+	}
+}
+
 void APlayerCharacter::StartZoom()
 {
+	if (!PlayerController) return;
+
 	bIsZoom = true;
-	GetWorldTimerManager().SetTimer(ZoomTimerHandle, this, &APlayerCharacter::Aiming, 0.001f, true);
-	GEngine->AddOnScreenDebugMessage(-1, 3.0f, FColor::Green, FString("Start Zoom."));
+
+	switch (PlayerController->GetView())
+	{
+	case EStateOfViews::FPV:
+
+		break;
+	case EStateOfViews::TopView:
+
+		break;
+	case EStateOfViews::TPV:
+		GetWorldTimerManager().SetTimer(AimingTimerHandle, this, &APlayerCharacter::Aiming, 0.001f, true);
+		GetWorldTimerManager().SetTimer(ZoomTimerHandle, this, &APlayerCharacter::ZoomIn, 0.01f, true);
+		break;
+	}
 }
 
 void APlayerCharacter::StopZoom()
 {
+	if (!PlayerController) return;
+
 	bIsZoom = false;
-	GetWorldTimerManager().ClearTimer(ZoomTimerHandle);
+	GetWorldTimerManager().ClearTimer(AimingTimerHandle);
 	GEngine->AddOnScreenDebugMessage(-1, 3.0f, FColor::Green, FString("Stop Zoom."));
 
 	LookYaw = 0.0f;
 	LookPitch = 0.0f;
+
+	switch (PlayerController->GetView())
+	{
+	case EStateOfViews::FPV:
+
+		break;
+	case EStateOfViews::TopView:
+
+		break;
+	case EStateOfViews::TPV:
+		GetWorldTimerManager().SetTimer(ZoomTimerHandle, this, &APlayerCharacter::ZoomOut, 0.01f, true);
+		break;
+	}
 }
 
 void APlayerCharacter::Aiming()
@@ -545,9 +633,9 @@ void APlayerCharacter::Aiming()
 	// Set character's LookYaw, LookPitch
 	FString RotationString = GoalRotation.ToString();
 	GEngine->AddOnScreenDebugMessage(-1, 0, FColor::Cyan, RotationString);
+
 	LookYaw = UKismetMathLibrary::ClampAngle(GoalRotation.Yaw - GetActorRotation().Yaw, -90.0f, 90.0f);
 	LookPitch = UKismetMathLibrary::ClampAngle(GoalRotation.Pitch - GetActorRotation().Pitch, -90.0f, 90.0f);
-
 }
 
 FVector APlayerCharacter::DrawCameraLineTrace()

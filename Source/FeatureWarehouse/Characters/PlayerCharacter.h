@@ -54,6 +54,12 @@ protected:
 	UFUNCTION(BlueprintCallable)
 	void StopAttack();
 
+	UFUNCTION()
+	void ZoomIn();
+
+	UFUNCTION()
+	void ZoomOut();
+
 	UFUNCTION(BlueprintCallable)
 	void StartZoom();
 
@@ -97,7 +103,15 @@ private:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = State, meta = (AllowPrivateAccess = "true"))
 	float LookPitch;
 
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Zoom|InOut", meta = (AllowPrivateAccess = "true"))
+	float MaxArmLength;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Zoom|InOut", meta = (AllowPrivateAccess = "true"))
+	float MinArmLength;
+
 	FTimerHandle ZoomTimerHandle;
+
+	FTimerHandle AimingTimerHandle;
 
 #pragma region GetterSetter
 public:
