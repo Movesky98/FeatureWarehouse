@@ -4,6 +4,9 @@
 #include "Gun.h"
 
 #include "Components/ArrowComponent.h"
+#include "Kismet/KismetSystemLibrary.h"
+#include "Kismet/KismetMathLibrary.h"
+
 #include "NiagaraFunctionLibrary.h"
 #include "NiagaraComponent.h"
 
@@ -99,4 +102,28 @@ void AGun::Fire()
 				BurstIndex < 3 ? BurstIndex++ : StopFire();
 		}
 	}
+}
+
+void AGun::DrawMuzzleLineTrace()
+{
+	FVector Start;
+	FVector End;
+
+	Start = MuzzleArrow->GetComponentLocation();
+	End = MuzzleArrow->GetComponentLocation() + UKismetMathLibrary::GetForwardVector(MuzzleArrow->GetComponentRotation()) * 50000.0f;
+
+	TArray<AActor*> IgnoreActor;
+	FHitResult Hit;
+
+	bool IsHit = UKismetSystemLibrary::LineTraceSingle(
+		GetWorld(),
+		Start,
+		End,
+		ETraceTypeQuery::TraceTypeQuery1,
+		true,
+		IgnoreActor,
+		EDrawDebugTrace::ForDuration,
+		Hit,
+		true
+	);
 }

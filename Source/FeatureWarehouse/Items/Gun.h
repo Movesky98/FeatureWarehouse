@@ -52,6 +52,8 @@ public:
 
 	void StopFire();
 
+	void DrawMuzzleLineTrace();
+
 protected:
 	virtual void Attack() override;
 

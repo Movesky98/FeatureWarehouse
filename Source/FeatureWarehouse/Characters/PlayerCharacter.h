@@ -54,6 +54,16 @@ protected:
 	UFUNCTION(BlueprintCallable)
 	void StopAttack();
 
+	UFUNCTION(BlueprintCallable)
+	void StartZoom();
+
+	UFUNCTION(BlueprintCallable)
+	void StopZoom();
+
+	UFUNCTION()
+	void Aiming();
+
+	FVector DrawCameraLineTrace();
 	
 private:
 	// Variables
@@ -77,6 +87,17 @@ private:
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = GamePlay, meta = (AllowPrivateAccess = "true"))
 	class AFW_PlayerController* PlayerController;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = State, meta = (AllowPrivateAccess = "true"))
+	bool bIsZoom;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = State, meta = (AllowPrivateAccess = "true"))
+	float LookYaw;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = State, meta = (AllowPrivateAccess = "true"))
+	float LookPitch;
+
+	FTimerHandle ZoomTimerHandle;
 
 #pragma region GetterSetter
 public:
@@ -115,6 +136,8 @@ protected:
 	void SecondWeapon(const FInputActionValue& Value);
 
 	void AttackTriggered(const FInputActionValue& Value);
+
+	void Zoom(const FInputActionValue& Value);
 
 private:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = InputAction, meta = (AllowPrivateAccess = "true"))
@@ -156,5 +179,7 @@ private:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = InputAction, meta = (AllowPrivateAccess = "true"))
 	UInputAction* AttackAction;
 
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = InputAction, meta = (AllowPrivateAccess = "true"))
+	UInputAction* ZoomAction;
 #pragma endregion
 };

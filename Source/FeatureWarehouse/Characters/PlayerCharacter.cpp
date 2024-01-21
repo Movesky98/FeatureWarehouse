@@ -8,6 +8,7 @@
 #include "Components/InputComponent.h"
 #include "Kismet/KismetSystemLibrary.h"
 #include "Kismet/KismetMathLibrary.h"
+#include "Kismet/GameplayStatics.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "GameFramework/Controller.h"
 #include "GameFramework/SpringArmComponent.h"
@@ -15,6 +16,8 @@
 #include "EnhancedInputSubsystems.h"
 
 #include "Items/Weapon.h"
+#include "Items/Gun.h"
+
 #include "Enums/StateOfViews.h"
 #include "Enums/UseTypeOfWeapon.h"
 #include "Components/HealthComponent.h"
@@ -118,6 +121,8 @@ void APlayerCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCom
 		EnhancedInputComponent->BindAction(SecondWeaponAction, ETriggerEvent::Triggered, this, &APlayerCharacter::SecondWeapon);
 
 		EnhancedInputComponent->BindAction(AttackAction, ETriggerEvent::Triggered, this, &APlayerCharacter::AttackTriggered);
+
+		EnhancedInputComponent->BindAction(ZoomAction, ETriggerEvent::Triggered, this, &APlayerCharacter::Zoom);
 	}
 }
 
@@ -131,7 +136,6 @@ void APlayerCharacter::MoveForward(const FInputActionValue& Value)
 		FVector ForwardVector;
 		if (PlayerController->GetView() == EStateOfViews::TopView)
 		{
-			GEngine->AddOnScreenDebugMessage(-1, 3.0f, FColor::Green, FString("MoveForward :: PlayerController"));
 			FRotator ControlRotation = GetControlRotation();
 			ControlRotation.Pitch = 0.0f;
 			ControlRotation.Roll = 0.0f;
@@ -297,8 +301,24 @@ void APlayerCharacter::AttackTriggered(const FInputActionValue& Value)
 	}
 }
 
-#pragma endregion
+void APlayerCharacter::Zoom(const FInputActionValue& Value)
+{
+	bool IsPressed = Value.Get<bool>();
 
+	if (Controller != nullptr)
+	{
+		if (IsPressed)
+		{
+			StartZoom();
+		}
+		else
+		{
+			StopZoom();
+		}
+	}
+}
+
+#pragma endregion
 
 #pragma region View
 void APlayerCharacter::SetTPV()
@@ -320,7 +340,7 @@ void APlayerCharacter::SetTPV()
 		SpringArm->bInheritPitch = true;
 		SpringArm->bInheritYaw = true;
 
-		SpringArm->SetRelativeLocation(FVector(0.0f, 0.0f, 150.0f));
+		SpringArm->SetRelativeLocation(FVector(-80.0f, 0.0f, 160.0f));
 		SpringArm->SetRelativeRotation(FRotator(0.0f, 90.0f, 0.0f));
 		SpringArm->TargetArmLength = 300.0f;
 	}
@@ -375,7 +395,7 @@ void APlayerCharacter::SetTopView()
 		bUseControllerRotationYaw = false;
 
 		SpringArm->SetRelativeLocation(FVector(0.0f, 0.0f, 150.0f));
-		SpringArm->SetRelativeRotation(FRotator(-90.0f, 0.0f, 0.0f));
+		SpringArm->SetRelativeRotation(FRotator(-50.0f, 0.0f, 0.0f));
 		SpringArm->TargetArmLength = 1400.0f;
 	}
 }
@@ -465,7 +485,9 @@ void APlayerCharacter::EquipSecondWeapon()
 void APlayerCharacter::Attack()
 {
 	if (!PlayerController) return;
-	PlayerController->ViewClickLocation();
+
+	if(PlayerController->GetView() == EStateOfViews::TopView)
+		PlayerController->ViewClickLocation();
 
 	if (!MainWeapon) return;
 	MainWeapon->Attack();
@@ -485,5 +507,80 @@ void APlayerCharacter::PlayMontage(UAnimMontage* Montage)
 	if (PlayerAnim)
 	{
 		PlayerAnim->Montage_Play(Montage);
+	}
+}
+
+void APlayerCharacter::StartZoom()
+{
+	bIsZoom = true;
+	GetWorldTimerManager().SetTimer(ZoomTimerHandle, this, &APlayerCharacter::Aiming, 0.001f, true);
+	GEngine->AddOnScreenDebugMessage(-1, 3.0f, FColor::Green, FString("Start Zoom."));
+}
+
+void APlayerCharacter::StopZoom()
+{
+	bIsZoom = false;
+	GetWorldTimerManager().ClearTimer(ZoomTimerHandle);
+	GEngine->AddOnScreenDebugMessage(-1, 3.0f, FColor::Green, FString("Stop Zoom."));
+
+	LookYaw = 0.0f;
+	LookPitch = 0.0f;
+}
+
+void APlayerCharacter::Aiming()
+{
+	AGun* Gun = Cast<AGun>(MainWeapon);
+	if (!Gun) return;
+
+	// Gun->DrawMuzzleLineTrace();
+
+	FVector HitLocation = DrawCameraLineTrace();
+	FVector HitDirection = (HitLocation - GetActorLocation());
+	FRotator GoalRotation = UKismetMathLibrary::MakeRotFromX(HitDirection.GetSafeNormal());
+	FVector GoalLocation = GetActorLocation() + GoalRotation.Vector() * 1000.0f;
+
+	DrawDebugLine(GetWorld(), GetActorLocation(), GoalLocation, FColor::Blue, false, 0, 0, 10);
+	DrawDebugLine(GetWorld(), GetActorLocation(), HitLocation, FColor::Green, false, 0, 0, 10);
+
+	// Set character's LookYaw, LookPitch
+	FString RotationString = GoalRotation.ToString();
+	GEngine->AddOnScreenDebugMessage(-1, 0, FColor::Cyan, RotationString);
+	LookYaw = UKismetMathLibrary::ClampAngle(GoalRotation.Yaw - GetActorRotation().Yaw, -90.0f, 90.0f);
+	LookPitch = UKismetMathLibrary::ClampAngle(GoalRotation.Pitch - GetActorRotation().Pitch, -90.0f, 90.0f);
+
+}
+
+FVector APlayerCharacter::DrawCameraLineTrace()
+{
+	APlayerCameraManager* CameraManager = UGameplayStatics::GetPlayerCameraManager(GetWorld(), 0);
+
+	FVector Start;
+	FVector End;
+
+	Start = CameraManager->GetCameraLocation();
+	End = CameraManager->GetCameraLocation() + UKismetMathLibrary::GetForwardVector(CameraManager->GetCameraRotation()) * 50000.0f;
+
+	TArray<AActor*> IgnoreActor;
+	FHitResult Hit;
+
+	bool IsHit = UKismetSystemLibrary::LineTraceSingle(
+		GetWorld(), 
+		Start, 
+		End, 
+		ETraceTypeQuery::TraceTypeQuery1, 
+		true, 
+		IgnoreActor, 
+		EDrawDebugTrace::None, 
+		Hit, 
+		true
+	);
+
+	if (IsHit)
+	{
+		return Hit.ImpactPoint;
+	}
+	else
+	{
+		return End;
 	}
 }
