@@ -62,6 +62,11 @@ protected:
 	UFUNCTION()
 	void Fire();
 
+	void FPVFire();
+
+	void TPVFire();
+
+	void TDVFire();
 private:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = Components, meta = (AllowPrivateAccess = "true"))
 	class UArrowComponent* MuzzleArrow;

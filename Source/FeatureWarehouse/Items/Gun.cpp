@@ -4,13 +4,17 @@
 #include "Gun.h"
 
 #include "Components/ArrowComponent.h"
+#include "Camera/CameraComponent.h"
 #include "Kismet/KismetSystemLibrary.h"
 #include "Kismet/KismetMathLibrary.h"
+#include "Kismet/GameplayStatics.h"
 
 #include "NiagaraFunctionLibrary.h"
 #include "NiagaraComponent.h"
 
 #include "Projectile.h"
+#include "GamePlay/FW_PlayerController.h"
+#include "Enums/StateOfViews.h"
 #include "Enums/UseTypeOfWeapon.h"
 #include "Enums/FireMode.h"
 
@@ -68,7 +72,7 @@ void AGun::StopFire()
 
 void AGun::Fire()
 {
-	// not implemented whether an attack is possible.
+	// not implement whether an attack is possible.
 
 	if (Info.CurrentRounds <= 0)
 	{
@@ -82,7 +86,30 @@ void AGun::Fire()
 		}
 		return;
 	}
+	
+	// Get player's controller.
+	AFW_PlayerController* PlayerController = Cast<AFW_PlayerController>(UGameplayStatics::GetPlayerController(GetWorld(), 0));
 
+	if (PlayerController)
+	{
+		switch (PlayerController->GetView())
+		{
+		case EStateOfViews::TPV:
+			TPVFire();
+			break;
+		case EStateOfViews::FPV:
+			FPVFire();
+			break;
+		case EStateOfViews::TopView:
+			TDVFire();
+			break;
+		}
+	}
+}
+
+// Gun firing when the player's view is first person view.
+void AGun::FPVFire()
+{
 	UWorld* World = GetWorld();
 	if (World)
 	{
@@ -90,11 +117,11 @@ void AGun::Fire()
 		FRotator Rotation = MuzzleArrow->GetComponentRotation();
 
 		AProjectile* Projectile = World->SpawnActor<AProjectile>(Info.ProjectileClass, Location, Rotation);
-		
-		if(Projectile)
+
+		if (Projectile)
 		{
 			Info.CurrentRounds--;
-			
+
 			FVector Direction = MuzzleArrow->GetForwardVector();
 			Projectile->FireDirection(Direction);
 
@@ -102,6 +129,70 @@ void AGun::Fire()
 				BurstIndex < 3 ? BurstIndex++ : StopFire();
 		}
 	}
+}
+
+// Gun firing when the player's view is third person view.
+void AGun::TPVFire()
+{
+	APlayerCameraManager* CameraManager = UGameplayStatics::GetPlayerCameraManager(GetWorld(), 0);
+	if (!CameraManager) return;
+
+	UWorld* World = GetWorld();
+	if (World)
+	{
+		// Camera trace.
+		FVector CameraStart = CameraManager->GetCameraLocation();
+		FVector CameraEnd = CameraStart + UKismetMathLibrary::GetForwardVector(CameraManager->GetCameraRotation()) * 50000.0f;
+		TArray<AActor*> IgnoreActors;
+		FHitResult Hit;
+
+		bool IsHit = UKismetSystemLibrary::LineTraceSingle(
+			GetWorld(), 
+			CameraStart, 
+			CameraEnd, 
+			ETraceTypeQuery::TraceTypeQuery1, 
+			true, 
+			IgnoreActors, 
+			EDrawDebugTrace::ForDuration, 
+			Hit, 
+			true, 
+			FLinearColor::Red, 
+			FLinearColor::Green, 
+			0.0f
+		);
+
+		FVector FireLocation;
+		FRotator FireRotation;
+
+		if (IsHit)
+		{
+			FireLocation = MuzzleArrow->GetComponentLocation();
+			FireRotation = UKismetMathLibrary::FindLookAtRotation(FireLocation, Hit.ImpactPoint);
+		}
+		else
+		{
+			FireLocation = MuzzleArrow->GetComponentLocation();
+			FireRotation = UKismetMathLibrary::FindLookAtRotation(FireLocation, CameraEnd);
+		}
+
+		AProjectile* Projectile = World->SpawnActor<AProjectile>(Info.ProjectileClass, FireLocation, FireRotation);
+		if (Projectile)
+		{
+			Info.CurrentRounds--;
+
+			FVector Direction = UKismetMathLibrary::GetForwardVector(FireRotation);
+			Projectile->FireDirection(Direction);
+
+			if (FireMode == EFireMode::Burst)
+				BurstIndex < 3 ? BurstIndex++ : StopFire();
+		}
+	}
+}
+
+// Gun firing when the player's view is top down view.
+void AGun::TDVFire()
+{
+
 }
 
 void AGun::DrawMuzzleLineTrace()
