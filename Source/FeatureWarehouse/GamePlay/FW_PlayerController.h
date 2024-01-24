@@ -17,7 +17,7 @@ class FEATUREWAREHOUSE_API AFW_PlayerController : public APlayerController
 public:
 	AFW_PlayerController();
 
-	void ViewClickLocation();
+	FVector ViewClickLocation();
 
 private:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = State, meta = (AllowPrivateAccess = "true"))
@@ -25,8 +25,8 @@ private:
 
 #pragma region GetterSetter
 public:
-	FORCEINLINE void SetView(EStateOfViews NewState) { ViewState = NewState; }
-	FORCEINLINE EStateOfViews GetView() { return ViewState; }
+	FORCEINLINE void SetPerspective(EStateOfViews NewState) { ViewState = NewState; }
+	FORCEINLINE EStateOfViews GetPerspective() { return ViewState; }
 
 #pragma endregion
 };

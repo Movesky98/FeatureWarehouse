@@ -14,7 +14,7 @@ AFW_PlayerController::AFW_PlayerController()
 }
 
 
-void AFW_PlayerController::ViewClickLocation()
+FVector AFW_PlayerController::ViewClickLocation()
 {
 	FHitResult Hit;
 	bool IsHit = GetHitResultUnderCursor(ECollisionChannel::ECC_Visibility, true, Hit);
@@ -29,5 +29,9 @@ void AFW_PlayerController::ViewClickLocation()
 		GetPawn()->SetActorRotation(TargetRotation);
 
 		DrawDebugSolidBox(GetWorld(), Hit.Location, FVector(3.0f, 3.0f, 3.0f), FColor::Red, false, 3.0f);
+
+		return Hit.Location;
 	}
+
+	return FVector(0.0f);
 }

@@ -30,14 +30,14 @@ protected:
 
 	virtual void Tick(float DeltaSeconds) override;
 
-	void SetTPV();
+	void SetTPP();
 
-	void SetFPV();
+	void SetFPP();
 
-	void SetTopView();
+	void SetTDP();
 
 	UFUNCTION(BlueprintCallable)
-	void SwitchView();
+	void SwitchPerspective();
 
 	UFUNCTION(BlueprintCallable)
 	AActor* FindInteractableActor(const FVector Start, const FVector End);
@@ -141,7 +141,7 @@ protected:
 
 	void Run(const FInputActionValue& Value);
 
-	void SwitchViewTriggered(const FInputActionValue& Value);
+	void SwitchPerspectiveTriggered(const FInputActionValue& Value);
 
 	void Interact(const FInputActionValue& Value);
 

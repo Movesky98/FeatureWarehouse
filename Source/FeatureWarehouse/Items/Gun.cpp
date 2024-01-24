@@ -30,20 +30,16 @@ AGun::AGun()
 	BurstIndex = 0;
 }
 
-void AGun::Attack()
+void AGun::Attack(EStateOfViews CurView, FVector HitLocation)
 {
 	switch (FireMode)
 	{
 	case EFireMode::SemiAuto:
-		Fire();
+		Fire(CurView, HitLocation);
 		break;
-
 	case EFireMode::FullAuto:
-		StartFire();
-		break;
-
 	case EFireMode::Burst:
-		StartFire();
+		StartFire(CurView, HitLocation);
 		break;
 	default:
 		break;
@@ -57,9 +53,12 @@ void AGun::StopAttack()
 	StopFire();
 }
 
-void AGun::StartFire()
+void AGun::StartFire(EStateOfViews CurView, FVector HitLocation)
 {
-	GetWorldTimerManager().SetTimer(FireTimerHandle, this, &AGun::Fire, FireRate, true);
+	FTimerDelegate FireTimerDel;
+	FireTimerDel.BindUFunction(this, FName("Fire"), CurView, HitLocation);
+
+	GetWorldTimerManager().SetTimer(FireTimerHandle, FireTimerDel, FireRate, true);
 }
 
 void AGun::StopFire()
@@ -70,7 +69,7 @@ void AGun::StopFire()
 		BurstIndex = 0;
 }
 
-void AGun::Fire()
+void AGun::Fire(EStateOfViews CurView, FVector HitLocation)
 {
 	// not implement whether an attack is possible.
 
@@ -87,42 +86,62 @@ void AGun::Fire()
 		return;
 	}
 	
-	// Get player's controller.
-	AFW_PlayerController* PlayerController = Cast<AFW_PlayerController>(UGameplayStatics::GetPlayerController(GetWorld(), 0));
-
-	if (PlayerController)
+	switch (CurView)
 	{
-		switch (PlayerController->GetView())
-		{
-		case EStateOfViews::TPV:
-			TPVFire();
-			break;
-		case EStateOfViews::FPV:
-			FPVFire();
-			break;
-		case EStateOfViews::TopView:
-			TDVFire();
-			break;
-		}
+	case EStateOfViews::TPP:
+		TPPFire();
+		break;
+	case EStateOfViews::FPP:
+		FPPFire();
+		break;
+	case EStateOfViews::TDP:
+		TDPFire(HitLocation);
+		break;
 	}
 }
 
 // Gun firing when the player's view is first person view.
-void AGun::FPVFire()
+void AGun::FPPFire()
 {
+	APlayerCameraManager* CameraManager = UGameplayStatics::GetPlayerCameraManager(GetWorld(), 0);
+	if (!CameraManager) return;
+
 	UWorld* World = GetWorld();
 	if (World)
 	{
-		FVector Location = MuzzleArrow->GetComponentLocation();
-		FRotator Rotation = MuzzleArrow->GetComponentRotation();
+		FVector CameraStart = CameraManager->GetCameraLocation();
+		FVector CameraEnd = CameraStart + UKismetMathLibrary::GetForwardVector(CameraManager->GetCameraRotation()) * 50000.0f;
+		TArray<AActor*> IgnoreActors;
+		FHitResult Hit;
 
-		AProjectile* Projectile = World->SpawnActor<AProjectile>(Info.ProjectileClass, Location, Rotation);
+		bool IsHit = UKismetSystemLibrary::LineTraceSingle(
+			GetWorld(),
+			CameraStart,
+			CameraEnd,
+			ETraceTypeQuery::TraceTypeQuery1,
+			true,
+			IgnoreActors,
+			EDrawDebugTrace::ForDuration,
+			Hit,
+			true,
+			FLinearColor::Red,
+			FLinearColor::Green,
+			1.0f
+		);
 
+		FVector FireLocation = MuzzleArrow->GetComponentLocation();
+		FRotator FireRotation;
+		
+		IsHit ? FireRotation = UKismetMathLibrary::FindLookAtRotation(FireLocation, Hit.ImpactPoint) 
+			: FireRotation = UKismetMathLibrary::FindLookAtRotation(FireLocation, CameraEnd);
+
+		SpawnParticles();
+		AProjectile* Projectile = World->SpawnActor<AProjectile>(Info.ProjectileClass, FireLocation, FireRotation);
 		if (Projectile)
 		{
 			Info.CurrentRounds--;
 
-			FVector Direction = MuzzleArrow->GetForwardVector();
+			FVector Direction = UKismetMathLibrary::GetForwardVector(FireRotation);
 			Projectile->FireDirection(Direction);
 
 			if (FireMode == EFireMode::Burst)
@@ -132,7 +151,7 @@ void AGun::FPVFire()
 }
 
 // Gun firing when the player's view is third person view.
-void AGun::TPVFire()
+void AGun::TPPFire()
 {
 	APlayerCameraManager* CameraManager = UGameplayStatics::GetPlayerCameraManager(GetWorld(), 0);
 	if (!CameraManager) return;
@@ -147,17 +166,17 @@ void AGun::TPVFire()
 		FHitResult Hit;
 
 		bool IsHit = UKismetSystemLibrary::LineTraceSingle(
-			GetWorld(), 
-			CameraStart, 
-			CameraEnd, 
-			ETraceTypeQuery::TraceTypeQuery1, 
-			true, 
-			IgnoreActors, 
-			EDrawDebugTrace::ForDuration, 
-			Hit, 
-			true, 
-			FLinearColor::Red, 
-			FLinearColor::Green, 
+			GetWorld(),
+			CameraStart,
+			CameraEnd,
+			ETraceTypeQuery::TraceTypeQuery1,
+			true,
+			IgnoreActors,
+			EDrawDebugTrace::ForDuration,
+			Hit,
+			true,
+			FLinearColor::Red,
+			FLinearColor::Green,
 			0.0f
 		);
 
@@ -175,6 +194,7 @@ void AGun::TPVFire()
 			FireRotation = UKismetMathLibrary::FindLookAtRotation(FireLocation, CameraEnd);
 		}
 
+		SpawnParticles();
 		AProjectile* Projectile = World->SpawnActor<AProjectile>(Info.ProjectileClass, FireLocation, FireRotation);
 		if (Projectile)
 		{
@@ -190,9 +210,38 @@ void AGun::TPVFire()
 }
 
 // Gun firing when the player's view is top down view.
-void AGun::TDVFire()
+void AGun::TDPFire(FVector HitLocation)
 {
+	UWorld* World = GetWorld();
+	if (World)
+	{
+		FVector FireLocation = MuzzleArrow->GetComponentLocation();;
+		FVector FireVector = HitLocation - FireLocation;
+		FRotator FireRotation = UKismetMathLibrary::MakeRotFromX(FireVector);
 
+		SpawnParticles();
+		AProjectile* Projectile = World->SpawnActor<AProjectile>(Info.ProjectileClass, FireLocation, FireRotation);
+		if (Projectile)
+		{
+			Info.CurrentRounds--;
+
+			FVector Direction = UKismetMathLibrary::GetForwardVector(FireRotation);
+			Projectile->FireDirection(Direction);
+
+			if (FireMode == EFireMode::Burst)
+				BurstIndex < 3 ? BurstIndex++ : StopFire();
+		}
+	}
+}
+
+void AGun::SpawnParticles()
+{
+	UWorld* World = GetWorld();
+	if (World)
+	{
+		UNiagaraFunctionLibrary::SpawnSystemAtLocation(GetWorld(), Info.NS_MuzzleFlash, MuzzleArrow->GetComponentLocation(), MuzzleArrow->GetComponentRotation());
+		UNiagaraFunctionLibrary::SpawnSystemAtLocation(GetWorld(), Info.NS_HiveShot, HiveShotArrow->GetComponentLocation(), HiveShotArrow->GetComponentRotation());
+	}
 }
 
 void AGun::DrawMuzzleLineTrace()

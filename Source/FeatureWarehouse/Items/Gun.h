@@ -8,6 +8,7 @@
 
 enum class ETypeOfGun :uint8;
 enum class EFireMode :uint8;
+enum class EStateOfViews :uint8;
 
 /* Struct for Weapon's Information */
 USTRUCT(Atomic, BlueprintType)
@@ -48,25 +49,28 @@ class FEATUREWAREHOUSE_API AGun : public AWeapon
 public:
 	AGun();
 
-	void StartFire();
+	void StartFire(EStateOfViews CurView, FVector HitLocation = FVector(0.0f));
 
 	void StopFire();
 
 	void DrawMuzzleLineTrace();
 
 protected:
-	virtual void Attack() override;
+	virtual void Attack(EStateOfViews CurView, FVector HitLocation = FVector(0.0f)) override;
 
 	virtual void StopAttack() override;
 
 	UFUNCTION()
-	void Fire();
+	void Fire(EStateOfViews CurView, FVector HitLocation = FVector(0.0f));
 
-	void FPVFire();
+	void FPPFire();
 
-	void TPVFire();
+	void TPPFire();
 
-	void TDVFire();
+	void TDPFire(FVector HitLocation);
+
+	void SpawnParticles();
+
 private:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = Components, meta = (AllowPrivateAccess = "true"))
 	class UArrowComponent* MuzzleArrow;

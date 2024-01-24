@@ -5,6 +5,7 @@
 
 #include "Enums/UseTypeOfWeapon.h"
 #include "Enums/TypeOfWeapon.h"
+#include "Enums/StateOfViews.h"
 
 #include "Characters/PlayerCharacter.h"
 #include "Components/WeaponComponent.h"
@@ -48,7 +49,7 @@ void AWeapon::ThrowAway(FVector Location)
 	SetActorLocation(Location);
 }
 
-void AWeapon::Attack()
+void AWeapon::Attack(EStateOfViews CurView, FVector HitLocation)
 {
 
 }

@@ -34,7 +34,7 @@ void AMelee::BindMontage()
 	}
 }
 
-void AMelee::Attack()
+void AMelee::Attack(EStateOfViews CurView, FVector HitLocation)
 {
 	if (!CanAttack())
 		return;

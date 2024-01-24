@@ -6,6 +6,8 @@
 #include "Weapon.h"
 #include "Melee.generated.h"
 
+enum class EStateOfViews :uint8;
+
 /**
  * 
  */
@@ -21,7 +23,7 @@ public:
 protected:
 	virtual void BeginPlay() override;
 
-	virtual void Attack() override;
+	virtual void Attack(EStateOfViews CurView, FVector HitLocation = FVector(0.0f)) override;
 
 	virtual bool CanAttack() override;
 

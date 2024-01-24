@@ -79,7 +79,7 @@ void APlayerCharacter::BeginPlay()
 		}
 	}
 
-	SetTPV();
+	SetTPP();
 }
 
 void APlayerCharacter::Tick(float DeltaSeconds)
@@ -110,7 +110,7 @@ void APlayerCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCom
 
 		EnhancedInputComponent->BindAction(CrouchAction, ETriggerEvent::Triggered, this, &APlayerCharacter::CrouchTriggered);
 
-		EnhancedInputComponent->BindAction(SwitchViewAction, ETriggerEvent::Triggered, this, &APlayerCharacter::SwitchViewTriggered);
+		EnhancedInputComponent->BindAction(SwitchViewAction, ETriggerEvent::Triggered, this, &APlayerCharacter::SwitchPerspectiveTriggered);
 
 		EnhancedInputComponent->BindAction(SwitchRunAction, ETriggerEvent::Triggered, this, &APlayerCharacter::Run);
 
@@ -134,7 +134,7 @@ void APlayerCharacter::MoveForward(const FInputActionValue& Value)
 	if (Controller != nullptr)
 	{
 		FVector ForwardVector;
-		if (PlayerController->GetView() == EStateOfViews::TopView)
+		if (PlayerController->GetPerspective() == EStateOfViews::TDP)
 		{
 			FRotator ControlRotation = GetControlRotation();
 			ControlRotation.Pitch = 0.0f;
@@ -165,7 +165,7 @@ void APlayerCharacter::MoveRight(const FInputActionValue& Value)
 	if (Controller != nullptr)
 	{
 		FVector RightVector;
-		if (PlayerController->GetView() == EStateOfViews::TopView)
+		if (PlayerController->GetPerspective() == EStateOfViews::TDP)
 		{
 			FRotator ControlRotation = GetControlRotation();
 			ControlRotation.Pitch = 0.0f;
@@ -191,7 +191,7 @@ void APlayerCharacter::Turn(const FInputActionValue& Value)
 {
 	float Movement = Value.Get<float>();
 	
-	if (PlayerController != nullptr && PlayerController->GetView() != EStateOfViews::TopView)
+	if (PlayerController != nullptr && PlayerController->GetPerspective() != EStateOfViews::TDP)
 	{
 		AddControllerYawInput(Movement);
 	}
@@ -201,7 +201,7 @@ void APlayerCharacter::LookUp(const FInputActionValue& Value)
 {
 	float Movement = Value.Get<float>();
 
-	if (PlayerController != nullptr && PlayerController->GetView() != EStateOfViews::TopView)
+	if (PlayerController != nullptr && PlayerController->GetPerspective() != EStateOfViews::TDP)
 	{
 		AddControllerPitchInput(Movement);
 	}
@@ -234,13 +234,13 @@ void APlayerCharacter::Run(const FInputActionValue& Value)
 	IsPressed ? GetCharacterMovement()->MaxWalkSpeed = 600.0f : GetCharacterMovement()->MaxWalkSpeed = 300.0f;
 }
 
-void APlayerCharacter::SwitchViewTriggered(const FInputActionValue& Value)
+void APlayerCharacter::SwitchPerspectiveTriggered(const FInputActionValue& Value)
 {
 	bool IsPressed = Value.Get<bool>();
 
 	if (IsPressed && Controller != nullptr)
 	{
-		SwitchView();
+		SwitchPerspective();
 	}
 }
 
@@ -321,11 +321,11 @@ void APlayerCharacter::Zoom(const FInputActionValue& Value)
 #pragma endregion
 
 #pragma region View
-void APlayerCharacter::SetTPV()
+void APlayerCharacter::SetTPP()
 {
 	if (!PlayerController) return;
 
-	PlayerController->SetView(EStateOfViews::TPV);
+	PlayerController->SetPerspective(EStateOfViews::TPP);
 
 	bool IsSuccess = SpringArm->AttachToComponent(GetMesh(), FAttachmentTransformRules::KeepRelativeTransform);
 
@@ -349,11 +349,11 @@ void APlayerCharacter::SetTPV()
 	}
 }
 
-void APlayerCharacter::SetFPV()
+void APlayerCharacter::SetFPP()
 {
 	if (!PlayerController) return;
 
-	PlayerController->SetView(EStateOfViews::FPV);
+	PlayerController->SetPerspective(EStateOfViews::FPP);
 	
 	bool IsSuccess = SpringArm->AttachToComponent(GetMesh(), FAttachmentTransformRules::SnapToTargetIncludingScale, FName("CameraSocket"));
 
@@ -377,12 +377,12 @@ void APlayerCharacter::SetFPV()
 	}
 }
 
-void APlayerCharacter::SetTopView()
+void APlayerCharacter::SetTDP()
 {
 	if (!PlayerController) return;
 	
 	PlayerController->SetControlRotation(FRotator::ZeroRotator);
-	PlayerController->SetView(EStateOfViews::TopView);
+	PlayerController->SetPerspective(EStateOfViews::TDP);
 
 	bool IsSuccess = SpringArm->AttachToComponent(GetCapsuleComponent(), FAttachmentTransformRules::KeepRelativeTransform);
 
@@ -409,20 +409,20 @@ void APlayerCharacter::SetTopView()
 	}
 }
 
-void APlayerCharacter::SwitchView()
+void APlayerCharacter::SwitchPerspective()
 {
 	if (!PlayerController) return;
 
-	switch (PlayerController->GetView())
+	switch (PlayerController->GetPerspective())
 	{
-	case EStateOfViews::TPV:
-		SetFPV();
+	case EStateOfViews::TPP:
+		SetFPP();
 		break;
-	case EStateOfViews::FPV:
-		SetTopView();
+	case EStateOfViews::FPP:
+		SetTDP();
 		break;
-	case EStateOfViews::TopView:
-		SetTPV();
+	case EStateOfViews::TDP:
+		SetTPP();
 		break;
 	default:
 		break;
@@ -494,12 +494,19 @@ void APlayerCharacter::EquipSecondWeapon()
 void APlayerCharacter::Attack()
 {
 	if (!PlayerController) return;
-
-	if(PlayerController->GetView() == EStateOfViews::TopView)
-		PlayerController->ViewClickLocation();
-
 	if (!MainWeapon) return;
-	MainWeapon->Attack();
+
+	
+
+	if (PlayerController->GetPerspective() == EStateOfViews::TDP)
+	{
+		FVector HitLocation = PlayerController->ViewClickLocation();
+		MainWeapon->Attack(PlayerController->GetPerspective(), HitLocation);
+
+		return;
+	}
+
+	MainWeapon->Attack(PlayerController->GetPerspective());
 }
 
 void APlayerCharacter::StopAttack()
@@ -523,15 +530,15 @@ void APlayerCharacter::ZoomIn()
 {
 	if (!PlayerController) return;
 
-	switch (PlayerController->GetView())
+	switch (PlayerController->GetPerspective())
 	{
-	case EStateOfViews::FPV:
+	case EStateOfViews::FPP:
 		// Adjust the camera's FOV value.
 		
 
 		break;
-	case EStateOfViews::TopView:
-	case EStateOfViews::TPV:
+	case EStateOfViews::TDP:
+	case EStateOfViews::TPP:
 		// Adjust SpringArm's length value.
 		SpringArm->TargetArmLength -= MaxArmLength * 0.1f;
 
@@ -548,15 +555,15 @@ void APlayerCharacter::ZoomOut()
 {
 	if (!PlayerController) return;
 
-	switch (PlayerController->GetView())
+	switch (PlayerController->GetPerspective())
 	{
-	case EStateOfViews::FPV:
+	case EStateOfViews::FPP:
 		// Adjust the camera's FOV value.
 
 
 		break;
-	case EStateOfViews::TopView:
-	case EStateOfViews::TPV:
+	case EStateOfViews::TDP:
+	case EStateOfViews::TPP:
 		// Adjust SpringArm's length value.
 		SpringArm->TargetArmLength += MaxArmLength * 0.1f;
 
@@ -575,15 +582,15 @@ void APlayerCharacter::StartZoom()
 
 	bIsZoom = true;
 
-	switch (PlayerController->GetView())
+	switch (PlayerController->GetPerspective())
 	{
-	case EStateOfViews::FPV:
+	case EStateOfViews::FPP:
 
 		break;
-	case EStateOfViews::TopView:
+	case EStateOfViews::TDP:
 
 		break;
-	case EStateOfViews::TPV:
+	case EStateOfViews::TPP:
 		GetWorldTimerManager().SetTimer(AimingTimerHandle, this, &APlayerCharacter::Aiming, 0.001f, true);
 		GetWorldTimerManager().SetTimer(ZoomTimerHandle, this, &APlayerCharacter::ZoomIn, 0.01f, true);
 		break;
@@ -601,15 +608,15 @@ void APlayerCharacter::StopZoom()
 	LookYaw = 0.0f;
 	LookPitch = 0.0f;
 
-	switch (PlayerController->GetView())
+	switch (PlayerController->GetPerspective())
 	{
-	case EStateOfViews::FPV:
+	case EStateOfViews::FPP:
 
 		break;
-	case EStateOfViews::TopView:
+	case EStateOfViews::TDP:
 
 		break;
-	case EStateOfViews::TPV:
+	case EStateOfViews::TPP:
 		GetWorldTimerManager().SetTimer(ZoomTimerHandle, this, &APlayerCharacter::ZoomOut, 0.01f, true);
 		break;
 	}

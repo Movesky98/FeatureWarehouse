@@ -8,7 +8,7 @@
 
 enum class EUseTypeOfWeapon :uint8;
 enum class ETypeOfWeapon :uint8;
-
+enum class EStateOfViews :uint8;
 /**
  * 
  */
@@ -28,7 +28,7 @@ public:
 	UFUNCTION(BlueprintCallable)
 	void ThrowAway(FVector Location);
 
-	virtual void Attack();
+	virtual void Attack(EStateOfViews CurView, FVector HitLocation = FVector(0.0f));
 
 	virtual void StopAttack();
 

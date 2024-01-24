@@ -6,7 +6,7 @@
 UENUM(BlueprintType)
 enum class EStateOfViews : uint8
 {
-	TPV UMETA(DisplayName = "TPV"),
-	FPV UMETA(DisplayName = "FPV"),
-	TopView UMETA(DisplayName = "TopView")
+	TPP UMETA(DisplayName = "TPP"),
+	FPP UMETA(DisplayName = "FPP"),
+	TDP UMETA(DisplayName = "TDP")
 };
