@@ -3,6 +3,7 @@
 
 #include "FW_PlayerController.h"
 #include "Enums/StateOfViews.h"
+#include "GamePlay/FW_GameInstance.h"
 
 #include "Kismet/KismetMathlibrary.h"
 #include "DrawDebugHelpers.h"
@@ -13,6 +14,18 @@ AFW_PlayerController::AFW_PlayerController()
 
 }
 
+void AFW_PlayerController::BeginPlay()
+{
+	Super::BeginPlay();
+
+	UFW_GameInstance* GameInstance = Cast<UFW_GameInstance>(GetGameInstance());
+
+	if (GameInstance)
+	{
+		GEngine->AddOnScreenDebugMessage(-1, 3.0f, FColor::Green, FString("Load player menu."));
+		GameInstance->LoadPlayerMenu();
+	}
+}
 
 FVector AFW_PlayerController::ViewClickLocation()
 {

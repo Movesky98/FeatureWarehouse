@@ -19,6 +19,9 @@ public:
 
 	FVector ViewClickLocation();
 
+protected:
+	virtual void BeginPlay() override;
+
 private:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = State, meta = (AllowPrivateAccess = "true"))
 	EStateOfViews ViewState;
