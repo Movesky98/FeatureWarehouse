@@ -6,7 +6,6 @@
 #include "GameFramework/Actor.h"
 #include "Dummy.generated.h"
 
-class UHealthComponent;
 class USkeletalMeshComponent;
 
 UCLASS()
@@ -25,7 +24,4 @@ protected:
 private:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = Components, meta = (AllowPrivateAccess = "true"))
 	USkeletalMeshComponent* SkeletalMesh;
-
-	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = Components, meta = (AllowPrivateAccess = "true"))
-	UHealthComponent* HealthComponent;
 };

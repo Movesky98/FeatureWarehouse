@@ -4,18 +4,19 @@
 
 #include "CoreMinimal.h"
 #include "Components/ActorComponent.h"
-#include "HealthComponent.generated.h"
+#include "StatComponent.generated.h"
 
+class UPlayerMenu;
 
 UCLASS(Blueprintable, BlueprintType, ClassGroup = (Custom), meta = (BlueprintSpawnableComponent))
-class FEATUREWAREHOUSE_API UHealthComponent : public UActorComponent
+class FEATUREWAREHOUSE_API UStatComponent : public UActorComponent
 {
 	GENERATED_BODY()
 
 public:	
 	// Sets default values for this component's properties
-	UHealthComponent();
-
+	UStatComponent();
+	
 	UFUNCTION(BlueprintCallable)
 	void GetDamaged(float Damage);
 
@@ -26,7 +27,7 @@ protected:
 	void ChangeDamagedMaterial();
 
 	UFUNCTION()
-	void RestoreOriginalMaterial(bool bIsStaticMeshComponent);
+	void RestoreOriginalMaterial();
 
 private:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = State, meta = (AllowPrivateAccess = "true"))
@@ -44,6 +45,18 @@ private:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = State, meta = (AllowPrivateAccess = "true"))
 	bool bIsDamagable;
 
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = UI, meta = (AllowPrivateAccess = "true"))
+	bool bIsPlayer;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = UI, meta = (AllowPrivateAccess = "true"))
+	UPlayerMenu* PlayerMenu;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Mesh, meta = (AllowPrivateAccess = "true"))
+	class USkeletalMeshComponent* OwnerSkeletalMesh;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Mesh, meta = (AllowPrivateAccess = "true"))
+	bool bIsSkeletalMeshComponent;
+
 #pragma region GetterSetter
 public:
 	FORCEINLINE float GetMaxHP() { return MaxHP; }
@@ -59,6 +72,6 @@ public:
 	FORCEINLINE void SetCurrentMP(float NewCurrentMP) { CurrentMP = NewCurrentMP; }
 
 	FORCEINLINE void SetDamagable() { bIsDamagable = true; }
-
+	
 #pragma endregion
 };

@@ -20,7 +20,6 @@
 
 #include "Enums/StateOfViews.h"
 #include "Enums/UseTypeOfWeapon.h"
-#include "Components/HealthComponent.h"
 #include "Components/WeaponComponent.h"
 
 #include "Interfaces/InteractInterface.h"
@@ -48,7 +47,6 @@ APlayerCharacter::APlayerCharacter()
 	GetCharacterMovement()->bCanWalkOffLedgesWhenCrouching = true;
 	GetCharacterMovement()->NavAgentProps.bCanCrouch = true;
 
-	HealthComponent = CreateDefaultSubobject<UHealthComponent>(TEXT("HealthComponent"));
 	WeaponComponent = CreateDefaultSubobject<UWeaponComponent>(TEXT("WeaponComponent"));
 
 	static ConstructorHelpers::FObjectFinder<USkeletalMesh> SKM_Manny(TEXT("/Game/Characters/Mannequins/Meshes/SKM_Manny"));

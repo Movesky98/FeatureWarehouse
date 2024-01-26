@@ -3,7 +3,7 @@
 
 #include "Projectile.h"
 
-#include "Components/HealthComponent.h"
+#include "Components/StatComponent.h"
 
 #include "GameFramework/ProjectileMovementComponent.h"
 #include "Kismet/KismetSystemLibrary.h"
@@ -49,11 +49,11 @@ void AProjectile::OnBulletHit(UPrimitiveComponent* HitComponent, AActor* OtherAc
 	if (!Hit.GetActor()) return;
 
 	AActor* HitActor = Hit.GetActor();
-	UHealthComponent* HealthComponent = Cast<UHealthComponent>(HitActor->GetComponentByClass(UHealthComponent::StaticClass()));
+	UStatComponent* StatComponent = Cast<UStatComponent>(HitActor->GetComponentByClass(UStatComponent::StaticClass()));
 
-	if (HealthComponent)
+	if (StatComponent)
 	{
-		HealthComponent->GetDamaged(30.0f);
+		StatComponent->GetDamaged(30.0f);
 	}
 	else
 	{

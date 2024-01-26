@@ -8,7 +8,6 @@
 #include "PlayerCharacter.generated.h"
 
 enum class EStateOfViews :uint8;
-class UHealthComponent;
 class UWeaponComponent;
 
 UCLASS()
@@ -82,9 +81,6 @@ private:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = Component, meta = (AllowPrivateAccess = "true"))
 	UWeaponComponent* WeaponComponent;
 
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = Component, meta = (AllowPrivateAccess = "true"))
-	UHealthComponent* HealthComponent;
-
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Weapon, meta = (AllowPrivateAccess = "true"))
 	bool HasWeapon;
 
@@ -116,8 +112,6 @@ private:
 #pragma region GetterSetter
 public:
 	FORCEINLINE UWeaponComponent* GetWeaponComponent() { return WeaponComponent; }
-	
-	FORCEINLINE UHealthComponent* GetHealthComponent() { return HealthComponent; }
 
 	FORCEINLINE class AWeapon* GetMainWeapon() { return MainWeapon; }
 

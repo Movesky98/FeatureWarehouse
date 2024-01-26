@@ -6,7 +6,7 @@
 #include "Characters/PlayerCharacter.h"
 #include "Characters/Dummy.h"
 #include "AnimInstance/PlayerAnimInstance.h"
-#include "Components/HealthComponent.h"
+#include "Components/StatComponent.h"
 
 #include "Animation/AnimMontage.h"
 #include "Kismet/KismetSystemLibrary.h"
@@ -137,7 +137,7 @@ void AMelee::AttackTrace()
 	if (IsHit)
 	{
 		// Dummy
-		UHealthComponent* HitActorComponent = Cast<UHealthComponent>(Hit.GetActor()->GetComponentByClass(UHealthComponent::StaticClass()));
+		UStatComponent* HitActorComponent = Cast<UStatComponent>(Hit.GetActor()->GetComponentByClass(UStatComponent::StaticClass()));
 
 		if (HitActorComponent)
 		{

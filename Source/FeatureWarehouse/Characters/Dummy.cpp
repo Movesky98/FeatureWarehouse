@@ -17,7 +17,6 @@ ADummy::ADummy()
 	RootComponent = SkeletalMesh;
 	SkeletalMesh->SetCollisionProfileName(FName("Dummy"));
 
-	HealthComponent = CreateDefaultSubobject<UHealthComponent>(TEXT("HealthComponent"));
 }
 
 // Called when the game starts or when spawned

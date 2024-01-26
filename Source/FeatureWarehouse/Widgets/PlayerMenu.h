@@ -23,6 +23,9 @@ public:
 	UFUNCTION(BlueprintCallable)
 	void SetUp();
 
+	UFUNCTION(BlueprintCallable)
+	void UpdatePlayerHealth(float CurHealth, float MaxHealth);
+
 protected:
 	virtual bool Initialize();
 

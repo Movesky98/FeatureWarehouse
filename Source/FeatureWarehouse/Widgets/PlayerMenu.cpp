@@ -36,3 +36,12 @@ void UPlayerMenu::SetUp()
 
 	// 일단 구현할 것은 없음.
 }
+
+void UPlayerMenu::UpdatePlayerHealth(float CurHealth, float MaxHealth)
+{
+	if (MaxHealth == 0.0f || CurHealth > MaxHealth) return;
+
+	float HealthPercent = CurHealth / MaxHealth;
+
+	HP_ProgressBar->SetPercent(HealthPercent);
+}
