@@ -2,9 +2,6 @@
 
 
 #include "Dummy.h"
-
-#include "Components/HealthComponent.h"
-
 #include "Components/SkeletalMeshComponent.h"
 
 // Sets default values

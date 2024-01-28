@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/PlayerController.h"
+#include "InputAction.h"
 #include "FW_PlayerController.generated.h"
 
 enum class EStateOfViews :uint8;
@@ -22,9 +23,19 @@ public:
 protected:
 	virtual void BeginPlay() override;
 
+	virtual void SetupInputComponent() override;
+
+	void ShowSystemMenu(const FInputActionValue& Value);
+
 private:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = State, meta = (AllowPrivateAccess = "true"))
 	EStateOfViews ViewState;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = InputAction, meta = (AllowPrivateAccess = "true"))
+	class UInputAction* SystemMenuAction;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = InputAction, meta = (AllowPrivateAccess = "true"))
+	UInputMappingContext* DefaultMappingContext;
 
 #pragma region GetterSetter
 public:

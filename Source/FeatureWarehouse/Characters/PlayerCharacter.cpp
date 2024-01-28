@@ -69,14 +69,6 @@ void APlayerCharacter::BeginPlay()
 
 	PlayerController = Cast<AFW_PlayerController>(Controller);
 
-	if (PlayerController)
-	{
-		if (UEnhancedInputLocalPlayerSubsystem* Subsystem = ULocalPlayer::GetSubsystem<UEnhancedInputLocalPlayerSubsystem>(PlayerController->GetLocalPlayer()))
-		{
-			Subsystem->AddMappingContext(DefaultMappingContext, 0);
-		}
-	}
-
 	SetTPP();
 }
 
@@ -107,8 +99,6 @@ void APlayerCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCom
 		EnhancedInputComponent->BindAction(JumpAction, ETriggerEvent::Triggered, this, &APlayerCharacter::JumpTriggered);
 
 		EnhancedInputComponent->BindAction(CrouchAction, ETriggerEvent::Triggered, this, &APlayerCharacter::CrouchTriggered);
-
-		EnhancedInputComponent->BindAction(SwitchViewAction, ETriggerEvent::Triggered, this, &APlayerCharacter::SwitchPerspectiveTriggered);
 
 		EnhancedInputComponent->BindAction(SwitchRunAction, ETriggerEvent::Triggered, this, &APlayerCharacter::Run);
 
@@ -230,16 +220,6 @@ void APlayerCharacter::Run(const FInputActionValue& Value)
 	bool IsPressed = Value.Get<bool>();
 
 	IsPressed ? GetCharacterMovement()->MaxWalkSpeed = 600.0f : GetCharacterMovement()->MaxWalkSpeed = 300.0f;
-}
-
-void APlayerCharacter::SwitchPerspectiveTriggered(const FInputActionValue& Value)
-{
-	bool IsPressed = Value.Get<bool>();
-
-	if (IsPressed && Controller != nullptr)
-	{
-		SwitchPerspective();
-	}
 }
 
 void APlayerCharacter::Interact(const FInputActionValue& Value)
@@ -407,25 +387,6 @@ void APlayerCharacter::SetTDP()
 	}
 }
 
-void APlayerCharacter::SwitchPerspective()
-{
-	if (!PlayerController) return;
-
-	switch (PlayerController->GetPerspective())
-	{
-	case EStateOfViews::TPP:
-		SetFPP();
-		break;
-	case EStateOfViews::FPP:
-		SetTDP();
-		break;
-	case EStateOfViews::TDP:
-		SetTPP();
-		break;
-	default:
-		break;
-	}
-}
 #pragma endregion
 
 AActor* APlayerCharacter::FindInteractableActor(const FVector Start, const FVector End)
