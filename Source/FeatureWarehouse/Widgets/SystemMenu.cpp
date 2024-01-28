@@ -3,7 +3,9 @@
 
 #include "SystemMenu.h"
 
+#include "Enums/StateOfViews.h"
 #include "Characters/PlayerCharacter.h"
+#include "GamePlay/FW_PlayerController.h"
 
 #include "Components/CanvasPanel.h"
 #include "Components/WidgetSwitcher.h"
@@ -35,6 +37,30 @@ bool USystemMenu::Initialize()
 	TDPButton->OnClicked.AddDynamic(this, &USystemMenu::SetTDP);
 
 	return true;
+}
+
+void USystemMenu::TearDown()
+{
+	this->RemoveFromViewport();
+
+	UWorld* World = GetWorld();
+	if (!ensure(World != nullptr)) return;
+
+	AFW_PlayerController* PlayerController = Cast<AFW_PlayerController>(World->GetFirstPlayerController());
+	if (!ensure(PlayerController != nullptr)) return;
+
+	if (PlayerController->GetPerspective() == EStateOfViews::TDP)
+	{
+		FInputModeGameAndUI InputModeData;
+		PlayerController->SetInputMode(InputModeData);
+		PlayerController->SetShowMouseCursor(true);
+	}
+	else
+	{
+		FInputModeGameOnly InputModeData;
+		PlayerController->SetInputMode(InputModeData);
+		PlayerController->SetShowMouseCursor(false);
+	}
 }
 
 void USystemMenu::BackToDefaultPanel()

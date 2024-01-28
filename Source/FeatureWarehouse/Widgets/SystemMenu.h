@@ -22,6 +22,8 @@ public:
 	UFUNCTION()
 	void BackToDefaultPanel();
 
+	void TearDown() override;
+
 protected:
 	virtual bool Initialize();
 
