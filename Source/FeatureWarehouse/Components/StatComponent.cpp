@@ -33,7 +33,9 @@ void UStatComponent::BeginPlay()
 		{
 			UFW_GameInstance* FWGameInstance = Cast<UFW_GameInstance>(GameInstance);
 			PlayerMenu = FWGameInstance->PlayerMenu;
-			PlayerMenu->UpdatePlayerHealth(CurrentHP, MaxHP);
+
+			if(PlayerMenu && PlayerMenu->IsInViewport())
+				PlayerMenu->UpdatePlayerHealth(CurrentHP, MaxHP);
 		}
 	}
 }

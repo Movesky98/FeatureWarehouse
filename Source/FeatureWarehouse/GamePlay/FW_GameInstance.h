@@ -20,11 +20,22 @@ public:
 	UFUNCTION(BlueprintCallable)
 	void LoadPlayerMenu();
 
+	UFUNCTION(BlueprintCallable)
+	void LoadSystemMenu();
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Widget)
 	class UPlayerMenu* PlayerMenu;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Widget)
+	class USystemMenu* SystemMenu;
+
+protected:
+	void Init() override;
 
 private:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = Widget, meta = (AllowPrivateAccess = "true"))
 	TSubclassOf<class UUserWidget> PlayerClass;
 
-
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = Widget, meta = (AllowPrivateAccess = "true"))
+	TSubclassOf<class UUserWidget> SystemWidgetClass;
 };
