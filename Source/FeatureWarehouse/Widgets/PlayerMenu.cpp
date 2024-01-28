@@ -34,7 +34,17 @@ void UPlayerMenu::SetUp()
 {
 	this->AddToViewport();
 
-	// 일단 구현할 것은 없음.
+	UWorld* World = GetWorld();
+	if (!ensure(World != nullptr)) return;
+
+	APlayerController* PlayerController = World->GetFirstPlayerController();
+	if (!ensure(PlayerController != nullptr)) return;
+
+	FInputModeGameOnly InputModeData;
+
+	// Set input mode to GameOnly.
+	PlayerController->SetInputMode(InputModeData);
+	PlayerController->SetShowMouseCursor(false);
 }
 
 void UPlayerMenu::UpdatePlayerHealth(float CurHealth, float MaxHealth)

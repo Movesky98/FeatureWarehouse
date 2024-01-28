@@ -3,7 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "Blueprint/UserWidget.h"
+#include "Menu.h"
 #include "PlayerMenu.generated.h"
 
 class UImage;
@@ -14,14 +14,14 @@ class UTextBlock;
  * 
  */
 UCLASS()
-class FEATUREWAREHOUSE_API UPlayerMenu : public UUserWidget
+class FEATUREWAREHOUSE_API UPlayerMenu : public UMenu
 {
 	GENERATED_BODY()
 public:
 	UPlayerMenu(const FObjectInitializer& ObjectInitializer);
 
 	UFUNCTION(BlueprintCallable)
-	void SetUp();
+	void SetUp() override;
 
 	UFUNCTION(BlueprintCallable)
 	void UpdatePlayerHealth(float CurHealth, float MaxHealth);
