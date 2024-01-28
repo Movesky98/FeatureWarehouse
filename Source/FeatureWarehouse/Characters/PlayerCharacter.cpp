@@ -310,6 +310,7 @@ void APlayerCharacter::SetTPP()
 	if (IsSuccess)
 	{
 		GEngine->AddOnScreenDebugMessage(-1, 3.0f, FColor::Green, FString("Successed springarm attach to skeletalmesh."));
+		GetMesh()->UnHideBoneByName(FName("head"));
 
 		bUseControllerRotationYaw = true;
 		PlayerController->bShowMouseCursor = false;
