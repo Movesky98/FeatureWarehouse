@@ -12,7 +12,7 @@ ADummy::ADummy()
 
 	SkeletalMesh = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("SkeletalMesh"));
 	RootComponent = SkeletalMesh;
-	SkeletalMesh->SetCollisionProfileName(FName("Dummy"));
+	SkeletalMesh->SetCollisionProfileName(FName("Enemy"));
 
 }
 
