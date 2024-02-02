@@ -33,6 +33,8 @@ void AEnemyAIController::OnPossess(APawn* InPawn)
 					ensure(RunBehaviorTree(BT_GoldenSkull));
 
 					Blackboard = BlackboardComp;
+
+					GEngine->AddOnScreenDebugMessage(-1, 3.0f, FColor::Green, Blackboard.GetName());
 				}
 			}
 			break;
