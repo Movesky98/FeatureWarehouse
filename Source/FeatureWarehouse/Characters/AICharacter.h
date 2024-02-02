@@ -6,6 +6,15 @@
 #include "GameFramework/Character.h"
 #include "AICharacter.generated.h"
 
+UENUM(BlueprintType)
+enum class ETypeOfEnemy :uint8
+{
+	NONE UMETA(DisplayName = "NONE"),
+	GoldenSkull UMETA(DisplayName = "GoldenSkull"),
+	Archer UMETA(DisplayName = "Archer"),
+	Knight UMETA(DisplayName = "Knight")
+};
+
 UCLASS()
 class FEATUREWAREHOUSE_API AAICharacter : public ACharacter
 {
@@ -29,6 +38,10 @@ private:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = Trigger, meta = (AllowPrivateAccess = "true"))
 	class USphereComponent* TriggerZone;
 
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = State, meta = (AllowPrivateAccess = "true"))
+	ETypeOfEnemy EnemyType;
+
 public:
 	FORCEINLINE class USphereComponent* GetTriggerZone() { return TriggerZone; }
+	FORCEINLINE ETypeOfEnemy GetEnemyType() { return EnemyType; }
 };
