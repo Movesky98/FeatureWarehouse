@@ -3,18 +3,18 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "AICharacter.h"
-#include "GoldSkull.generated.h"
+#include "Enemy.h"
+#include "GoldenSkull.generated.h"
 
 /**
  * 
  */
 UCLASS()
-class FEATUREWAREHOUSE_API AGoldSkull : public AAICharacter
+class FEATUREWAREHOUSE_API AGoldenSkull : public AEnemy
 {
 	GENERATED_BODY()
 public:
-	AGoldSkull();
+	AGoldenSkull();
 
 protected:
 	virtual void BeginPlay() override;

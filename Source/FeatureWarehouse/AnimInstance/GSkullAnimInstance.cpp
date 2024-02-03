@@ -1,7 +1,7 @@
 // This page is Gold Skull Enemy character class's definition part.
 
 #include "GSkullAnimInstance.h"
-#include "Characters/GoldSkull.h"
+#include "Characters/GoldenSkull.h"
 
 #include "GameFramework/CharacterMovementComponent.h"
 
@@ -16,17 +16,17 @@ void UGSkullAnimInstance::NativeInitializeAnimation()
 	
 	if (Pawn)
 	{
-		GoldSkull = Cast<AGoldSkull>(Pawn);
-		MovementComponent = GoldSkull->GetCharacterMovement();
+		GoldenSkull = Cast<AGoldenSkull>(Pawn);
+		MovementComponent = GoldenSkull->GetCharacterMovement();
 	}
 }
 
 void UGSkullAnimInstance::NativeUpdateAnimation(float DeltaSeconds)
 {
-	if (GoldSkull)
+	if (GoldenSkull)
 	{
 		Speed = MovementComponent->Velocity.Length();
-		Direction = CalculateDirection(MovementComponent->Velocity, GoldSkull->GetActorRotation());
+		Direction = CalculateDirection(MovementComponent->Velocity, GoldenSkull->GetActorRotation());
 		bShouldMove = (Speed > 3.0f) && (MovementComponent->GetCurrentAcceleration() != FVector::ZeroVector);
 		bIsCrouch = MovementComponent->IsCrouching();
 		bIsFalling = MovementComponent->IsFalling();

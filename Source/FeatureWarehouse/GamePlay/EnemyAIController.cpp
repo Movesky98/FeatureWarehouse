@@ -2,7 +2,7 @@
 
 
 #include "EnemyAIController.h"
-#include "Characters/AICharacter.h"
+#include "Characters/Enemy.h"
 
 #include "BehaviorTree/BlackboardComponent.h"
 #include "BehaviorTree/BehaviorTree.h"
@@ -17,11 +17,11 @@ void AEnemyAIController::OnPossess(APawn* InPawn)
 {
 	Super::OnPossess(InPawn);
 
-	AAICharacter* AI = Cast<AAICharacter>(InPawn);
+	AEnemy* Enemy = Cast<AEnemy>(InPawn);
 
-	if (AI)
+	if (Enemy)
 	{
-		switch (AI->GetEnemyType())
+		switch (Enemy->GetEnemyType())
 		{
 		case ETypeOfEnemy::GoldenSkull:
 			if (BT_GoldenSkull && BD_GoldenSkull)

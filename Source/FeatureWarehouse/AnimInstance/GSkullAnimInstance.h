@@ -41,7 +41,7 @@ private:
 	bool bIsCrouch;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Pawn, meta = (AllowPrivateAccess = "true"))
-	class AGoldSkull* GoldSkull;
+	class AGoldenSkull* GoldenSkull;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Components, meta = (AllowPrivateAccess = "true"))
 	class UCharacterMovementComponent* MovementComponent;
