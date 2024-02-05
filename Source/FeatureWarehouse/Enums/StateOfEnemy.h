@@ -8,5 +8,5 @@ enum class EStateOfEnemy : uint8
 {
 	Patrol UMETA(DisplayName = "Patrol"),
 	Chase UMETA(DisplayName = "Chase"),
-	Avoid UMETA(DisplayName = "Avoid")
+	RunAway UMETA(DisplayName = "RunAway")
 };

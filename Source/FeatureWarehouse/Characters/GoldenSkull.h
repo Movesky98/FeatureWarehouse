@@ -16,6 +16,8 @@ class FEATUREWAREHOUSE_API AGoldenSkull : public AEnemy
 public:
 	AGoldenSkull();
 
+	FVector FindLocationToRunAwayFromPlayer();
+
 protected:
 	virtual void BeginPlay() override;
 	
@@ -25,4 +27,21 @@ protected:
 	UFUNCTION()
 	void OnTriggerEndOverlap(class UPrimitiveComponent* SelfComp, class AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex);
 	
+	UFUNCTION(BlueprintCallable)
+	void CalculateFleeLocation();
+
+	UFUNCTION(BlueprintCallable)
+	FRotator CalculateTraceRotation(const FRotator& FirstRotation, const float& DeltaYaw, int Index);
+
+	FVector GetFloorLocationOnHit(const FVector& Location);
+
+private:
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = Avoid, meta = (AllowPrivateAccess = "true"))
+	int FleeTraceNum;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = Avoid, meta = (AllowPrivateAccess = "true"))
+	float MaxAvoidanceRange;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = Avoid, meta = (AllowPrivateAccess = "true"))
+	float MinAvoidanceRange;
 };

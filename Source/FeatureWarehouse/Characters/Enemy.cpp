@@ -3,3 +3,9 @@
 
 #include "Enemy.h"
 
+#include "Enums/StateOfEnemy.h"
+
+bool AEnemy::IsPlayerApproached()
+{
+	return bHasPlayerApproached;
+}

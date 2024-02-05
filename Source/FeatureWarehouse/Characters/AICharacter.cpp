@@ -16,7 +16,8 @@ AAICharacter::AAICharacter()
 	RootComponent = GetCapsuleComponent();
 
 	TriggerZone = CreateDefaultSubobject<USphereComponent>(TEXT("TriggerZone"));
-	TriggerZone->SetCollisionProfileName(FName("Enemy"));
+	TriggerZone->SetupAttachment(RootComponent);
+	TriggerZone->SetCollisionProfileName(FName("PlayerTrigger"));
 	TriggerZone->SetGenerateOverlapEvents(true);
 
 	AIControllerClass = AEnemyAIController::StaticClass();
