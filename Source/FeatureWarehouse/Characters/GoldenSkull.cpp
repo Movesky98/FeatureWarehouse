@@ -3,6 +3,7 @@
 
 #include "GoldenSkull.h"
 #include "Enums/StateOfEnemy.h"
+#include "GamePlay/EnemyController.h"
 
 #include "Components/SphereComponent.h"
 #include "Components/CapsuleComponent.h"
@@ -26,29 +27,28 @@ void  AGoldenSkull::BeginPlay()
 
 void AGoldenSkull::OnTriggerBeginOverlap(class UPrimitiveComponent* SelfComp, class AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
-	GEngine->AddOnScreenDebugMessage(-1, 3.0f, FColor::Cyan, FString("Something in Trigger"));
-	CalculateFleeLocation();
+	if (OtherActor->ActorHasTag(FName("Player")))
+	{
+		bIsPlayerApproached = true;
+
+		AEnemyController* EnemyController = Cast<AEnemyController>(GetController());
+		if (EnemyController->IsIdentifiedPlayer())
+		{
+			EnemyController->NotifyEnemyState(EStateOfEnemy::Flee);
+		}
+	}
 }
 
 void AGoldenSkull::OnTriggerEndOverlap(class UPrimitiveComponent* SelfComp, class AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex)
 {
-
+	if (OtherActor->ActorHasTag(FName("Player")))
+	{
+		bIsPlayerApproached = false;
+	}
 }
 
-/*
-* 해보고 싶은 기능이 생김
-* 1. 캐릭터의 뒤쪽으로 최대 도망거리만큼 레이를 여러개 쏨 (반원 모양으로)
-* 2. 그 중에서 거리가 가장 긴 것을 가져옴.
-* 3. 가장 긴 거리의 바닥 (NavMesh때문)의 위치를 가져와서 보내는 방식.
-* 
-* 4. 반대로, 최소 도망거리보다 짧을 경우 플레이어의 뒤쪽으로 레이를 쏴서 그 방향으로 가도록 만들어보자. 
-* 5. 우선 부채꼴 모양으로 레이를 쏘는 방법부터 찾아내는게 중요할 듯.
-*/
-
-void AGoldenSkull::CalculateFleeLocation()
+FVector AGoldenSkull::CalculateFleeLocation()
 {
-	// if (CurrentState != EStateOfEnemy::RunAway) return;
-
 	UWorld* World = GetWorld();
 
 	if (World)
@@ -114,7 +114,10 @@ void AGoldenSkull::CalculateFleeLocation()
 
 		// Step 3. 계산된 거리 중 가장 긴 거리의 바닥 위치를 그림.
 		DrawDebugSolidBox(World, ReturnLocation, FVector(10.0f), FColor::Cyan, false, 5.0f, 5);
+		return ReturnLocation;
 	}
+
+	return FVector(0.0f);
 }
 
 FRotator AGoldenSkull::CalculateTraceRotation(const FRotator& FirstRotation, const float& DeltaYaw, int Index)
@@ -156,4 +159,9 @@ FVector AGoldenSkull::GetFloorLocationOnHit(const FVector& Location)
 	}
 
 	return ReturnLocation;
+}
+
+void AGoldenSkull::ReturnStateToPatrol()
+{
+	CurrentState = EStateOfEnemy::Patrol;
 }

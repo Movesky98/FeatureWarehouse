@@ -34,7 +34,7 @@ protected:
 	EStateOfEnemy CurrentState;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = State, meta = (AllowPrivateAccess = "true"))
-	bool bHasPlayerApproached;
+	bool bIsPlayerApproached;
 
 public:
 	FORCEINLINE ETypeOfEnemy GetEnemyType() { return EnemyType; }

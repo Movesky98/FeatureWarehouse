@@ -7,5 +7,5 @@
 
 bool AEnemy::IsPlayerApproached()
 {
-	return bHasPlayerApproached;
+	return bIsPlayerApproached;
 }

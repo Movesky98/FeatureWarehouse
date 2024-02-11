@@ -60,6 +60,8 @@ APlayerCharacter::APlayerCharacter()
 	{
 		GetMesh()->SetAnimInstanceClass(ABP_Player.Class);
 	}
+
+	Tags.Add(FName("Player"));
 }
 
 // Called when the game starts or when spawned
