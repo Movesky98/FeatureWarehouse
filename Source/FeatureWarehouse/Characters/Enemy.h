@@ -26,6 +26,8 @@ public:
 	UFUNCTION(BlueprintCallable)
 	bool IsPlayerApproached();
 
+	virtual EStateOfEnemy IdentifiedPlayer();
+
 protected:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = State, meta = (AllowPrivateAccess = "true"))
 	ETypeOfEnemy EnemyType;

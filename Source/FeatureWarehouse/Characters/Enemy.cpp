@@ -9,3 +9,8 @@ bool AEnemy::IsPlayerApproached()
 {
 	return bIsPlayerApproached;
 }
+
+EStateOfEnemy AEnemy::IdentifiedPlayer()
+{
+	return EStateOfEnemy::Patrol;
+}

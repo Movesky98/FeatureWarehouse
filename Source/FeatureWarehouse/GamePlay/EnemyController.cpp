@@ -4,6 +4,7 @@
 #include "EnemyController.h"
 #include "Characters/Enemy.h"
 #include "Enums/StateOfEnemy.h"
+#include "Enums/BattleState.h"
 
 #include "BehaviorTree/BlackboardComponent.h"
 #include "BehaviorTree/BehaviorTree.h"
@@ -37,13 +38,23 @@ void AEnemyController::OnPossess(APawn* InPawn)
 					ensure(RunBehaviorTree(BT_GoldenSkull));
 
 					Blackboard = BlackboardComp;
-
-					GEngine->AddOnScreenDebugMessage(-1, 3.0f, FColor::Green, Blackboard.GetName());
 				}
 			}
 			break;
 		case ETypeOfEnemy::Archer:
 		case ETypeOfEnemy::Knight:
+			if (BT_KnightSkull && BD_KnightSkull)
+			{
+				UBlackboardComponent* BlackboardComp = Blackboard.Get();
+
+				if (UseBlackboard(BD_KnightSkull, BlackboardComp))
+				{
+					ensure(RunBehaviorTree(BT_KnightSkull));
+
+					Blackboard = BlackboardComp;
+				}
+			}
+			break;
 		default:
 			break;
 		}
@@ -67,9 +78,20 @@ void AEnemyController::OnTragetDetected(AActor* Actor, FAIStimulus Stimulus)
 		{
 			bIsIdentifiedPlayer = true;
 
+			// 플레이어가 식별 거리 안에 들어왔다면
 			if (Enemy->IsPlayerApproached())
 			{
-				NotifyEnemyState(EStateOfEnemy::Flee);
+				switch (Enemy->GetEnemyType())
+				{
+				case ETypeOfEnemy::GoldenSkull:
+					NotifyEnemyState(EStateOfEnemy::Flee);
+					break;
+				case ETypeOfEnemy::Knight:
+					NotifyEnemyState(EStateOfEnemy::In_Battle);
+					break;
+				default:
+					break;
+				}
 			}
 			else
 			{
@@ -99,9 +121,21 @@ bool AEnemyController::IsIdentifiedPlayer()
 	return bIsIdentifiedPlayer;
 }
 
+void AEnemyController::NotifyEnemyActor(AActor* Actor)
+{
+	Blackboard->SetValueAsObject(FName("EnemyActor"), Actor);
+}
+
 void AEnemyController::NotifyEnemyState(EStateOfEnemy State)
 {
 	uint8 Value = (uint8)State;
 
 	Blackboard->SetValueAsEnum(FName("State"), Value);
+}
+
+void AEnemyController::NotifyBattleState(EBattleState State)
+{
+	uint8 Value = (uint8)State;
+
+	Blackboard->SetValueAsEnum(FName("BattleState"), Value);
 }

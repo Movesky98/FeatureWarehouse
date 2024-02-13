@@ -8,6 +8,7 @@
 #include "EnemyController.generated.h"
 
 enum class EStateOfEnemy :uint8;
+enum class EBattleState :uint8;
 
 /**
  * 
@@ -22,8 +23,13 @@ public:
 	UFUNCTION(BlueprintCallable)
 	bool IsIdentifiedPlayer();
 
+	void NotifyEnemyActor(AActor* Actor);
+
 	UFUNCTION(BlueprintCallable)
 	void NotifyEnemyState(EStateOfEnemy State);
+
+	UFUNCTION(BlueprintCallable)
+	void NotifyBattleState(EBattleState State);
 
 protected:
 	virtual void BeginPlay() override;
@@ -46,6 +52,12 @@ private:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "AI", meta = (AllowPrivateAccess = "true"))
 	UBlackboardData* BD_GoldenSkull;
 
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "AI", meta = (AllowPrivateAccess = "true"))
+	UBehaviorTree* BT_KnightSkull;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "AI", meta = (AllowPrivateAccess = "true"))
+	UBlackboardData* BD_KnightSkull;
+
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "AI|Perception", meta = (AllowPrivateAccess = "true"))
 	float LineOfSightTime;
 
@@ -60,4 +72,7 @@ private:
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "AI|Perception", meta = (AllowPrivateAccess = "true"))
 	bool bIsIdentifiedPlayer;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "AI|Perception", meta = (AllowPrivateAccess = "true"))
+	bool bIsMaintainingDistance;
 };

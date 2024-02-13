@@ -4,17 +4,18 @@
 
 #include "CoreMinimal.h"
 #include "Animation/AnimInstance.h"
-#include "GSkullAnimInstance.generated.h"
+#include "SkullAnimInstance.generated.h"
 
 /**
  * 
  */
 UCLASS()
-class FEATUREWAREHOUSE_API UGSkullAnimInstance : public UAnimInstance
+class FEATUREWAREHOUSE_API USkullAnimInstance : public UAnimInstance
 {
 	GENERATED_BODY()
+
 public:
-	UGSkullAnimInstance();
+	USkullAnimInstance();
 
 protected:
 	void NativeInitializeAnimation() override;
@@ -41,7 +42,7 @@ private:
 	bool bIsCrouch;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Pawn, meta = (AllowPrivateAccess = "true"))
-	class AGoldenSkull* GoldenSkull;
+	class AEnemy* Enemy;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Components, meta = (AllowPrivateAccess = "true"))
 	class UCharacterMovementComponent* MovementComponent;

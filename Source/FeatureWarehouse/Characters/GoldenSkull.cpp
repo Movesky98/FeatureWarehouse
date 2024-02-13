@@ -7,6 +7,8 @@
 
 #include "Components/SphereComponent.h"
 #include "Components/CapsuleComponent.h"
+#include "GameFramework/CharacterMovementComponent.h"
+
 #include "Kismet/KismetMathLibrary.h"
 #include "Kismet/KismetSystemLibrary.h"
 #include "Kismet/GamePlayStatics.h"
@@ -21,6 +23,8 @@ void  AGoldenSkull::BeginPlay()
 {
 	Super::BeginPlay();
 
+	SetMovemenetSpeed(NormalSpeed);
+
 	GetTriggerZone()->OnComponentBeginOverlap.AddDynamic(this, &AGoldenSkull::OnTriggerBeginOverlap);
 	GetTriggerZone()->OnComponentEndOverlap.AddDynamic(this, &AGoldenSkull::OnTriggerEndOverlap);
 }
@@ -34,6 +38,7 @@ void AGoldenSkull::OnTriggerBeginOverlap(class UPrimitiveComponent* SelfComp, cl
 		AEnemyController* EnemyController = Cast<AEnemyController>(GetController());
 		if (EnemyController->IsIdentifiedPlayer())
 		{
+			IdentifiedPlayer();
 			EnemyController->NotifyEnemyState(EStateOfEnemy::Flee);
 		}
 	}
@@ -45,6 +50,18 @@ void AGoldenSkull::OnTriggerEndOverlap(class UPrimitiveComponent* SelfComp, clas
 	{
 		bIsPlayerApproached = false;
 	}
+}
+
+EStateOfEnemy AGoldenSkull::IdentifiedPlayer()
+{
+	SetMovemenetSpeed(FleeSpeed);
+
+	return EStateOfEnemy::Flee;
+}
+
+void AGoldenSkull::SetMovemenetSpeed(float Speed)
+{
+	GetCharacterMovement()->MaxWalkSpeed = Speed;
 }
 
 FVector AGoldenSkull::CalculateFleeLocation()
