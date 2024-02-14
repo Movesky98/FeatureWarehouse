@@ -23,10 +23,14 @@ class FEATUREWAREHOUSE_API AEnemy : public AAICharacter
 	GENERATED_BODY()
 	
 public:
+	AEnemy();
+
 	UFUNCTION(BlueprintCallable)
 	bool IsPlayerApproached();
 
 	virtual EStateOfEnemy IdentifiedPlayer();
+
+	virtual void EngagingInCombat(AActor* AdversaryActor);
 
 protected:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = State, meta = (AllowPrivateAccess = "true"))
@@ -37,6 +41,21 @@ protected:
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = State, meta = (AllowPrivateAccess = "true"))
 	bool bIsPlayerApproached;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Attack|Range", meta = (AllowPrivateAccess = "true"))
+	class USphereComponent* AttackRangeComponent;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Attack|Range", meta = (AllowPrivateAccess = "true"))
+	float AttackRange;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Attack|State", meta = (AllowPrivateAccess = "true"))
+	bool bCanAttack;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Attack|State", meta = (AllowPrivateAccess = "true"))
+	bool bIsPlayerInAttackRange;
+
+	UFUNCTION(BlueprintCallable)
+	void SetMovemenetSpeed(float Speed);
 
 public:
 	FORCEINLINE ETypeOfEnemy GetEnemyType() { return EnemyType; }

@@ -23,6 +23,8 @@ public:
 	UFUNCTION(BlueprintCallable)
 	bool IsIdentifiedPlayer();
 
+	void NotifyEnemyInAttackRange(bool IsInAttackRange);
+
 	void NotifyEnemyActor(AActor* Actor);
 
 	UFUNCTION(BlueprintCallable)

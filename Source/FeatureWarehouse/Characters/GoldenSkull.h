@@ -38,9 +38,6 @@ protected:
 	FVector GetFloorLocationOnHit(const FVector& Location);
 
 	UFUNCTION(BlueprintCallable)
-	void SetMovemenetSpeed(float Speed);
-
-	UFUNCTION(BlueprintCallable)
 	void ReturnStateToPatrol();
 
 private:

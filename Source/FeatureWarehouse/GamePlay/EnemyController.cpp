@@ -70,6 +70,7 @@ void AEnemyController::BeginPlay()
 
 void AEnemyController::OnTragetDetected(AActor* Actor, FAIStimulus Stimulus)
 {
+	// 시야에 들어온 액터가 플레이어라면
 	if (Actor->ActorHasTag(FName("Player")))
 	{
 		AEnemy* Enemy = Cast<AEnemy>(GetPawn());
@@ -87,7 +88,8 @@ void AEnemyController::OnTragetDetected(AActor* Actor, FAIStimulus Stimulus)
 					NotifyEnemyState(EStateOfEnemy::Flee);
 					break;
 				case ETypeOfEnemy::Knight:
-					NotifyEnemyState(EStateOfEnemy::In_Battle);
+					// 전투 시작.
+					Enemy->EngagingInCombat(Actor);
 					break;
 				default:
 					break;
@@ -124,6 +126,11 @@ bool AEnemyController::IsIdentifiedPlayer()
 void AEnemyController::NotifyEnemyActor(AActor* Actor)
 {
 	Blackboard->SetValueAsObject(FName("EnemyActor"), Actor);
+}
+
+void AEnemyController::NotifyEnemyInAttackRange(bool IsInAttackRange)
+{
+	Blackboard->SetValueAsBool(FName("IsEnemyInAttackRange"), IsInAttackRange);
 }
 
 void AEnemyController::NotifyEnemyState(EStateOfEnemy State)

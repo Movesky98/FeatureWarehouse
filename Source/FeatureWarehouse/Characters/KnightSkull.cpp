@@ -44,9 +44,8 @@ void AKnightSkull::OnTriggerBeginOverlap(class UPrimitiveComponent* SelfComp, cl
 		AEnemyController* EnemyController = Cast<AEnemyController>(GetController());
 		if (EnemyController->IsIdentifiedPlayer())
 		{
-			EnemyController->NotifyEnemyActor(OtherActor);
-			EnemyController->NotifyEnemyState(EStateOfEnemy::In_Battle);
-			EnemyController->NotifyBattleState(EBattleState::Monitoring);
+			// 전투 시작.
+			EngagingInCombat(OtherActor);
 		}
 	}
 }
@@ -59,6 +58,51 @@ void AKnightSkull::OnTriggerEndOverlap(class UPrimitiveComponent* SelfComp, clas
 	}
 }
 
+void AKnightSkull::OnAttackRangeBeginOverlap(class UPrimitiveComponent* SelfComp, class AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
+{
+	if (OtherActor->ActorHasTag(FName("Player")))
+	{
+		bIsPlayerInAttackRange = true;
+
+		AEnemyController* EnemyController = Cast<AEnemyController>(GetController());
+		if (EnemyController)
+		{
+			EnemyController->NotifyEnemyInAttackRange(bIsPlayerInAttackRange);
+			EnemyController->NotifyBattleState(EBattleState::Attacking);
+		}
+	}
+}
+
+void AKnightSkull::OnAttackRangeEndOverlap(class UPrimitiveComponent* SelfComp, class AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex)
+{
+	if (OtherActor->ActorHasTag(FName("Player")))
+	{
+		bIsPlayerInAttackRange = false;
+
+		AEnemyController* EnemyController = Cast<AEnemyController>(GetController());
+		if (EnemyController)
+		{
+			EnemyController->NotifyEnemyInAttackRange(bIsPlayerInAttackRange);
+			EnemyController->NotifyBattleState(EBattleState::Approaching);
+		}
+	}
+}
+
+
+void AKnightSkull::EngagingInCombat(AActor* AdversaryActor)
+{
+	AEnemyController* EnemyController = Cast<AEnemyController>(GetController());
+	
+	if (!ensure(EnemyController != nullptr)) return;
+
+	EnemyController->NotifyEnemyActor(AdversaryActor);
+	EnemyController->NotifyEnemyState(EStateOfEnemy::In_Battle);
+
+	// 이 부분은 나중에 공격, 뒤로 물리기 기능이 완성되면 셋 중 랜덤으로 작동하도록 해도 괜찮을 듯.
+	EnemyController->NotifyBattleState(EBattleState::Monitoring);
+	EnemyController->SetFocus(AdversaryActor);
+}
+
 void AKnightSkull::MonitoringPlayer()
 {
 	/*
@@ -68,6 +112,15 @@ void AKnightSkull::MonitoringPlayer()
 	*/
 	bIsStartMonitoring = true;
 	bIsCirclingAroundThePlayer = UKismetMathLibrary::RandomBool();
+
+	if (bIsCirclingAroundThePlayer)
+	{
+		DrawDebugString(GetWorld(), FVector(0.0f, 0.0f, 150.0f), FString("KnightSkull :: Circling around the player !"), this, FColor::Green, 4.0f);
+	}
+	else
+	{
+		DrawDebugString(GetWorld(), FVector(0.0f, 0.0f, 150.0f), FString("KnightSkull :: Maintaining distance from the player !"), this, FColor::Green, 4.0f);
+	}
 
 	MonitoringTimerDuration = 5.0f + UKismetMathLibrary::RandomFloatInRange(0.0f, 3.0f);
 	GetWorldTimerManager().SetTimer(MonitoringTimer, this, &AKnightSkull::CalculateMonitoringTime, 0.01f, true);
@@ -96,11 +149,6 @@ void AKnightSkull::CalculateMonitoringTime()
 
 FVector AKnightSkull::MaintainingDistance()
 {
-	/*
-	* 여기선 일정 시간동안 플레이어를 경계하기 위해 플레이어를 바라보면서 거리를 유지해야함.
-	* 따라서, 플레이어의 위치를 따온 다음 이 캐릭터와의 방향을 구해 플레이어가 다가오면 뒤로 가도록 구현할 것임.
-	*/
-
 	FVector MoveLocation;
 	ACharacter* Player = UGameplayStatics::GetPlayerCharacter(GetWorld(), 0);
 
