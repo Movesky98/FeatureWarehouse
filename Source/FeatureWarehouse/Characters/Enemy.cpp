@@ -6,6 +6,7 @@
 #include "Enums/StateOfEnemy.h"
 
 #include "GameFramework/CharacterMovementComponent.h"
+#include "Kismet/KismetMathLibrary.h"
 #include "Components/SphereComponent.h"
 
 AEnemy::AEnemy()
@@ -15,6 +16,13 @@ AEnemy::AEnemy()
 	AttackRangeComponent->SetCollisionProfileName(FName("PlayerTrigger"));
 	AttackRangeComponent->SetGenerateOverlapEvents(true);
 	AttackRangeComponent->InitSphereRadius(AttackRange);
+}
+
+void AEnemy::BeginPlay()
+{
+	Super::BeginPlay();
+
+	AttackRangeComponent->SetSphereRadius(AttackRange);
 }
 
 bool AEnemy::IsPlayerApproached()
@@ -35,4 +43,16 @@ EStateOfEnemy AEnemy::IdentifiedPlayer()
 void AEnemy::EngagingInCombat(AActor* AdversaryActor)
 {
 
+}
+
+void AEnemy::Attack()
+{
+
+}
+
+bool AEnemy::CanAttack()
+{
+	bool CanAttack = !UKismetMathLibrary::BooleanXOR(bCanCombo, bIsAttacking);
+
+	return CanAttack;
 }

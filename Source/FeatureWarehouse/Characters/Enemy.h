@@ -33,6 +33,8 @@ public:
 	virtual void EngagingInCombat(AActor* AdversaryActor);
 
 protected:
+	virtual void BeginPlay() override;
+
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = State, meta = (AllowPrivateAccess = "true"))
 	ETypeOfEnemy EnemyType;
 
@@ -49,13 +51,22 @@ protected:
 	float AttackRange;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Attack|State", meta = (AllowPrivateAccess = "true"))
-	bool bCanAttack;
+	bool bIsAttacking;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Attack|State", meta = (AllowPrivateAccess = "true"))
+	bool bCanCombo;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Attack|State", meta = (AllowPrivateAccess = "true"))
 	bool bIsPlayerInAttackRange;
 
 	UFUNCTION(BlueprintCallable)
 	void SetMovemenetSpeed(float Speed);
+
+	UFUNCTION(BlueprintCallable)
+	virtual void Attack();
+
+	UFUNCTION(BlueprintCallable)
+	virtual bool CanAttack();
 
 public:
 	FORCEINLINE ETypeOfEnemy GetEnemyType() { return EnemyType; }
