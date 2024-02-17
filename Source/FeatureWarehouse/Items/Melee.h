@@ -17,6 +17,8 @@ class FEATUREWAREHOUSE_API AMelee : public AWeapon
 	GENERATED_BODY()
 	
 public:
+	AMelee();
+
 	UFUNCTION(BlueprintCallable)
 	void BindMontage();
 
@@ -26,6 +28,12 @@ protected:
 	virtual void Attack(EStateOfViews CurView, FVector HitLocation = FVector(0.0f)) override;
 
 	virtual bool CanAttack() override;
+
+	UFUNCTION()
+	void OnBladeBeginOverlap(class UPrimitiveComponent* SelfComp, class AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
+
+	UFUNCTION()
+	void OnBladeEndOverlap(class UPrimitiveComponent* SelfComp, class AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex);
 
 private:
 	// Functions
@@ -53,6 +61,9 @@ private:
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = Montage, meta = (AllowPrivateAccess = "true"))
 	int MontageIndex;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = Component, meta = (AllowPrivateAccess = "true"))
+	class UBoxComponent* BladeCollision;
 	
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Montage, meta = (AllowPrivateAccess = "true"))
 	TArray<AActor*> IgnoreActor;

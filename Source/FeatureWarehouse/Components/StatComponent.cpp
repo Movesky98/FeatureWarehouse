@@ -2,17 +2,21 @@
 
 
 #include "StatComponent.h"
-#include "GamePlay/FW_GameInstance.h"
-#include "Widgets/PlayerMenu.h"
 
 #include "Kismet/KismetSystemLibrary.h"
 #include "Kismet/GamePlayStatics.h"
+#include "Particles/ParticleSystem.h"
 
 // Sets default values for this component's properties
 UStatComponent::UStatComponent()
 {
 	PrimaryComponentTick.bCanEverTick = false;
 
+	static ConstructorHelpers::FObjectFinder<UParticleSystem> P_Blood(TEXT("/Game/ImportAssets/Realistic_Starter_VFX_Pack_Vol2/Particles/Blood/P_Blood_Splat_Cone"));
+	if (P_Blood.Succeeded())
+	{
+		BloodParticle = P_Blood.Object;
+	}
 }
 
 
@@ -21,45 +25,25 @@ void UStatComponent::BeginPlay()
 {
 	Super::BeginPlay();
 
-	OwnerSkeletalMesh = Cast<USkeletalMeshComponent>(GetOwner()->GetComponentByClass(USkeletalMeshComponent::StaticClass()));
-	if (OwnerSkeletalMesh)
-		bIsSkeletalMeshComponent = true;
-
-	if (bIsPlayer)
-	{
-		UGameInstance* GameInstance = UGameplayStatics::GetGameInstance(GetWorld());
-
-		if (GameInstance)
-		{
-			UFW_GameInstance* FWGameInstance = Cast<UFW_GameInstance>(GameInstance);
-			PlayerMenu = FWGameInstance->PlayerMenu;
-
-			if(PlayerMenu && PlayerMenu->IsInViewport())
-				PlayerMenu->UpdatePlayerHealth(CurrentHP, MaxHP);
-		}
-	}
 }
 
-void UStatComponent::GetDamaged(float Damage)
+bool UStatComponent::GetDamaged(float Damage)
 {
-	if (!bIsDamagable) return;
+	if (!bIsDamagable) return false;
 
 	bIsDamagable = false;
 
-	ChangeDamagedMaterial();
-
 	CurrentHP -= Damage;
-
-	if (bIsPlayer)
-	{
-		PlayerMenu->UpdatePlayerHealth(CurrentHP, MaxHP);
-	}
 
 	if (CurrentHP <= 0.0f)
 	{
+		USkeletalMeshComponent* OwnerSkeletalMesh = Cast<USkeletalMeshComponent>(GetOwner()->GetComponentByClass(USkeletalMeshComponent::StaticClass()));
+
 		if (OwnerSkeletalMesh)
 		{
 			OwnerSkeletalMesh->SetSimulatePhysics(true);
+
+			return true;
 		}
 	}
 	else
@@ -67,46 +51,15 @@ void UStatComponent::GetDamaged(float Damage)
 		FTimerHandle DamagableTimerHandle;
 		GetWorld()->GetTimerManager().SetTimer(DamagableTimerHandle, this, &UStatComponent::SetDamagable, 0.1f);
 	}
+
+	return true;
 }
 
-// USkeletalMeshComponent, UStaticMeshComponent 둘 중 하나만 있는 경우만 가능함.
-void UStatComponent::ChangeDamagedMaterial()
+void UStatComponent::ShowBloodEffect(FVector Location, FRotator Rotation)
 {
-	FTimerHandle RestoreTimerHandle;
-
-	if (!bIsSkeletalMeshComponent)
+	UWorld* World = GetWorld();
+	if (World)
 	{
-		UStaticMeshComponent* StaticMeshComponent = Cast<UStaticMeshComponent>(GetOwner()->GetComponentByClass(UStaticMeshComponent::StaticClass()));
-
-		StaticMeshComponent->SetVectorParameterValueOnMaterials(FName("Tint"), FVector(1.0f, 0.0f, 0.0f));
-
-		GetWorld()->GetTimerManager().SetTimer(RestoreTimerHandle, this, &UStatComponent::RestoreOriginalMaterial, 0.1f, false);
-
-		return;
-	}
-
-	if (OwnerSkeletalMesh)
-	{
-		TArray<UMaterialInterface*> BaseMaterials = OwnerSkeletalMesh->GetMaterials();
-
-		OwnerSkeletalMesh->SetVectorParameterValueOnMaterials(FName("Tint"), FVector(1.0f, 0.0f, 0.0f));
-
-		GetWorld()->GetTimerManager().SetTimer(RestoreTimerHandle, this, &UStatComponent::RestoreOriginalMaterial, 0.1f, false);
-
-		return;
-	}
-}
-
-void UStatComponent::RestoreOriginalMaterial()
-{
-	if (bIsSkeletalMeshComponent)
-	{
-		OwnerSkeletalMesh->SetVectorParameterValueOnMaterials(FName("Tint"), FVector(1.0f, 1.0f, 1.0f));
-	}
-	else
-	{
-		UStaticMeshComponent* StaticMeshComponent = Cast<UStaticMeshComponent>(GetOwner()->GetComponentByClass(UStaticMeshComponent::StaticClass()));
-
-		StaticMeshComponent->SetVectorParameterValueOnMaterials(FName("Tint"), FVector(1.0f, 1.0f, 1.0f));
+		UGameplayStatics::SpawnEmitterAtLocation(World, BloodParticle, Location, Rotation, true);
 	}
 }

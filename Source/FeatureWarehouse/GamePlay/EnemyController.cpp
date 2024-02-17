@@ -85,7 +85,7 @@ void AEnemyController::OnTragetDetected(AActor* Actor, FAIStimulus Stimulus)
 				switch (Enemy->GetEnemyType())
 				{
 				case ETypeOfEnemy::GoldenSkull:
-					NotifyEnemyState(EStateOfEnemy::Flee);
+					NotifyEnemyState(Enemy->IdentifiedPlayer());
 					break;
 				case ETypeOfEnemy::Knight:
 					// 전투 시작.

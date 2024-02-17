@@ -37,8 +37,7 @@ void AGoldenSkull::OnTriggerBeginOverlap(class UPrimitiveComponent* SelfComp, cl
 		AEnemyController* EnemyController = Cast<AEnemyController>(GetController());
 		if (EnemyController->IsIdentifiedPlayer())
 		{
-			IdentifiedPlayer();
-			EnemyController->NotifyEnemyState(EStateOfEnemy::Flee);
+			EnemyController->NotifyEnemyState(IdentifiedPlayer());
 		}
 	}
 }
@@ -81,6 +80,7 @@ FVector AGoldenSkull::CalculateFleeLocation()
 		
 		FVector Direction;
 		TArray<AActor*> IgnoreActors;
+		IgnoreActors.Add(this);
 		FHitResult Hit;
 
 		for (int i = 0; i < FleeTraceNum; i++)

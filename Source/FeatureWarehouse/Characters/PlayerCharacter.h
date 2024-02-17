@@ -9,6 +9,7 @@
 
 enum class EStateOfViews :uint8;
 class UWeaponComponent;
+class UStatComponent;
 
 UCLASS()
 class FEATUREWAREHOUSE_API APlayerCharacter : public ACharacter
@@ -28,6 +29,11 @@ public:
 	void SetFPP();
 
 	void SetTDP();
+
+	void GetDamaged(float Damage);
+
+	UFUNCTION(BlueprintCallable)
+	void UpdateHealth();
 
 protected:
 	// Called when the game starts or when spawned
@@ -78,6 +84,9 @@ private:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = Component, meta = (AllowPrivateAccess = "true"))
 	UWeaponComponent* WeaponComponent;
 
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = Component, meta = (AllowPrivateAccess = "true"))
+	UStatComponent* StatComponent;
+
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Weapon, meta = (AllowPrivateAccess = "true"))
 	bool HasWeapon;
 
@@ -109,6 +118,7 @@ private:
 #pragma region GetterSetter
 public:
 	FORCEINLINE UWeaponComponent* GetWeaponComponent() { return WeaponComponent; }
+	FORCEINLINE UStatComponent* GetStatComponent() { return StatComponent; }
 
 	FORCEINLINE class AWeapon* GetMainWeapon() { return MainWeapon; }
 
@@ -131,8 +141,6 @@ protected:
 	void CrouchTriggered(const FInputActionValue& Value);
 
 	void Run(const FInputActionValue& Value);
-
-	void SwitchPerspectiveTriggered(const FInputActionValue& Value);
 
 	void Interact(const FInputActionValue& Value);
 

@@ -2,6 +2,8 @@
 
 #include "PlayerCharacter.h"
 #include "GamePlay/FW_PlayerController.h"
+#include "GamePlay/FW_GameInstance.h"
+#include "Widgets/PlayerMenu.h"
 
 #include "Camera/CameraComponent.h"
 #include "Components/CapsuleComponent.h"
@@ -21,6 +23,7 @@
 #include "Enums/StateOfViews.h"
 #include "Enums/UseTypeOfWeapon.h"
 #include "Components/WeaponComponent.h"
+#include "Components/StatComponent.h"
 
 #include "Interfaces/InteractInterface.h"
 
@@ -48,6 +51,7 @@ APlayerCharacter::APlayerCharacter()
 	GetCharacterMovement()->NavAgentProps.bCanCrouch = true;
 
 	WeaponComponent = CreateDefaultSubobject<UWeaponComponent>(TEXT("WeaponComponent"));
+	StatComponent = CreateDefaultSubobject<UStatComponent>(TEXT("StatComponent"));
 
 	static ConstructorHelpers::FObjectFinder<USkeletalMesh> SKM_Manny(TEXT("/Game/Characters/Mannequins/Meshes/SKM_Manny"));
 	if (SKM_Manny.Succeeded())
@@ -639,5 +643,24 @@ FVector APlayerCharacter::DrawCameraLineTrace()
 	else
 	{
 		return End;
+	}
+}
+
+void APlayerCharacter::GetDamaged(float Damage)
+{
+	bool IsDamaged = StatComponent->GetDamaged(Damage);
+
+	if (IsDamaged)
+	{
+		UpdateHealth();
+	}
+}
+
+void APlayerCharacter::UpdateHealth()
+{
+	UFW_GameInstance* GameInstance = Cast<UFW_GameInstance>(GetGameInstance());
+	if (GameInstance)
+	{
+		GameInstance->PlayerMenu->UpdatePlayerHealth(StatComponent->GetCurrentHP(), StatComponent->GetMaxHP());
 	}
 }

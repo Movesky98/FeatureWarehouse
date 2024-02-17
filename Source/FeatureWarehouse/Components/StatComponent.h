@@ -6,7 +6,7 @@
 #include "Components/ActorComponent.h"
 #include "StatComponent.generated.h"
 
-class UPlayerMenu;
+class UParticleSystem;
 
 UCLASS(Blueprintable, BlueprintType, ClassGroup = (Custom), meta = (BlueprintSpawnableComponent))
 class FEATUREWAREHOUSE_API UStatComponent : public UActorComponent
@@ -18,16 +18,13 @@ public:
 	UStatComponent();
 	
 	UFUNCTION(BlueprintCallable)
-	void GetDamaged(float Damage);
+	bool GetDamaged(float Damage);
+
+	void ShowBloodEffect(FVector Location, FRotator Rotation);
 
 protected:
 	// Called when the game starts
 	virtual void BeginPlay() override;
-
-	void ChangeDamagedMaterial();
-
-	UFUNCTION()
-	void RestoreOriginalMaterial();
 
 private:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = State, meta = (AllowPrivateAccess = "true"))
@@ -45,17 +42,8 @@ private:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = State, meta = (AllowPrivateAccess = "true"))
 	bool bIsDamagable;
 
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = UI, meta = (AllowPrivateAccess = "true"))
-	bool bIsPlayer;
-
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = UI, meta = (AllowPrivateAccess = "true"))
-	UPlayerMenu* PlayerMenu;
-
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Mesh, meta = (AllowPrivateAccess = "true"))
-	class USkeletalMeshComponent* OwnerSkeletalMesh;
-
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Mesh, meta = (AllowPrivateAccess = "true"))
-	bool bIsSkeletalMeshComponent;
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = State, meta = (AllowPrivateAccess = "true"))
+	UParticleSystem* BloodParticle;
 
 #pragma region GetterSetter
 public:

@@ -4,6 +4,7 @@
 #include "Characters/AICharacter.h"
 #include "GamePlay/EnemyController.h"
 
+#include "Components/StatComponent.h"
 #include "Components/CapsuleComponent.h"
 #include "Components/SphereComponent.h"
 
@@ -19,6 +20,8 @@ AAICharacter::AAICharacter()
 	TriggerZone->SetupAttachment(RootComponent);
 	TriggerZone->SetCollisionProfileName(FName("PlayerTrigger"));
 	TriggerZone->SetGenerateOverlapEvents(true);
+
+	StatComponent = CreateDefaultSubobject<UStatComponent>(TEXT("StatComponent"));
 
 	AIControllerClass = AEnemyController::StaticClass();
 	AutoPossessAI = EAutoPossessAI::PlacedInWorldOrSpawned;

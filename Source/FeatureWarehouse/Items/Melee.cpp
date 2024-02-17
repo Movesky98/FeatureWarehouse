@@ -12,9 +12,32 @@
 #include "Kismet/KismetSystemLibrary.h"
 #include "Kismet/KismetMathLibrary.h"
 
+#include "Components/BoxComponent.h"
+#include "DrawDebugHelpers.h"
+
+AMelee::AMelee()
+{
+	BladeCollision = CreateDefaultSubobject<UBoxComponent>(TEXT("BladeCollision"));
+	BladeCollision->SetupAttachment(RootComponent);
+	BladeCollision->SetCollisionProfileName(FName("EnemyTrigger"));
+	BladeCollision->SetGenerateOverlapEvents(true);
+}
+
 void AMelee::BeginPlay()
 {
 	Super::BeginPlay();
+
+	BladeCollision->OnComponentBeginOverlap.AddDynamic(this, &AMelee::OnBladeBeginOverlap);
+	BladeCollision->OnComponentEndOverlap.AddDynamic(this, &AMelee::OnBladeEndOverlap);
+}
+
+void AMelee::OnBladeBeginOverlap(class UPrimitiveComponent* SelfComp, class AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
+{
+	
+}
+
+void AMelee::OnBladeEndOverlap(class UPrimitiveComponent* SelfComp, class AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex)
+{
 
 }
 
@@ -114,15 +137,13 @@ void AMelee::AttackTrace()
 {
 	FVector Start = GetSkeletalMesh()->GetSocketLocation(FName("BladeBottom"));
 	FVector End = GetSkeletalMesh()->GetSocketLocation(FName("BladeTop"));
-	FVector HalfSize = FVector(3.0f, 3.0f, 8.0f);
+	FVector HalfSize = FVector(3.0f, 3.0f, 0.0f);
 
 	FHitResult Hit;
-	bool IsHit = UKismetSystemLibrary::BoxTraceSingle(
+	bool IsHit = UKismetSystemLibrary::LineTraceSingle(
 		GetWorld(), 
 		Start, 
 		End, 
-		HalfSize, 
-		FRotator::ZeroRotator, 
 		ETraceTypeQuery::TraceTypeQuery4, 
 		false, 
 		IgnoreActor, 
@@ -144,6 +165,9 @@ void AMelee::AttackTrace()
 			IgnoreActor.Add(Hit.GetActor());
 
 			HitActorComponent->GetDamaged(30.0f);
+
+			FRotator ImpactRotation = UKismetMathLibrary::MakeRotFromZ(-Hit.ImpactNormal);
+			HitActorComponent->ShowBloodEffect(Hit.ImpactPoint, ImpactRotation);
 		}
 	}
 }

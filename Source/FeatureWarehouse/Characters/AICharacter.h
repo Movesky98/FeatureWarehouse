@@ -23,6 +23,10 @@ private:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = Trigger, meta = (AllowPrivateAccess = "true"))
 	class USphereComponent* TriggerZone;
 
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = Component, meta = (AllowPrivateAccess = "true"))
+	class UStatComponent* StatComponent;
+
 public:
 	FORCEINLINE class USphereComponent* GetTriggerZone() { return TriggerZone; }
+	FORCEINLINE class UStatComponent* GetStatComponent() { return StatComponent; }
 };
