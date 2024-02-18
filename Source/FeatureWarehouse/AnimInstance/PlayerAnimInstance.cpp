@@ -37,6 +37,7 @@ void UPlayerAnimInstance::NativeUpdateAnimation(float DeltaSeconds)
 		Direction = CalculateDirection(MovementComponent->Velocity, Player->GetActorRotation());
 		bIsCrouch = MovementComponent->IsCrouching();
 		bIsFalling = MovementComponent->IsFalling();
+		bShouldMove = (MovementComponent->GetCurrentAcceleration() != FVector::ZeroVector) && (Speed > 3.0f);
 		Pitch = Player->GetBaseAimRotation().Pitch >= 180 ? Player->GetBaseAimRotation().Pitch - 360 : Player->GetBaseAimRotation().Pitch;
 	}
 }

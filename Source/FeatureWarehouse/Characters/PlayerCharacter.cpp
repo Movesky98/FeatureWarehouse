@@ -17,8 +17,8 @@
 #include "EnhancedInputComponent.h"
 #include "EnhancedInputSubsystems.h"
 
-#include "Items/Weapon.h"
-#include "Items/Gun.h"
+#include "Weapon.h"
+#include "Guns/Gun.h"
 
 #include "Enums/StateOfViews.h"
 #include "Enums/UseTypeOfWeapon.h"

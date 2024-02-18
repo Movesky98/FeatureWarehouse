@@ -13,6 +13,8 @@ public class FeatureWarehouse : ModuleRules
 		PrivateDependencyModuleNames.AddRange(new string[] {  });
 
 		PrivateIncludePaths.Add("FeatureWarehouse");
+		PrivateIncludePaths.Add("FeatureWarehouse/Items");
+		PrivateIncludePaths.Add("FeatureWarehouse/Items/Weapons");
 
 		// Uncomment if you are using Slate UI
 		// PrivateDependencyModuleNames.AddRange(new string[] { "Slate", "SlateCore" });

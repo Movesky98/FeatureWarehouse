@@ -6,9 +6,9 @@
 #include "Characters/PlayerCharacter.h"
 #include "AnimInstance/PlayerAnimInstance.h"
 
-#include "Items/Weapon.h"
-#include "Items/Gun.h"
-#include "Items/Melee.h"
+#include "Weapon.h"
+#include "Guns/Gun.h"
+#include "Melees/Melee.h"
 
 #include "Enums/UseTypeOfWeapon.h"
 #include "Enums/TypeOfWeapon.h"

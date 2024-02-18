@@ -26,6 +26,8 @@ protected:
 	// Called when the game starts
 	virtual void BeginPlay() override;
 
+	void PlayMontage(UAnimMontage* PlayMontage);
+
 private:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = State, meta = (AllowPrivateAccess = "true"))
 	float MaxHP;
@@ -44,6 +46,12 @@ private:
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = State, meta = (AllowPrivateAccess = "true"))
 	UParticleSystem* BloodParticle;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Animation", meta = (AllowPrivateAccess = "true"))
+	class UAnimMontage* GetDamagedMontage;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Animation", meta = (AllowPrivateAccess = "true"))
+	class UAnimMontage* DeathMontage;
 
 #pragma region GetterSetter
 public:

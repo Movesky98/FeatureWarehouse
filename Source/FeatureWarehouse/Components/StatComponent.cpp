@@ -2,6 +2,7 @@
 
 
 #include "StatComponent.h"
+#include "Animation/AnimMontage.h"
 
 #include "Kismet/KismetSystemLibrary.h"
 #include "Kismet/GamePlayStatics.h"
@@ -35,13 +36,25 @@ bool UStatComponent::GetDamaged(float Damage)
 
 	CurrentHP -= Damage;
 
+	if (GetDamagedMontage)
+	{
+		PlayMontage(GetDamagedMontage);
+	}
+
 	if (CurrentHP <= 0.0f)
 	{
 		USkeletalMeshComponent* OwnerSkeletalMesh = Cast<USkeletalMeshComponent>(GetOwner()->GetComponentByClass(USkeletalMeshComponent::StaticClass()));
 
 		if (OwnerSkeletalMesh)
 		{
-			OwnerSkeletalMesh->SetSimulatePhysics(true);
+			if (DeathMontage)
+			{
+				PlayMontage(DeathMontage);
+			}
+			else
+			{
+				OwnerSkeletalMesh->SetSimulatePhysics(true);
+			}
 
 			return true;
 		}
@@ -62,4 +75,22 @@ void UStatComponent::ShowBloodEffect(FVector Location, FRotator Rotation)
 	{
 		UGameplayStatics::SpawnEmitterAtLocation(World, BloodParticle, Location, Rotation, true);
 	}
+}
+
+void UStatComponent::PlayMontage(UAnimMontage* PlayMontage)
+{
+	USkeletalMeshComponent* OwnerSkeletalMesh = Cast<USkeletalMeshComponent>(GetOwner()->GetComponentByClass(USkeletalMeshComponent::StaticClass()));
+	
+	if (!OwnerSkeletalMesh) return;
+	
+	UAnimInstance* OwnerAnim = OwnerSkeletalMesh->GetAnimInstance();
+	if (OwnerAnim)
+	{
+		// 재생되고 있는 몽타주 중지.
+		OwnerAnim->Montage_Stop(0.0f, nullptr);
+
+		// 몽타주 재생 (피격, 죽음)
+		OwnerAnim->Montage_Play(PlayMontage);
+	}
+	
 }
