@@ -425,36 +425,18 @@ AActor* APlayerCharacter::FindInteractableActor(const FVector Start, const FVect
 
 void APlayerCharacter::EquipFirstWeapon()
 {
-	if (!WeaponComponent->GetFirstWeapon())
+	if (!WeaponComponent->GetMainWeapon())
 		return;
 
-	if (WeaponComponent->GetFirstWeapon()->GetUseType() == EUseTypeOfWeapon::Sub)
-	{
-		WeaponComponent->SwapWeapon();
-
-		MainWeapon = WeaponComponent->GetFirstWeapon();
-
-		MainWeapon->AttachToComponent(GetMesh(), FAttachmentTransformRules::KeepRelativeTransform, MainWeapon->GetAttachSocketName());
-
-		WeaponComponent->NotifyToAnimInstance();
-	}
+	WeaponComponent->EquipMainWeapon();
 }
 
 void APlayerCharacter::EquipSecondWeapon()
 {
-	if (!WeaponComponent->GetSecondWeapon())
+	if (!WeaponComponent->GetSubWeapon())
 		return;
 
-	if (WeaponComponent->GetSecondWeapon()->GetUseType() == EUseTypeOfWeapon::Sub)
-	{
-		WeaponComponent->SwapWeapon();
-
-		MainWeapon = WeaponComponent->GetSecondWeapon();
-
-		MainWeapon->AttachToComponent(GetMesh(), FAttachmentTransformRules::KeepRelativeTransform, MainWeapon->GetAttachSocketName());
-
-		WeaponComponent->NotifyToAnimInstance();
-	}
+	WeaponComponent->EquipSubWeapon();
 }
 
 void APlayerCharacter::Attack()

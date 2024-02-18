@@ -14,7 +14,7 @@
 
 AWeapon::AWeapon()
 {
-	UseType = EUseTypeOfWeapon::None;
+
 }
 
 void AWeapon::Interact(AActor* InteractActor)
@@ -23,7 +23,7 @@ void AWeapon::Interact(AActor* InteractActor)
 
 	if (PlayerCharacter)
 	{
-		PlayerCharacter->GetWeaponComponent()->SaveWeaponInfo(this);
+		PlayerCharacter->GetWeaponComponent()->SaveAcquiredWeaponInfo(this);
 	}
 }
 
@@ -47,6 +47,8 @@ void AWeapon::ThrowAway(FVector Location)
 	GetTriggerZone()->SetCollisionProfileName(FName("Item"));
 
 	SetActorLocation(Location);
+	SetActorRotation(FRotator(0.0f, 0.0f, 0.0f));
+	SetActorScale3D(FVector(1.0f));
 }
 
 void AWeapon::Attack(EStateOfViews CurView, FVector HitLocation)
@@ -64,6 +66,11 @@ bool AWeapon::CanAttack()
 	return false;
 }
 
+void AWeapon::Attach() 
+{
+
+}
+
 void AWeapon::Equip()
 {
 
@@ -73,3 +80,4 @@ void AWeapon::Unequip()
 {
 
 }
+

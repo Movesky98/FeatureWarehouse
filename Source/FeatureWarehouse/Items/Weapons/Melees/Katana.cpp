@@ -28,3 +28,8 @@ void AKatana::Unequip()
 {
 
 }
+
+void AKatana::Attach()
+{
+
+}

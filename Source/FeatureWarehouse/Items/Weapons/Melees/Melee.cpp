@@ -24,9 +24,9 @@ void AMelee::BeginPlay()
 {
 	Super::BeginPlay();
 
-	BindMontage();
 }
 
+// 무기를 장착했을 때, WeaponComponent에서 실행되는 함수.
 void AMelee::BindMontage()
 {
 	if (!GetWeaponOwner()) return;

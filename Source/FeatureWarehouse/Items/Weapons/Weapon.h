@@ -32,6 +32,8 @@ public:
 
 	virtual void StopAttack();
 
+	virtual void Attach();
+
 	virtual void Equip();
 
 	virtual void Unequip();
@@ -46,22 +48,19 @@ private:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = State, meta = (AllowPrivateAccess = "true"))
 	FName AttachSocketName;
 
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = State, meta = (AllowPrivateAccess = "true"))
-	EUseTypeOfWeapon UseType;
-
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = State, meta = (AllowPrivateAccess = "true"))
 	ETypeOfWeapon WeaponType;
 
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Attack, meta = (AllowPrivateAccess = "true"))
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "State", meta = (AllowPrivateAccess = "true"))
+	bool bHasAttachmentInfo;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Attack", meta = (AllowPrivateAccess = "true"))
 	bool bIsAttacking;
 
 #pragma region GetterSetter
 public:
 	FORCEINLINE AActor* GetWeaponOwner() { return WeaponOwner; }
 	FORCEINLINE void SetWeaponOwner(AActor* NewOwner) { WeaponOwner = NewOwner; }
-
-	FORCEINLINE EUseTypeOfWeapon GetUseType() { return UseType; }
-	FORCEINLINE void SetUseType(EUseTypeOfWeapon Type) { UseType = Type; }
 
 	FORCEINLINE FName GetAttachSocketName() { return AttachSocketName; }
 
@@ -70,5 +69,6 @@ public:
 	FORCEINLINE bool IsAttacking() { return bIsAttacking; }
 	FORCEINLINE void SetIsAttacking(bool IsAttacking) { bIsAttacking = IsAttacking; }
 
+	FORCEINLINE bool HasAttachmentInfo() { return bHasAttachmentInfo; }
 #pragma endregion
 };

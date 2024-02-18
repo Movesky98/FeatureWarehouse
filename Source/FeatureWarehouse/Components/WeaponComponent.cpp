@@ -21,8 +21,9 @@ UWeaponComponent::UWeaponComponent()
 	PrimaryComponentTick.bCanEverTick = false;
 
 	// ...
-}
 
+	EquipState = EEquipState::None;
+}
 
 // Called when the game starts
 void UWeaponComponent::BeginPlay()
@@ -42,80 +43,152 @@ void UWeaponComponent::BeginPlay()
 	}
 }
 
-void UWeaponComponent::SaveWeaponInfo(AWeapon* NewWeapon)
+void UWeaponComponent::EquipMainWeapon()
 {
-	if (NewWeapon)
-	{
-		switch (EquipNum)
-		{
-		case 0:
-			EquipNum++;
-			FirstWeapon = NewWeapon;
-			FirstWeapon->SetUseType(EUseTypeOfWeapon::Main);
-			SetWeaponInfo(FirstWeapon);
+	if (!IsValid(MainWeapon) || PlayerCharacter->GetMainWeapon() == MainWeapon) return;
 
-			PlayerAnim->SetHasWeapon(true);
-			NotifyToAnimInstance();
-			break;
-		case 1:
-			EquipNum++;
-			SecondWeapon = NewWeapon;
-			SecondWeapon->SetUseType(EUseTypeOfWeapon::Sub);
-			SetWeaponInfo(SecondWeapon);
-			break;
-		case 2:
-			ChangeToNewWeapon(NewWeapon);
-			break;
-		default:
-			// Error.
-			break;
-		}
+	EquipState = EEquipState::MainWeapon;
+	MainWeapon->GetSkeletalMesh()->SetVisibility(true);
+
+	if (IsValid(SubWeapon))
+	{
+		SubWeapon->GetSkeletalMesh()->SetVisibility(false);
 	}
+
+	PlayerCharacter->SetMainWeapon(MainWeapon);
+
+	NotifyToAnimInstance();
 }
 
-void UWeaponComponent::ChangeToNewWeapon(AWeapon* NewWeapon)
+void UWeaponComponent::EquipSubWeapon()
 {
-	FVector DropLocation = NewWeapon->GetActorLocation();
+	if (!IsValid(SubWeapon) || PlayerCharacter->GetMainWeapon() == SubWeapon) return;
 
-	NewWeapon->SetUseType(EUseTypeOfWeapon::Main);
+	EquipState = EEquipState::SubWeapon;
 
-	if (FirstWeapon->GetUseType() == EUseTypeOfWeapon::Main)
+	SubWeapon->GetSkeletalMesh()->SetVisibility(true);
+
+	if (IsValid(MainWeapon))
 	{
-		FirstWeapon->ThrowAway(DropLocation);
-		FirstWeapon = NewWeapon;
-		SetWeaponInfo(FirstWeapon);
+		MainWeapon->GetSkeletalMesh()->SetVisibility(false);
 	}
-	else
+
+	PlayerCharacter->SetMainWeapon(SubWeapon);
+
+	NotifyToAnimInstance();
+}
+
+void UWeaponComponent::SaveAcquiredWeaponInfo(AWeapon* NewWeapon)
+{
+	if (EquipNum < 0) return;
+
+	switch (EquipNum)
 	{
-		// SecondWeapon is main weapon.
-		SecondWeapon->ThrowAway(DropLocation);
-		SecondWeapon = NewWeapon;
-		SetWeaponInfo(SecondWeapon);
+	case 0:
+		// 처음 획득한 무기일 때 == 메인 무기로 등록.
+		EquipNum++;
+		EquipState = EEquipState::MainWeapon;
+		NotifyHasWeaponToAnim();
+		SaveMainWeaponInfo(NewWeapon);
+		break;
+	case 1:
+		// 두번째 획득한 무기일 때
+		EquipNum++;
+		SaveSingleWeaponInfo(NewWeapon);
+		break;
+	case 2:
+		// 이미 두 개의 무기를 가지고 있을 때 (무기 교체)
+		SaveMultipleWeaponInfo(NewWeapon);
+		break;
+	default:
+		break;
 	}
 
 	NotifyToAnimInstance();
 }
 
-void UWeaponComponent::SetWeaponInfo(AWeapon* NewWeapon)
+void UWeaponComponent::SaveSingleWeaponInfo(AWeapon* Weapon)
 {
-	NewWeapon->TakeUp(GetOwner());
+	// 나중에 인벤토리를 구현하게 되면, 배틀 그라운드처럼 메인, 서브 무기를 마음대로 바꿀 수 있도록 구현하겠음.
+	// 지금은 무기를 획득하면 두번째 무기로 들어가도록 만들어놓음.
 
-	if (PlayerCharacter)
+	SaveSubWeaponInfo(Weapon);
+}
+
+void UWeaponComponent::SaveMultipleWeaponInfo(AWeapon* Weapon)
+{
+	switch (EquipState)
 	{
-		NewWeapon->AttachToComponent(PlayerCharacter->GetMesh(), FAttachmentTransformRules::KeepRelativeTransform, NewWeapon->GetAttachSocketName());
-
-		// if the new weapon is the first weapon, setting it as the player's main wepaon.
-		(NewWeapon->GetUseType() == EUseTypeOfWeapon::Main) ? PlayerCharacter->SetMainWeapon(NewWeapon) : NewWeapon->GetSkeletalMesh()->SetVisibility(false);
+	case EEquipState::None:
+	case EEquipState::MainWeapon:
+		SaveMainWeaponInfo(Weapon);
+		break;
+	case EEquipState::SubWeapon:
+		SaveSubWeaponInfo(Weapon);
+		break;
+	default:
+		break;
 	}
+}
+
+void UWeaponComponent::SaveMainWeaponInfo(AWeapon* Weapon)
+{
+	if (IsValid(MainWeapon))
+	{
+		// 메인 무기가 이미 있는 경우 (무기 교체)
+		FVector DropLocation = Weapon->GetActorLocation();
+		MainWeapon->ThrowAway(DropLocation);
+	}
+
+	Weapon->TakeUp(GetOwner());
+
+	if (Weapon->HasAttachmentInfo())
+	{
+		Weapon->Attach();
+	}
+	else
+	{
+		if(IsValid(PlayerCharacter))
+			Weapon->AttachToComponent(PlayerCharacter->GetMesh(), FAttachmentTransformRules::KeepRelativeTransform, Weapon->GetAttachSocketName());
+	}
+
+	MainWeapon = Weapon;
+	(EquipState != EEquipState::MainWeapon) ? MainWeapon->GetSkeletalMesh()->SetVisibility(false)
+		: PlayerCharacter->SetMainWeapon(MainWeapon);
+}
+
+void UWeaponComponent::SaveSubWeaponInfo(AWeapon* Weapon)
+{
+	if (IsValid(SubWeapon))
+	{
+		// 메인 무기가 이미 있는 경우 (무기 교체)
+		FVector DropLocation = Weapon->GetActorLocation();
+		SubWeapon->ThrowAway(DropLocation);
+	}
+
+	Weapon->TakeUp(GetOwner());
+
+	if (Weapon->HasAttachmentInfo())
+	{
+		Weapon->Attach();
+	}
+	else
+	{
+		if (IsValid(PlayerCharacter))
+			Weapon->AttachToComponent(PlayerCharacter->GetMesh(), FAttachmentTransformRules::KeepRelativeTransform, Weapon->GetAttachSocketName());
+	}
+
+	SubWeapon = Weapon;
+
+	(EquipState != EEquipState::SubWeapon) ? SubWeapon->GetSkeletalMesh()->SetVisibility(false)
+		: PlayerCharacter->SetMainWeapon(SubWeapon);
 }
 
 void UWeaponComponent::NotifyToAnimInstance()
 {
+	if (!IsValid(PlayerCharacter->GetMainWeapon())) return;
+
 	AWeapon* Weapon = PlayerCharacter->GetMainWeapon();
-
-	if (!Weapon)
-		return;
-
 	ETypeOfWeapon WeaponType = Weapon->GetWeaponType();
 
 	PlayerAnim->SetWeaponType(WeaponType);
@@ -147,27 +220,12 @@ void UWeaponComponent::NotifyToAnimInstance()
 	default:
 		break;
 	}
-
-
 }
 
-void UWeaponComponent::SwapWeapon()
+void UWeaponComponent::NotifyHasWeaponToAnim()
 {
-	if (PlayerCharacter->GetMainWeapon() == SecondWeapon)
+	if (IsValid(PlayerAnim))
 	{
-		// Swap second weapon to first weapon.
-		FirstWeapon->GetSkeletalMesh()->SetVisibility(true);
-		FirstWeapon->SetUseType(EUseTypeOfWeapon::Main);
-
-		SecondWeapon->GetSkeletalMesh()->SetVisibility(false);
-		SecondWeapon->SetUseType(EUseTypeOfWeapon::Sub);
-	}
-	else
-	{
-		SecondWeapon->GetSkeletalMesh()->SetVisibility(true);
-		SecondWeapon->SetUseType(EUseTypeOfWeapon::Main);
-
-		FirstWeapon->GetSkeletalMesh()->SetVisibility(false);
-		FirstWeapon->SetUseType(EUseTypeOfWeapon::Sub);
+		PlayerAnim->SetHasWeapon(true);
 	}
 }

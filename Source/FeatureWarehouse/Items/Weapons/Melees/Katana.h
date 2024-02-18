@@ -21,6 +21,9 @@ public:
 
 	void Unequip() override;
 
+protected:
+	void Attach() override;
+
 private:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Mesh", meta = (AllowPrivateAccess = "true"))
 	USkeletalMeshComponent* Scabbard;

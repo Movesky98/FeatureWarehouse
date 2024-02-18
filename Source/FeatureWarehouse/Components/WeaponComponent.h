@@ -8,6 +8,13 @@
 
 class AWeapon;
 
+UENUM(BlueprintType)
+enum class EEquipState : uint8
+{
+	None UMETA(DisplayName = "None"),
+	MainWeapon UMETA(DisplayName = "MainWeapon"),
+	SubWeapon UMETA(DisplayName = "SubWeapon")
+};
 
 UCLASS(Blueprintable, BlueprintType, ClassGroup = (Custom), meta = (BlueprintSpawnableComponent))
 class FEATUREWAREHOUSE_API UWeaponComponent : public UActorComponent
@@ -18,11 +25,11 @@ public:
 	// Sets default values for this component's properties
 	UWeaponComponent();
 
-	UFUNCTION(BlueprintCallable)
-	void SaveWeaponInfo(AWeapon* NewWeapon);
+	void EquipMainWeapon();
 
-	UFUNCTION(BlueprintCallable)
-	void SwapWeapon();
+	void EquipSubWeapon();
+
+	void SaveAcquiredWeaponInfo(AWeapon* NewWeapon);
 
 	UFUNCTION(BlueprintCallable)
 	void NotifyToAnimInstance();
@@ -31,35 +38,44 @@ protected:
 	// Called when the game starts
 	virtual void BeginPlay() override;
 	
-private:
-	// Functions
-	void SetWeaponInfo(AWeapon* NewWeapon);
+	void SaveSingleWeaponInfo(AWeapon* Weapon);
 
-	void ChangeToNewWeapon(AWeapon* NewWeapon);
+	void SaveMultipleWeaponInfo(AWeapon* Weapon);
+
+	void SaveMainWeaponInfo(AWeapon* Weapon);
+
+	void SaveSubWeaponInfo(AWeapon* Weapon);
+
+	void NotifyHasWeaponToAnim();
+
+private:
 
 	// Variables
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = State, meta = (AllowPrivateAccess = "true"))
-	AWeapon* FirstWeapon;
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "State", meta = (AllowPrivateAccess = "true"))
+	AWeapon* MainWeapon;
 
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = State, meta = (AllowPrivateAccess = "true"))
-	AWeapon* SecondWeapon;
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "State", meta = (AllowPrivateAccess = "true"))
+	AWeapon* SubWeapon;
 
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = State, meta = (AllowPrivateAccess = "true"))
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "State", meta = (AllowPrivateAccess = "true"))
 	int EquipNum;
 
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = State, meta = (AllowPrivateAccess = "true"))
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "State", meta = (AllowPrivateAccess = "true"))
 	class UPlayerAnimInstance* PlayerAnim;
 
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = State, meta = (AllowPrivateAccess = "true"))
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "State", meta = (AllowPrivateAccess = "true"))
 	class APlayerCharacter* PlayerCharacter;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "State", meta = (AllowPrivateAccess = "true"))
+	EEquipState EquipState;
 
 #pragma region GetterSetter
 public:
-	FORCEINLINE AWeapon* GetFirstWeapon() const { return FirstWeapon; }
-	FORCEINLINE void SetFirstWeapon(AWeapon* NewWeapon) { FirstWeapon = NewWeapon; }
+	FORCEINLINE AWeapon* GetMainWeapon() const { return MainWeapon; }
+	FORCEINLINE void SetMainWeapon(AWeapon* NewWeapon) { MainWeapon = NewWeapon; }
 
-	FORCEINLINE AWeapon* GetSecondWeapon() const { return SecondWeapon; }
-	FORCEINLINE void SetSecondWeapon(AWeapon* NewWeapon) { SecondWeapon = NewWeapon; }
+	FORCEINLINE AWeapon* GetSubWeapon() const { return SubWeapon; }
+	FORCEINLINE void SetSubWeapon(AWeapon* NewWeapon) { SubWeapon = NewWeapon; }
 
 	FORCEINLINE int GetEquipNum() { return EquipNum; }
 
