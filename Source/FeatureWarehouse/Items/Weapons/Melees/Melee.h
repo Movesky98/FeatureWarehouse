@@ -64,4 +64,7 @@ private:
 	TArray<AActor*> IgnoreActor;
 
 	FTimerHandle AttackTraceTimer;
+
+public:
+	FORCEINLINE ETypeOfMelee GetMeleeType() { return MeleeType; }
 };

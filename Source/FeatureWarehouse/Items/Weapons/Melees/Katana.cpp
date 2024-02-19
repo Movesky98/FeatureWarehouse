@@ -8,7 +8,6 @@
 AKatana::AKatana()
 {
 	Scabbard = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("Scabbard"));
-	Scabbard->SetupAttachment(RootComponent);
 	Scabbard->SetCollisionProfileName(FName("NoCollision"));
 }
 
@@ -31,5 +30,12 @@ void AKatana::Unequip()
 
 void AKatana::Attach()
 {
+	if (GetWeaponOwner())
+	{
+		ACharacter* Character = Cast<ACharacter>(GetWeaponOwner());
 
+		// ¸ö ¿ÞÂÊ¿¡ Ä®Áý, ¿À¸¥¼Õ¿¡ Ä«Å¸³ª¸¦ º¸¿©Áà¾ßÇÔ.
+		GetSkeletalMesh()->AttachToComponent(Character->GetMesh(), FAttachmentTransformRules::KeepRelativeTransform, Blade_RightHandSocketName);
+		Scabbard->AttachToComponent(Character->GetMesh(), FAttachmentTransformRules::KeepRelativeTransform, Scabbard_UnequipSocketName);
+	}
 }

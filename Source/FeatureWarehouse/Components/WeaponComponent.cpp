@@ -212,6 +212,7 @@ void UWeaponComponent::NotifyToAnimInstance()
 		AMelee* Melee = Cast<AMelee>(Weapon);
 		if (!Melee) break;
 
+		PlayerAnim->SetMeleeType(Melee->GetMeleeType());
 		Melee->BindMontage();
 	}
 		break;

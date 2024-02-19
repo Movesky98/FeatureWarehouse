@@ -85,7 +85,7 @@ public:
 	FORCEINLINE void AttemptToggleEquip(bool IsAttempt) { bAttemptToggleEquip = IsAttempt; }
 
 	FORCEINLINE void SetWeaponType(ETypeOfWeapon Type) { WeaponType = Type; }
-
+	FORCEINLINE void SetMeleeType(ETypeOfMelee Type) { MeleeType = Type; }
 	FORCEINLINE void SetGunType(ETypeOfGun Type) { GunType = Type; }
 
 #pragma endregion
