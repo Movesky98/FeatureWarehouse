@@ -47,6 +47,8 @@ private:
 	UFUNCTION()
 	void AttackTrace();
 
+	void DrawAttackLineTrace(const FVector& LineStart, const FVector& LineEnd, bool IsInterpolating);
+
 	// Variables
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "State", meta = (AllowPrivateAccess = "true"))
 	bool CanCombo;
@@ -64,6 +66,19 @@ private:
 	TArray<AActor*> IgnoreActor;
 
 	FTimerHandle AttackTraceTimer;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Attack|Interpolating", meta = (AllowPrivateAccess = "true"))
+	float InterpolateDistance;
+
+	float BladeLength;
+
+	FVector PreBladeVector;
+
+	FVector PreEnd;
+
+	FVector PreStart;
+
+	FVector PreMidpoint;
 
 public:
 	FORCEINLINE ETypeOfMelee GetMeleeType() { return MeleeType; }

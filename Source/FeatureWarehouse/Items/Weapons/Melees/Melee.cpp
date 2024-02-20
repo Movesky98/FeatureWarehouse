@@ -17,13 +17,16 @@
 
 AMelee::AMelee()
 {
-
+	InterpolateDistance = 20.0f;
 }
 
 void AMelee::BeginPlay()
 {
 	Super::BeginPlay();
 
+	FVector Start = GetSkeletalMesh()->GetSocketLocation(FName("BladeBottom"));
+	FVector End = GetSkeletalMesh()->GetSocketLocation(FName("BladeTop"));
+	BladeLength = (Start - End).Length();
 }
 
 // 무기를 장착했을 때, WeaponComponent에서 실행되는 함수.
@@ -117,32 +120,107 @@ void AMelee::StopAttackTrace()
 	GetWorldTimerManager().ClearTimer(AttackTraceTimer);
 
 	IgnoreActor.Empty();
+
+	PreMidpoint = FVector::ZeroVector;
+	PreBladeVector = FVector::ZeroVector;
+	PreStart = FVector::ZeroVector;
+	PreEnd = FVector::ZeroVector;
 }
 
 void AMelee::AttackTrace()
 {
 	FVector Start = GetSkeletalMesh()->GetSocketLocation(FName("BladeBottom"));
 	FVector End = GetSkeletalMesh()->GetSocketLocation(FName("BladeTop"));
+	FVector Midpoint = (Start + End) / 2;
 
+	// Interpolate line trace when the distance is far.
+	if (PreMidpoint != FVector::ZeroVector && FVector::Distance(PreMidpoint, Midpoint) > InterpolateDistance)
+	{
+		int InterpolatingNum = (int)FVector::Distance(PreMidpoint, Midpoint) / InterpolateDistance;
+		
+		float EndDelta = FVector::Distance(PreEnd, End) / InterpolatingNum;
+		float EndSpeed = EndDelta;
+
+		float StartDelta = FVector::Distance(PreStart, Start) / InterpolatingNum;
+		float StartSpeed = StartDelta;
+
+		FVector CurBladeVector = (End - Start).GetSafeNormal();
+		float BladeVectorDelta = FVector::Distance(PreBladeVector, CurBladeVector) / InterpolatingNum;
+		float BladeVectorSpeed = BladeVectorDelta;
+
+		/*FVector CurBladeVector = (Start - End).GetSafeNormal();
+		float BladeVectorDelta = FVector::Distance(PreBladeVector, CurBladeVector) / InterpolatingNum;
+		float BladeVectorSpeed = BladeVectorDelta;*/
+
+		for (int i = 0; i < InterpolatingNum; i++)
+		{
+			FVector InterpolatedStart = FMath::VInterpConstantTo(PreStart, Start, 1.0f, EndSpeed);
+			FVector InterpolatedVector = FMath::VInterpConstantTo(PreBladeVector, CurBladeVector, 1.0f, BladeVectorSpeed);
+			FVector InterpolatedEnd = InterpolatedStart + InterpolatedVector.GetSafeNormal() * BladeLength;
+
+			/*FVector InterpolatedEnd = FMath::VInterpConstantTo(PreEnd, End, 1.0f, EndSpeed);
+			FVector InterpolatedVector = FMath::VInterpConstantTo(PreBladeVector, CurBladeVector, 1.0f, BladeVectorSpeed);
+			FVector InterpolatedStart = InterpolatedEnd + InterpolatedVector.GetSafeNormal() * BladeLength;*/
+
+			DrawAttackLineTrace(InterpolatedStart, InterpolatedEnd, true);
+
+			EndSpeed += EndDelta;
+			BladeVectorSpeed += BladeVectorDelta;
+		}
+	}
+
+	PreMidpoint = Midpoint;
+	PreBladeVector = (End - Start).GetSafeNormal();
+	// PreBladeVector = (Start - End).GetSafeNormal();
+	PreStart = Start;
+	PreEnd = End;
+
+	DrawAttackLineTrace(Start, End, false);
+}
+
+void AMelee::DrawAttackLineTrace(const FVector& LineStart, const FVector& LineEnd, bool IsInterpolating)
+{
 	FHitResult Hit;
-	bool IsHit = UKismetSystemLibrary::LineTraceSingle(
-		GetWorld(), 
-		Start, 
-		End, 
-		ETraceTypeQuery::TraceTypeQuery4, 
-		false, 
-		IgnoreActor, 
-		EDrawDebugTrace::ForDuration, 
-		Hit, 
-		true, 
-		FLinearColor::Red, 
-		FLinearColor::Green, 
-		1.0f
-	);
+	bool IsHit;
+		
+	if (IsInterpolating)
+	{
+		IsHit = UKismetSystemLibrary::LineTraceSingle(
+			GetWorld(),
+			LineStart,
+			LineEnd,
+			ETraceTypeQuery::TraceTypeQuery4,
+			false,
+			IgnoreActor,
+			EDrawDebugTrace::Persistent,
+			Hit,
+			true,
+			FLinearColor::Blue,
+			FLinearColor::Black,
+			1.0f
+		);
+	}
+	else
+	{
+		IsHit = UKismetSystemLibrary::LineTraceSingle(
+			GetWorld(),
+			LineStart,
+			LineEnd,
+			ETraceTypeQuery::TraceTypeQuery4,
+			false,
+			IgnoreActor,
+			EDrawDebugTrace::Persistent,
+			Hit,
+			true,
+			FLinearColor::Red,
+			FLinearColor::Green,
+			1.0f
+		);
+	}
+
 
 	if (IsHit)
 	{
-		// Dummy
 		UStatComponent* HitActorComponent = Cast<UStatComponent>(Hit.GetActor()->GetComponentByClass(UStatComponent::StaticClass()));
 
 		if (HitActorComponent)
@@ -151,6 +229,7 @@ void AMelee::AttackTrace()
 
 			HitActorComponent->GetDamaged(30.0f);
 
+			// Show Blood effet.
 			FRotator ImpactRotation = UKismetMathLibrary::MakeRotFromZ(-Hit.ImpactNormal);
 			HitActorComponent->ShowBloodEffect(Hit.ImpactPoint, ImpactRotation);
 		}

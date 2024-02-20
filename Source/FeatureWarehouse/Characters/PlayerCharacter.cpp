@@ -24,7 +24,6 @@
 #include "Enums/UseTypeOfWeapon.h"
 #include "Components/WeaponComponent.h"
 #include "Components/StatComponent.h"
-#include "MotionWarpingComponent.h"
 
 #include "Interfaces/InteractInterface.h"
 
@@ -53,7 +52,6 @@ APlayerCharacter::APlayerCharacter()
 
 	WeaponComponent = CreateDefaultSubobject<UWeaponComponent>(TEXT("WeaponComponent"));
 	StatComponent = CreateDefaultSubobject<UStatComponent>(TEXT("StatComponent"));
-	MotionWarpingComponent = CreateDefaultSubobject<UMotionWarpingComponent>(TEXT("MotionWarpingComponent"));
 
 	static ConstructorHelpers::FObjectFinder<USkeletalMesh> SKM_Manny(TEXT("/Game/Characters/Mannequins/Meshes/SKM_Manny"));
 	if (SKM_Manny.Succeeded())
