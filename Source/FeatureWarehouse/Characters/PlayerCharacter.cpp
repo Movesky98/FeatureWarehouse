@@ -65,6 +65,8 @@ APlayerCharacter::APlayerCharacter()
 		GetMesh()->SetAnimInstanceClass(ABP_Player.Class);
 	}
 
+	MovementState = EMovementState::Idle;
+
 	Tags.Add(FName("Player"));
 }
 
@@ -92,9 +94,9 @@ void APlayerCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCom
 	
 	if (UEnhancedInputComponent* EnhancedInputComponent = CastChecked<UEnhancedInputComponent>(PlayerInputComponent))
 	{
-		GEngine->AddOnScreenDebugMessage(-1, 3.0f, FColor::Green, FString("setting up player input components."));
 		// Move forward.
 		EnhancedInputComponent->BindAction(MoveForwardAction, ETriggerEvent::Triggered, this, &APlayerCharacter::MoveForward);
+		EnhancedInputComponent->BindAction(MoveForwardAction, ETriggerEvent::Completed, this, &APlayerCharacter::SetMovementStateIdle);
 
 		EnhancedInputComponent->BindAction(MoveRightAction, ETriggerEvent::Triggered, this, &APlayerCharacter::MoveRight);
 
@@ -123,6 +125,8 @@ void APlayerCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCom
 void APlayerCharacter::MoveForward(const FInputActionValue& Value)
 {
 	float Movement = Value.Get<float>();
+	bool IsPressed = Value.Get<bool>();
+
 	FVector Start = GetActorLocation() + FVector(0, 0, 50);
 
 	if (Controller != nullptr)
@@ -148,6 +152,11 @@ void APlayerCharacter::MoveForward(const FInputActionValue& Value)
 		}
 
 		AddMovementInput(ForwardVector, Movement);
+
+		if (MovementState == EMovementState::Idle)
+		{
+			MovementState = EMovementState::Walking;
+		}
 	}
 }
 
@@ -207,7 +216,18 @@ void APlayerCharacter::JumpTriggered(const FInputActionValue& Value)
 
 	if (IsPressed && Controller != nullptr)
 	{
-		bIsCrouched ? UnCrouch() : Jump();
+		if (bIsCrouched)
+		{
+			UnCrouch();
+
+			MovementState = EMovementState::Idle;
+		}
+		else
+		{
+			Jump();
+
+			MovementState = EMovementState::Jumping;
+		}
 	}
 }
 
@@ -217,7 +237,18 @@ void APlayerCharacter::CrouchTriggered(const FInputActionValue& Value)
 
 	if (IsPressed && Controller != nullptr)
 	{
-		bIsCrouched ? UnCrouch() : Crouch();
+		if (bIsCrouched)
+		{
+			UnCrouch();
+
+			MovementState = EMovementState::Idle;
+		}
+		else
+		{
+			Crouch();
+
+			MovementState = EMovementState::Crouching;
+		}
 	}
 }
 
@@ -225,7 +256,24 @@ void APlayerCharacter::Run(const FInputActionValue& Value)
 {
 	bool IsPressed = Value.Get<bool>();
 
-	IsPressed ? GetCharacterMovement()->MaxWalkSpeed = 600.0f : GetCharacterMovement()->MaxWalkSpeed = 300.0f;
+	if (IsPressed)
+	{
+		GetCharacterMovement()->MaxWalkSpeed = 600.0f;
+
+		if (MovementState == EMovementState::Idle || MovementState == EMovementState::Walking)
+		{
+			MovementState = EMovementState::Running;
+		}
+	} 
+	else
+	{
+		GetCharacterMovement()->MaxWalkSpeed = 300.0f;
+
+		if (MovementState == EMovementState::Running)
+		{
+			MovementState = EMovementState::Walking;
+		}
+	}
 }
 
 void APlayerCharacter::Interact(const FInputActionValue& Value)
@@ -299,6 +347,17 @@ void APlayerCharacter::Zoom(const FInputActionValue& Value)
 		{
 			StopZoom();
 		}
+	}
+}
+
+void APlayerCharacter::SetMovementStateIdle()
+{
+	if (IsValid(Controller))
+	{
+		GEngine->AddOnScreenDebugMessage(-1, 3.0f, FColor::Blue, FString("Button Released"));
+
+		if(MovementState == EMovementState::Walking || MovementState == EMovementState::Running)
+			MovementState = EMovementState::Idle;
 	}
 }
 
@@ -644,3 +703,24 @@ void APlayerCharacter::UpdateHealth()
 		GameInstance->PlayerMenu->UpdatePlayerHealth(StatComponent->GetCurrentHP(), StatComponent->GetMaxHP());
 	}
 }
+
+#pragma region Movement_State
+
+void APlayerCharacter::OnMovementModeChanged(EMovementMode PrevMovementMode, uint8 PreviousCustomMode)
+{
+	ACharacter::OnMovementModeChanged(PrevMovementMode, PreviousCustomMode);
+
+	if (PrevMovementMode != EMovementMode::MOVE_Falling) return;
+	
+	if (GetCharacterMovement()->MovementMode == EMovementMode::MOVE_Walking)
+	{
+		// Jump Ended.
+		if(MainWeapon->IsAttacking())
+			WeaponComponent->JumpAttackLanding();
+		
+		MovementState = EMovementState::Idle;
+		GEngine->AddOnScreenDebugMessage(-1, 3.0f, FColor::Blue, FString("Jump ended."));
+	}
+}
+
+#pragma endregion

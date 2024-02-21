@@ -23,12 +23,16 @@ public:
 	UFUNCTION(BlueprintCallable)
 	void BindMontage();
 
+	void JumpAttackLanding();
+
 protected:
 	virtual void BeginPlay() override;
 
 	virtual void Attack(EStateOfViews CurView, FVector HitLocation = FVector(0.0f)) override;
 
 	virtual bool CanAttack() override;
+
+	virtual class UAnimMontage* FindAppropriateAttackAnimation();
 
 private:
 	// Functions
@@ -59,6 +63,15 @@ private:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Montage", meta = (AllowPrivateAccess = "true"))
 	class UAnimMontage* AttackMontage;
 
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Montage", meta = (AllowPrivateAccess = "true"))
+	class UAnimMontage* SprintAttackMontage;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Montage", meta = (AllowPrivateAccess = "true"))
+	class UAnimMontage* JumpAttackMontage;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Montage", meta = (AllowPrivateAccess = "true"))
+	class UAnimMontage* JumpAttackLandMontage;
+
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Montage", meta = (AllowPrivateAccess = "true"))
 	int MontageIndex;
 	
@@ -73,8 +86,6 @@ private:
 	float BladeLength;
 
 	FVector PreBladeVector;
-
-	FVector PreEnd;
 
 	FVector PreStart;
 

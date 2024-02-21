@@ -140,7 +140,8 @@ void UWeaponComponent::SaveMainWeaponInfo(AWeapon* Weapon)
 		MainWeapon->ThrowAway(DropLocation);
 	}
 
-	Weapon->TakeUp(GetOwner());
+	ACharacter* CharacterOwner = Cast<ACharacter>(GetOwner());
+	Weapon->TakeUp(CharacterOwner);
 
 	if (Weapon->HasAttachmentInfo())
 	{
@@ -166,7 +167,8 @@ void UWeaponComponent::SaveSubWeaponInfo(AWeapon* Weapon)
 		SubWeapon->ThrowAway(DropLocation);
 	}
 
-	Weapon->TakeUp(GetOwner());
+	ACharacter* CharacterOwner = Cast<ACharacter>(GetOwner());
+	Weapon->TakeUp(CharacterOwner);
 
 	if (Weapon->HasAttachmentInfo())
 	{
@@ -228,5 +230,17 @@ void UWeaponComponent::NotifyHasWeaponToAnim()
 	if (IsValid(PlayerAnim))
 	{
 		PlayerAnim->SetHasWeapon(true);
+	}
+}
+
+// 근접 무기를 들고 점프공격을 하다가 땅에 닿았을 때 실행되는 함수.
+void UWeaponComponent::JumpAttackLanding()
+{
+	if (!IsValid(PlayerCharacter->GetMainWeapon())) return;
+
+	AMelee* Melee = Cast<AMelee>(PlayerCharacter->GetMainWeapon());
+	if (IsValid(Melee))
+	{
+		Melee->JumpAttackLanding();
 	}
 }

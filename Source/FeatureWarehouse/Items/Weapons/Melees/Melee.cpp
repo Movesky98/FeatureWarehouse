@@ -51,6 +51,8 @@ void AMelee::Attack(EStateOfViews CurView, FVector HitLocation)
 	if (!CanAttack())
 		return;
 
+	UAnimMontage* PlayMontage = FindAppropriateAttackAnimation();
+
 	if (CanCombo)
 	{
 		// Combo attack.
@@ -65,8 +67,8 @@ void AMelee::Attack(EStateOfViews CurView, FVector HitLocation)
 
 		if (PlayerAnim)
 		{
-			FName SectionName = AttackMontage->GetSectionName(MontageIndex);
-			PlayerAnim->Montage_JumpToSection(SectionName, AttackMontage);
+			FName SectionName = PlayMontage->GetSectionName(MontageIndex);
+			PlayerAnim->Montage_JumpToSection(SectionName, PlayMontage);
 
 			MontageIndex++;
 			CanCombo = false;
@@ -80,7 +82,7 @@ void AMelee::Attack(EStateOfViews CurView, FVector HitLocation)
 		APlayerCharacter* Player = Cast<APlayerCharacter>(GetWeaponOwner());
 		if (Player)
 		{
-			Player->PlayMontage(AttackMontage);
+			Player->PlayMontage(PlayMontage);
 			MontageIndex++;
 		}
 	}
@@ -97,10 +99,14 @@ void AMelee::OnAttackEnded(class UAnimMontage* Montage, bool bInterrupted)
 {
 	if (Montage == AttackMontage)
 	{
-		MontageIndex = 0;
+		/*MontageIndex = 0;
 		CanCombo = false;
-		SetIsAttacking(false);
+		SetIsAttacking(false);*/
 	}
+
+	MontageIndex = 0;
+	CanCombo = false;
+	SetIsAttacking(false);
 }
 
 void AMelee::OnNextAttackChecked()
@@ -110,6 +116,10 @@ void AMelee::OnNextAttackChecked()
 
 void AMelee::StartAttackTrace()
 {
+	PreMidpoint = FVector::ZeroVector;
+	PreBladeVector = FVector::ZeroVector;
+	PreStart = FVector::ZeroVector;
+
 	IgnoreActor.Add(GetWeaponOwner());
 
 	GetWorldTimerManager().SetTimer(AttackTraceTimer, this, &AMelee::AttackTrace, 0.01f, true);
@@ -124,7 +134,6 @@ void AMelee::StopAttackTrace()
 	PreMidpoint = FVector::ZeroVector;
 	PreBladeVector = FVector::ZeroVector;
 	PreStart = FVector::ZeroVector;
-	PreEnd = FVector::ZeroVector;
 }
 
 void AMelee::AttackTrace()
@@ -138,9 +147,6 @@ void AMelee::AttackTrace()
 	{
 		int InterpolatingNum = (int)FVector::Distance(PreMidpoint, Midpoint) / InterpolateDistance;
 		
-		float EndDelta = FVector::Distance(PreEnd, End) / InterpolatingNum;
-		float EndSpeed = EndDelta;
-
 		float StartDelta = FVector::Distance(PreStart, Start) / InterpolatingNum;
 		float StartSpeed = StartDelta;
 
@@ -148,32 +154,22 @@ void AMelee::AttackTrace()
 		float BladeVectorDelta = FVector::Distance(PreBladeVector, CurBladeVector) / InterpolatingNum;
 		float BladeVectorSpeed = BladeVectorDelta;
 
-		/*FVector CurBladeVector = (Start - End).GetSafeNormal();
-		float BladeVectorDelta = FVector::Distance(PreBladeVector, CurBladeVector) / InterpolatingNum;
-		float BladeVectorSpeed = BladeVectorDelta;*/
-
 		for (int i = 0; i < InterpolatingNum; i++)
 		{
-			FVector InterpolatedStart = FMath::VInterpConstantTo(PreStart, Start, 1.0f, EndSpeed);
+			FVector InterpolatedStart = FMath::VInterpConstantTo(PreStart, Start, 1.0f, StartSpeed);
 			FVector InterpolatedVector = FMath::VInterpConstantTo(PreBladeVector, CurBladeVector, 1.0f, BladeVectorSpeed);
 			FVector InterpolatedEnd = InterpolatedStart + InterpolatedVector.GetSafeNormal() * BladeLength;
 
-			/*FVector InterpolatedEnd = FMath::VInterpConstantTo(PreEnd, End, 1.0f, EndSpeed);
-			FVector InterpolatedVector = FMath::VInterpConstantTo(PreBladeVector, CurBladeVector, 1.0f, BladeVectorSpeed);
-			FVector InterpolatedStart = InterpolatedEnd + InterpolatedVector.GetSafeNormal() * BladeLength;*/
-
 			DrawAttackLineTrace(InterpolatedStart, InterpolatedEnd, true);
 
-			EndSpeed += EndDelta;
+			StartSpeed += StartDelta;
 			BladeVectorSpeed += BladeVectorDelta;
 		}
 	}
 
 	PreMidpoint = Midpoint;
 	PreBladeVector = (End - Start).GetSafeNormal();
-	// PreBladeVector = (Start - End).GetSafeNormal();
 	PreStart = Start;
-	PreEnd = End;
 
 	DrawAttackLineTrace(Start, End, false);
 }
@@ -192,7 +188,7 @@ void AMelee::DrawAttackLineTrace(const FVector& LineStart, const FVector& LineEn
 			ETraceTypeQuery::TraceTypeQuery4,
 			false,
 			IgnoreActor,
-			EDrawDebugTrace::Persistent,
+			EDrawDebugTrace::ForDuration,
 			Hit,
 			true,
 			FLinearColor::Blue,
@@ -209,7 +205,7 @@ void AMelee::DrawAttackLineTrace(const FVector& LineStart, const FVector& LineEn
 			ETraceTypeQuery::TraceTypeQuery4,
 			false,
 			IgnoreActor,
-			EDrawDebugTrace::Persistent,
+			EDrawDebugTrace::ForDuration,
 			Hit,
 			true,
 			FLinearColor::Red,
@@ -229,9 +225,52 @@ void AMelee::DrawAttackLineTrace(const FVector& LineStart, const FVector& LineEn
 
 			HitActorComponent->GetDamaged(30.0f);
 
+			ShakePlayerCamera();
+
 			// Show Blood effet.
 			FRotator ImpactRotation = UKismetMathLibrary::MakeRotFromZ(-Hit.ImpactNormal);
 			HitActorComponent->ShowBloodEffect(Hit.ImpactPoint, ImpactRotation);
 		}
+	}
+}
+
+UAnimMontage* AMelee::FindAppropriateAttackAnimation()
+{
+	APlayerCharacter* Character = Cast<APlayerCharacter>(GetWeaponOwner());
+	UAnimMontage* ReturnMontage = nullptr;
+
+	if (Character)
+	{
+		switch (Character->GetMovementState())
+		{
+		case EMovementState::Jumping:
+			ReturnMontage = JumpAttackMontage;
+			break;
+		case EMovementState::Running:
+			ReturnMontage = SprintAttackMontage;
+			break;
+		case EMovementState::Crouching:
+
+			break;
+		default:
+			ReturnMontage = AttackMontage;
+			break;
+		}
+	}
+
+	return ReturnMontage;
+}
+
+void AMelee::JumpAttackLanding()
+{
+	APlayerCharacter* Player = Cast<APlayerCharacter>(GetWeaponOwner());
+	if (!Player)
+		return;
+
+	UPlayerAnimInstance* PlayerAnim = Cast<UPlayerAnimInstance>(Player->GetMesh()->GetAnimInstance());
+	if (IsValid(PlayerAnim))
+	{
+		PlayerAnim->Montage_Stop(1.0f, JumpAttackMontage);
+		PlayerAnim->Montage_Play(JumpAttackLandMontage);
 	}
 }

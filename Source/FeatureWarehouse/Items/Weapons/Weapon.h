@@ -23,7 +23,7 @@ public:
 	void Interact(AActor* InteractActor) override;
 
 	UFUNCTION(BlueprintCallable)
-	void TakeUp(AActor* NewOwner);
+	void TakeUp(ACharacter* NewOwner);
 
 	UFUNCTION(BlueprintCallable)
 	void ThrowAway(FVector Location);
@@ -41,9 +41,15 @@ public:
 protected:
 	virtual bool CanAttack();
 
+	UFUNCTION(BlueprintImplementableEvent)
+	void ShakePlayerCamera();
+
+	UFUNCTION(BlueprintImplementableEvent)
+	void StopShake();
+
 private:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = State, meta = (AllowPrivateAccess = "true"))
-	AActor* WeaponOwner;
+	ACharacter* WeaponOwner;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = State, meta = (AllowPrivateAccess = "true"))
 	FName AttachSocketName;
@@ -59,8 +65,8 @@ private:
 
 #pragma region GetterSetter
 public:
-	FORCEINLINE AActor* GetWeaponOwner() { return WeaponOwner; }
-	FORCEINLINE void SetWeaponOwner(AActor* NewOwner) { WeaponOwner = NewOwner; }
+	FORCEINLINE ACharacter* GetWeaponOwner() { return WeaponOwner; }
+	FORCEINLINE void SetWeaponOwner(ACharacter* NewOwner) { WeaponOwner = NewOwner; }
 
 	FORCEINLINE FName GetAttachSocketName() { return AttachSocketName; }
 

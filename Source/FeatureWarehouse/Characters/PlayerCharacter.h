@@ -11,6 +11,16 @@ enum class EStateOfViews :uint8;
 class UWeaponComponent;
 class UStatComponent;
 
+UENUM(BlueprintType)
+enum class EMovementState : uint8
+{
+	Idle UMETA(DisplayName = "Idle"),
+	Walking UMETA(DisplayName = "Walking"),
+	Running UMETA(DisplayName = "Running"),
+	Jumping UMETA(DisplayName = "Jumping"),
+	Crouching UMETA(DisplayName = "Crouching")
+};
+
 UCLASS()
 class FEATUREWAREHOUSE_API APlayerCharacter : public ACharacter
 {
@@ -115,15 +125,25 @@ private:
 
 	FTimerHandle AimingTimerHandle;
 
+#pragma region Movement_State
+protected:
+	virtual void OnMovementModeChanged(EMovementMode PrevMovementMode, uint8 PreviousCustomMode) override;
+
+private:
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "State|Movement", meta = (AllowPrivateAccess = "true"))
+	EMovementState MovementState;
+#pragma endregion
+
 #pragma region GetterSetter
 public:
 	FORCEINLINE UWeaponComponent* GetWeaponComponent() { return WeaponComponent; }
 	FORCEINLINE UStatComponent* GetStatComponent() { return StatComponent; }
 
 	FORCEINLINE class AWeapon* GetMainWeapon() { return MainWeapon; }
+	FORCEINLINE EMovementState GetMovementState() { return MovementState; }
+	FORCEINLINE void SetMovementState(EMovementState State) { MovementState = State; }
 
 	FORCEINLINE void SetMainWeapon(class AWeapon* Weapon) { MainWeapon = Weapon; }
-
 #pragma endregion
 
 #pragma region InputAction
@@ -151,6 +171,8 @@ protected:
 	void AttackTriggered(const FInputActionValue& Value);
 
 	void Zoom(const FInputActionValue& Value);
+
+	void SetMovementStateIdle();
 
 private:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = InputAction, meta = (AllowPrivateAccess = "true"))

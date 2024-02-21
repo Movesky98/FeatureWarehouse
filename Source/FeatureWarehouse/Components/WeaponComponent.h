@@ -34,6 +34,8 @@ public:
 	UFUNCTION(BlueprintCallable)
 	void NotifyToAnimInstance();
 
+	void JumpAttackLanding();
+
 protected:
 	// Called when the game starts
 	virtual void BeginPlay() override;

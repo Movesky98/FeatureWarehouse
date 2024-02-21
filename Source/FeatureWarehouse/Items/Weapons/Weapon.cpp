@@ -11,6 +11,8 @@
 #include "Components/WeaponComponent.h"
 
 #include "Components/SphereComponent.h"
+#include "Kismet/GameplayStatics.h"
+#include "Camera/PlayerCameraManager.h"
 
 AWeapon::AWeapon()
 {
@@ -27,7 +29,7 @@ void AWeapon::Interact(AActor* InteractActor)
 	}
 }
 
-void AWeapon::TakeUp(AActor* NewOwner)
+void AWeapon::TakeUp(ACharacter* NewOwner)
 {
 	GetTriggerZone()->SetCollisionProfileName(FName("NoCollision"));
 
@@ -80,4 +82,3 @@ void AWeapon::Unequip()
 {
 
 }
-

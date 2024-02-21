@@ -9,6 +9,7 @@ AKatana::AKatana()
 {
 	Scabbard = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("Scabbard"));
 	Scabbard->SetCollisionProfileName(FName("NoCollision"));
+	Scabbard->SetupAttachment(RootComponent);
 }
 
 // 카타나를 꺼낼 때 쓰이는 함수.
