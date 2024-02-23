@@ -39,6 +39,8 @@ private:
 	UFUNCTION()
 	void OnAttackEnded(class UAnimMontage* Montage, bool bInterrupted);
 
+	bool IsAttackMontage(UAnimMontage* Montage);
+
 	UFUNCTION()
 	void OnNextAttackChecked();
 
@@ -54,11 +56,14 @@ private:
 	void DrawAttackLineTrace(const FVector& LineStart, const FVector& LineEnd, bool IsInterpolating);
 
 	// Variables
-	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "State", meta = (AllowPrivateAccess = "true"))
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "State", meta = (AllowPrivateAccess = "true"))
 	bool CanCombo;
 	
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "State", meta = (AllowPrivateAccess = "true"))
 	ETypeOfMelee MeleeType;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Montage", meta = (AllowPrivateAccess = "true"))
+	TArray<class UAnimMontage*> AttackMontages;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Montage", meta = (AllowPrivateAccess = "true"))
 	class UAnimMontage* AttackMontage;

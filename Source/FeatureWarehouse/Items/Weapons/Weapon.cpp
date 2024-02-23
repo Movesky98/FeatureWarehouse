@@ -13,6 +13,7 @@
 #include "Components/SphereComponent.h"
 #include "Kismet/GameplayStatics.h"
 #include "Camera/PlayerCameraManager.h"
+#include "Animation/AnimMontage.h"
 
 AWeapon::AWeapon()
 {
@@ -75,10 +76,24 @@ void AWeapon::Attach()
 
 void AWeapon::Equip()
 {
+	if (!IsValid(EquipMontage)) return;
+	if (!IsValid(WeaponOwner)) return;
 
+	UAnimInstance* AnimInstance = WeaponOwner->GetMesh()->GetAnimInstance();
+	if (AnimInstance)
+	{
+		AnimInstance->Montage_Play(EquipMontage);
+	}
 }
 
 void AWeapon::Unequip()
 {
+	if (!IsValid(UnequipMontage)) return;
+	if (!IsValid(WeaponOwner)) return;
 
+	UAnimInstance* AnimInstance = WeaponOwner->GetMesh()->GetAnimInstance();
+	if (AnimInstance)
+	{
+		AnimInstance->Montage_Play(UnequipMontage);
+	}
 }

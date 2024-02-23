@@ -27,6 +27,10 @@ void AMelee::BeginPlay()
 	FVector Start = GetSkeletalMesh()->GetSocketLocation(FName("BladeBottom"));
 	FVector End = GetSkeletalMesh()->GetSocketLocation(FName("BladeTop"));
 	BladeLength = (Start - End).Length();
+
+	AttackMontages.Add(JumpAttackMontage);
+	AttackMontages.Add(AttackMontage);
+	AttackMontages.Add(SprintAttackMontage);
 }
 
 // 무기를 장착했을 때, WeaponComponent에서 실행되는 함수.
@@ -51,8 +55,6 @@ void AMelee::Attack(EStateOfViews CurView, FVector HitLocation)
 	if (!CanAttack())
 		return;
 
-	UAnimMontage* PlayMontage = FindAppropriateAttackAnimation();
-
 	if (CanCombo)
 	{
 		// Combo attack.
@@ -67,7 +69,9 @@ void AMelee::Attack(EStateOfViews CurView, FVector HitLocation)
 
 		if (PlayerAnim)
 		{
+			UAnimMontage* PlayMontage = FindAppropriateAttackAnimation();
 			FName SectionName = PlayMontage->GetSectionName(MontageIndex);
+			Player->PlayMontage(PlayMontage);
 			PlayerAnim->Montage_JumpToSection(SectionName, PlayMontage);
 
 			MontageIndex++;
@@ -82,7 +86,9 @@ void AMelee::Attack(EStateOfViews CurView, FVector HitLocation)
 		APlayerCharacter* Player = Cast<APlayerCharacter>(GetWeaponOwner());
 		if (Player)
 		{
+			UAnimMontage* PlayMontage = FindAppropriateAttackAnimation();
 			Player->PlayMontage(PlayMontage);
+
 			MontageIndex++;
 		}
 	}
@@ -97,13 +103,27 @@ bool AMelee::CanAttack()
 
 void AMelee::OnAttackEnded(class UAnimMontage* Montage, bool bInterrupted)
 {
+	if (!IsAttackMontage(Montage)) return;
+
+	// 콤보가 존재하는 공격 몽타주일 때
 	if (Montage == AttackMontage)
 	{
-		/*MontageIndex = 0;
-		CanCombo = false;
-		SetIsAttacking(false);*/
+		UAnimInstance* p_AnimInstance = GetWeaponOwner()->GetMesh()->GetAnimInstance();
+		if (!IsValid(p_AnimInstance)) return;
+
+		bool IsPlaying = p_AnimInstance->Montage_IsPlaying(AttackMontage);
+
+		if (!IsPlaying)
+		{
+			MontageIndex = 0;
+			CanCombo = false;
+			SetIsAttacking(false);
+		}
+
+		return;
 	}
 
+	// 콤보가 존재하지 않는다면 상태 초기화
 	MontageIndex = 0;
 	CanCombo = false;
 	SetIsAttacking(false);
@@ -273,4 +293,11 @@ void AMelee::JumpAttackLanding()
 		PlayerAnim->Montage_Stop(1.0f, JumpAttackMontage);
 		PlayerAnim->Montage_Play(JumpAttackLandMontage);
 	}
+}
+
+bool AMelee::IsAttackMontage(UAnimMontage* Montage)
+{
+	bool IsAttackMontage = AttackMontages.Contains(Montage);
+	
+	return IsAttackMontage;
 }

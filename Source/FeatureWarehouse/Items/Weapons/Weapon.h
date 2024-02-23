@@ -9,6 +9,8 @@
 enum class EUseTypeOfWeapon :uint8;
 enum class ETypeOfWeapon :uint8;
 enum class EStateOfViews :uint8;
+class UAnimMontage;
+
 /**
  * 
  */
@@ -62,6 +64,12 @@ private:
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Attack", meta = (AllowPrivateAccess = "true"))
 	bool bIsAttacking;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Montage", meta = (AllowPrivateAccess = "true"))
+	UAnimMontage* EquipMontage;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Montage", meta = (AllowPrivateAccess = "true"))
+	UAnimMontage* UnequipMontage;
 
 #pragma region GetterSetter
 public:
