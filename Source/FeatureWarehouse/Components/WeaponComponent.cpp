@@ -34,13 +34,23 @@ void UWeaponComponent::BeginPlay()
 
 	if (PlayerCharacter)
 	{
-		UAnimInstance* AnimInstance = PlayerCharacter->GetMesh()->GetAnimInstance();
+		UPlayerAnimInstance* AnimInstance = Cast<UPlayerAnimInstance>(PlayerCharacter->GetMesh()->GetAnimInstance());
 
 		if (AnimInstance)
 		{
-			PlayerAnim = Cast<UPlayerAnimInstance>(AnimInstance);
+			PlayerAnim = AnimInstance;
+			PlayerAnim->OnUnequipEnd.BindUFunction(this, FName("OnUnequipEnd"));
 		}
 	}
+}
+
+void UWeaponComponent::OnUnequipEnd()
+{
+	if (!PlayerCharacter) return;
+	PlayerCharacter->SetActionState(EActionState::EAS_Idle);
+
+	// Unequip이 끝났으므로, 무기 교체.
+	EquipState == EEquipState::SubWeapon ? EquipMainWeapon() : EquipSubWeapon();
 }
 
 void UWeaponComponent::EquipMainWeapon()
@@ -56,7 +66,7 @@ void UWeaponComponent::EquipMainWeapon()
 	}
 
 	PlayerCharacter->SetMainWeapon(MainWeapon);
-
+	
 	NotifyToAnimInstance();
 }
 
@@ -223,6 +233,8 @@ void UWeaponComponent::NotifyToAnimInstance()
 	default:
 		break;
 	}
+
+	PlayerCharacter->GetMainWeapon()->Equip();
 }
 
 void UWeaponComponent::NotifyHasWeaponToAnim()
@@ -243,4 +255,11 @@ void UWeaponComponent::JumpAttackLanding()
 	{
 		Melee->JumpAttackLanding();
 	}
+}
+
+// 무기를 스왑할 때 사용하는 함수
+void UWeaponComponent::Swap()
+{
+	PlayerCharacter->SetActionState(EActionState::EAS_Swapping);
+	PlayerCharacter->GetMainWeapon()->Unequip();
 }

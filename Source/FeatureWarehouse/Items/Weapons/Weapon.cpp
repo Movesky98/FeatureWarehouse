@@ -20,6 +20,16 @@ AWeapon::AWeapon()
 
 }
 
+void AWeapon::PostInitializeComponents()
+{
+	Super::PostInitializeComponents();
+
+	if (IsValid(EquipMontage) && IsValid(UnequipMontage))
+	{
+		bHasEquipMontage = true;
+	}
+}
+
 void AWeapon::Interact(AActor* InteractActor)
 {
 	APlayerCharacter* PlayerCharacter = Cast<APlayerCharacter>(InteractActor);

@@ -43,11 +43,19 @@ public:
 protected:
 	virtual bool CanAttack();
 
+	virtual void PostInitializeComponents() override;
+
 	UFUNCTION(BlueprintImplementableEvent)
 	void ShakePlayerCamera();
 
 	UFUNCTION(BlueprintImplementableEvent)
 	void StopShake();
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Montage", meta = (AllowPrivateAccess = "true"))
+	UAnimMontage* EquipMontage;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Montage", meta = (AllowPrivateAccess = "true"))
+	UAnimMontage* UnequipMontage;
 
 private:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = State, meta = (AllowPrivateAccess = "true"))
@@ -62,14 +70,11 @@ private:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "State", meta = (AllowPrivateAccess = "true"))
 	bool bHasAttachmentInfo;
 
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "State", meta = (AllowPrivateAccess = "true"))
+	bool bHasEquipMontage;
+
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Attack", meta = (AllowPrivateAccess = "true"))
 	bool bIsAttacking;
-
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Montage", meta = (AllowPrivateAccess = "true"))
-	UAnimMontage* EquipMontage;
-
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Montage", meta = (AllowPrivateAccess = "true"))
-	UAnimMontage* UnequipMontage;
 
 #pragma region GetterSetter
 public:
@@ -83,6 +88,7 @@ public:
 	FORCEINLINE bool IsAttacking() { return bIsAttacking; }
 	FORCEINLINE void SetIsAttacking(bool IsAttacking) { bIsAttacking = IsAttacking; }
 
+	FORCEINLINE bool HasEquipMontage() { return bHasEquipMontage; }
 	FORCEINLINE bool HasAttachmentInfo() { return bHasAttachmentInfo; }
 #pragma endregion
 };

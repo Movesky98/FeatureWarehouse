@@ -10,6 +10,8 @@ enum class ETypeOfWeapon :uint8;
 enum class ETypeOfGun :uint8;
 enum class ETypeOfMelee :uint8;
 
+DECLARE_DELEGATE(FOnHoldMeleeWeaponDelegate);
+DECLARE_DELEGATE(FOnUnequipEndDelegate);
 DECLARE_MULTICAST_DELEGATE(FOnNextAttackCheckDelegate);
 
 /**
@@ -24,6 +26,10 @@ public:
 	UPlayerAnimInstance();
 
 	FOnNextAttackCheckDelegate OnNextAttackCheck;
+	
+	FOnUnequipEndDelegate OnUnequipEnd;
+
+	FOnHoldMeleeWeaponDelegate OnHoldMeleeWeapon;
 
 protected:
 	void NativeInitializeAnimation() override;
@@ -34,6 +40,15 @@ private:
 	// Functions
 	UFUNCTION()
 	void AnimNotify_NextAttackCheck();
+
+	UFUNCTION()
+	void AnimNotify_EquipEnd();
+
+	UFUNCTION()
+	void AnimNotify_UnequipEnd();
+
+	UFUNCTION()
+	void AnimNotify_HoldMeleeWeapon();
 
 	// Variables
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = State, meta = (AllowPrivateAccess = "true"))

@@ -40,13 +40,14 @@ void AMelee::BindMontage()
 
 	APlayerCharacter* Player = Cast<APlayerCharacter>(GetWeaponOwner());
 	if (!Player) return;
-	
+
 	UPlayerAnimInstance* PlayerAnim = Cast<UPlayerAnimInstance>(Player->GetMesh()->GetAnimInstance());
 
 	if (PlayerAnim)
 	{
 		PlayerAnim->OnMontageEnded.AddDynamic(this, &AMelee::OnAttackEnded);
 		PlayerAnim->OnNextAttackCheck.AddUFunction(this, FName("OnNextAttackChecked"));
+		PlayerAnim->OnHoldMeleeWeapon.BindUFunction(this, FName("HoldMeleeWeapon"));
 	}
 }
 
@@ -300,4 +301,9 @@ bool AMelee::IsAttackMontage(UAnimMontage* Montage)
 	bool IsAttackMontage = AttackMontages.Contains(Montage);
 	
 	return IsAttackMontage;
+}
+
+void AMelee::HoldMeleeWeapon()
+{
+
 }

@@ -6,6 +6,7 @@
 #include "Enums/TypeOfGun.h"
 #include "Enums/TypeOfWeapon.h"
 #include "Characters/PlayerCharacter.h"
+#include "Components/WeaponComponent.h"
 
 #include "GameFramework/CharacterMovementComponent.h"
 
@@ -45,4 +46,27 @@ void UPlayerAnimInstance::NativeUpdateAnimation(float DeltaSeconds)
 void UPlayerAnimInstance::AnimNotify_NextAttackCheck()
 {
 	OnNextAttackCheck.Broadcast();
+}
+
+void UPlayerAnimInstance::AnimNotify_EquipEnd()
+{
+	if (!IsValid(Player)) return;
+
+	GEngine->AddOnScreenDebugMessage(-1, 3.0f, FColor::Green, FString("AnimNotify :: Equip End."));
+}
+
+void UPlayerAnimInstance::AnimNotify_UnequipEnd()
+{
+	if (OnUnequipEnd.IsBound())
+	{
+		OnUnequipEnd.Execute();
+	}
+}
+
+void UPlayerAnimInstance::AnimNotify_HoldMeleeWeapon()
+{
+	if (OnHoldMeleeWeapon.IsBound())
+	{
+		OnHoldMeleeWeapon.Execute();
+	}
 }

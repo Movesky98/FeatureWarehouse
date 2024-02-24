@@ -36,6 +36,8 @@ public:
 
 	void JumpAttackLanding();
 
+	void Swap();
+
 protected:
 	// Called when the game starts
 	virtual void BeginPlay() override;
@@ -49,6 +51,9 @@ protected:
 	void SaveSubWeaponInfo(AWeapon* Weapon);
 
 	void NotifyHasWeaponToAnim();
+
+	UFUNCTION()
+	void OnUnequipEnd();
 
 private:
 
@@ -78,6 +83,8 @@ public:
 
 	FORCEINLINE AWeapon* GetSubWeapon() const { return SubWeapon; }
 	FORCEINLINE void SetSubWeapon(AWeapon* NewWeapon) { SubWeapon = NewWeapon; }
+
+	FORCEINLINE EEquipState CurEquipState() { return EquipState; }
 
 	FORCEINLINE int GetEquipNum() { return EquipNum; }
 

@@ -17,12 +17,16 @@ class FEATUREWAREHOUSE_API AKatana : public AMelee
 public:
 	AKatana();
 
+	// void BindMontage() override;
+
 	void Equip() override;
 
 	void Unequip() override;
 
 protected:
 	void Attach() override;
+
+	void HoldMeleeWeapon() override;
 
 private:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Mesh", meta = (AllowPrivateAccess = "true"))

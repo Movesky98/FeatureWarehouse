@@ -21,6 +21,14 @@ enum class EMovementState : uint8
 	Crouching UMETA(DisplayName = "Crouching")
 };
 
+UENUM(BlueprintType)
+enum class EActionState : uint8
+{
+	EAS_Idle UMETA(DisplayName = "Idle"),
+	EAS_Attacking UMETA(DisplayName = "Attacking"),
+	EAS_Swapping UMETA(DisplayName = "Swapping")
+};
+
 UCLASS()
 class FEATUREWAREHOUSE_API APlayerCharacter : public ACharacter
 {
@@ -125,13 +133,16 @@ private:
 
 	FTimerHandle AimingTimerHandle;
 
-#pragma region Movement_State
+#pragma region State
 protected:
 	virtual void OnMovementModeChanged(EMovementMode PrevMovementMode, uint8 PreviousCustomMode) override;
 
 private:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "State|Movement", meta = (AllowPrivateAccess = "true"))
 	EMovementState MovementState;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "State|Action", meta = (AllowPrivateAccess = "true"))
+	EActionState ActionState;
 #pragma endregion
 
 #pragma region GetterSetter
@@ -142,6 +153,8 @@ public:
 	FORCEINLINE class AWeapon* GetMainWeapon() { return MainWeapon; }
 	FORCEINLINE EMovementState GetMovementState() { return MovementState; }
 	FORCEINLINE void SetMovementState(EMovementState State) { MovementState = State; }
+	FORCEINLINE void SetActionState(EActionState State) { ActionState = State; }
+	FORCEINLINE EActionState GetAction() { return ActionState; }
 
 	FORCEINLINE void SetMainWeapon(class AWeapon* Weapon) { MainWeapon = Weapon; }
 #pragma endregion

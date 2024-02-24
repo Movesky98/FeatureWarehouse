@@ -484,16 +484,34 @@ AActor* APlayerCharacter::FindInteractableActor(const FVector Start, const FVect
 
 void APlayerCharacter::EquipFirstWeapon()
 {
-	if (!WeaponComponent->GetMainWeapon())
+	if (!WeaponComponent->GetMainWeapon() || ActionState == EActionState::EAS_Swapping)
 		return;
 
+	if (WeaponComponent->CurEquipState() == EEquipState::SubWeapon)
+	{
+		if (MainWeapon->HasEquipMontage())
+		{
+			WeaponComponent->Swap();
+			return;
+		}
+	}
+	
 	WeaponComponent->EquipMainWeapon();
 }
 
 void APlayerCharacter::EquipSecondWeapon()
 {
-	if (!WeaponComponent->GetSubWeapon())
+	if (!WeaponComponent->GetSubWeapon() || ActionState == EActionState::EAS_Swapping)
 		return;
+
+	if (WeaponComponent->CurEquipState() == EEquipState::MainWeapon)
+	{
+		if (MainWeapon->HasEquipMontage())
+		{
+			WeaponComponent->Swap();
+			return;
+		}
+	}
 
 	WeaponComponent->EquipSubWeapon();
 }

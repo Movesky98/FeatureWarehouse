@@ -20,8 +20,7 @@ class FEATUREWAREHOUSE_API AMelee : public AWeapon
 public:
 	AMelee();
 
-	UFUNCTION(BlueprintCallable)
-	void BindMontage();
+	virtual void BindMontage();
 
 	void JumpAttackLanding();
 
@@ -33,6 +32,9 @@ protected:
 	virtual bool CanAttack() override;
 
 	virtual class UAnimMontage* FindAppropriateAttackAnimation();
+
+	UFUNCTION()
+	virtual	void HoldMeleeWeapon();
 
 private:
 	// Functions
