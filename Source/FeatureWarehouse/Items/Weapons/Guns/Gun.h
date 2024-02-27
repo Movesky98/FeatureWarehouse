@@ -71,6 +71,10 @@ protected:
 
 	void SpawnParticles();
 
+	void Equip() override;
+
+	void Unequip() override;
+
 private:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = Components, meta = (AllowPrivateAccess = "true"))
 	class UArrowComponent* MuzzleArrow;
@@ -84,15 +88,18 @@ private:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = State, meta = (AllowPrivateAccess = "true"))
 	EFireMode FireMode;
 
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = Fire, meta = (AllowPrivateAccess = "true"))
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Attach|Socket", meta = (AllowPrivateAccess = "true"))
+	FName EquipName;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Fire", meta = (AllowPrivateAccess = "true"))
 	FGunInfo Info;
 
 	FTimerHandle FireTimerHandle;
 
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Fire, meta = (AllowPrivateAccess = "true"))
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Fire", meta = (AllowPrivateAccess = "true"))
 	int BurstIndex;
 
-	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = Fire, meta = (AllowPrivateAccess = "true"))
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Fire", meta = (AllowPrivateAccess = "true"))
 	float FireRate;
 
 #pragma region GetterSetter

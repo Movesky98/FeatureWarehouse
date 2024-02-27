@@ -20,6 +20,7 @@
 #include "Weapon.h"
 #include "Guns/Gun.h"
 
+#include "Enums/TypeOfWeapon.h"
 #include "Enums/StateOfViews.h"
 #include "Enums/UseTypeOfWeapon.h"
 #include "Components/WeaponComponent.h"
@@ -489,6 +490,11 @@ void APlayerCharacter::EquipFirstWeapon()
 
 	if (WeaponComponent->CurEquipState() == EEquipState::SubWeapon)
 	{
+		if (MainWeapon->GetWeaponType() == ETypeOfWeapon::Gun)
+		{
+			MainWeapon->Unequip();
+		}
+
 		if (MainWeapon->HasEquipMontage())
 		{
 			WeaponComponent->Swap();
@@ -506,6 +512,11 @@ void APlayerCharacter::EquipSecondWeapon()
 
 	if (WeaponComponent->CurEquipState() == EEquipState::MainWeapon)
 	{
+		if (MainWeapon->GetWeaponType() == ETypeOfWeapon::Gun)
+		{
+			MainWeapon->Unequip();
+		}
+
 		if (MainWeapon->HasEquipMontage())
 		{
 			WeaponComponent->Swap();

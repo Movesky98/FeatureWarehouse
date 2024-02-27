@@ -18,6 +18,8 @@
 AMelee::AMelee()
 {
 	InterpolateDistance = 20.0f;
+
+	bIsEquip = false;
 }
 
 void AMelee::BeginPlay()
@@ -132,7 +134,7 @@ void AMelee::OnAttackEnded(class UAnimMontage* Montage, bool bInterrupted)
 
 void AMelee::OnNextAttackChecked()
 {
-	CanCombo = true;
+	if (bIsEquip) CanCombo = true;
 }
 
 void AMelee::StartAttackTrace()

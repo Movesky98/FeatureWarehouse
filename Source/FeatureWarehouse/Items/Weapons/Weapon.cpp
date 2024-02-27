@@ -56,6 +56,7 @@ void AWeapon::ThrowAway(FVector Location)
 	WeaponOwner = nullptr;
 
 	DetachFromActor(FDetachmentTransformRules::KeepWorldTransform);
+	Detach();
 
 	GetTriggerZone()->SetCollisionProfileName(FName("Item"));
 
@@ -81,7 +82,15 @@ bool AWeapon::CanAttack()
 
 void AWeapon::Attach() 
 {
+	if (IsValid(GetWeaponOwner()))
+	{
+		AttachToComponent(GetWeaponOwner()->GetMesh(), FAttachmentTransformRules::KeepRelativeTransform, AttachSocketName);
+	}
+}
 
+void AWeapon::Detach()
+{
+	
 }
 
 void AWeapon::Equip()

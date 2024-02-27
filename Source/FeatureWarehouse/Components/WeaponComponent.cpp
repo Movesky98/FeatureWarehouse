@@ -58,12 +58,6 @@ void UWeaponComponent::EquipMainWeapon()
 	if (!IsValid(MainWeapon) || PlayerCharacter->GetMainWeapon() == MainWeapon) return;
 
 	EquipState = EEquipState::MainWeapon;
-	MainWeapon->GetSkeletalMesh()->SetVisibility(true);
-
-	if (IsValid(SubWeapon))
-	{
-		SubWeapon->GetSkeletalMesh()->SetVisibility(false);
-	}
 
 	PlayerCharacter->SetMainWeapon(MainWeapon);
 	
@@ -75,13 +69,6 @@ void UWeaponComponent::EquipSubWeapon()
 	if (!IsValid(SubWeapon) || PlayerCharacter->GetMainWeapon() == SubWeapon) return;
 
 	EquipState = EEquipState::SubWeapon;
-
-	SubWeapon->GetSkeletalMesh()->SetVisibility(true);
-
-	if (IsValid(MainWeapon))
-	{
-		MainWeapon->GetSkeletalMesh()->SetVisibility(false);
-	}
 
 	PlayerCharacter->SetMainWeapon(SubWeapon);
 
@@ -105,6 +92,7 @@ void UWeaponComponent::SaveAcquiredWeaponInfo(AWeapon* NewWeapon)
 		// 두번째 획득한 무기일 때
 		EquipNum++;
 		SaveSingleWeaponInfo(NewWeapon);
+		return;
 		break;
 	case 2:
 		// 이미 두 개의 무기를 가지고 있을 때 (무기 교체)
@@ -153,19 +141,13 @@ void UWeaponComponent::SaveMainWeaponInfo(AWeapon* Weapon)
 	ACharacter* CharacterOwner = Cast<ACharacter>(GetOwner());
 	Weapon->TakeUp(CharacterOwner);
 
-	if (Weapon->HasAttachmentInfo())
-	{
-		Weapon->Attach();
-	}
-	else
-	{
-		if(IsValid(PlayerCharacter))
-			Weapon->AttachToComponent(PlayerCharacter->GetMesh(), FAttachmentTransformRules::KeepRelativeTransform, Weapon->GetAttachSocketName());
-	}
+	Weapon->Attach();
 
 	MainWeapon = Weapon;
-	(EquipState != EEquipState::MainWeapon) ? MainWeapon->GetSkeletalMesh()->SetVisibility(false)
-		: PlayerCharacter->SetMainWeapon(MainWeapon);
+	if (EquipState == EEquipState::MainWeapon)
+	{
+		PlayerCharacter->SetMainWeapon(MainWeapon);
+	}
 }
 
 void UWeaponComponent::SaveSubWeaponInfo(AWeapon* Weapon)
@@ -180,20 +162,15 @@ void UWeaponComponent::SaveSubWeaponInfo(AWeapon* Weapon)
 	ACharacter* CharacterOwner = Cast<ACharacter>(GetOwner());
 	Weapon->TakeUp(CharacterOwner);
 
-	if (Weapon->HasAttachmentInfo())
-	{
-		Weapon->Attach();
-	}
-	else
-	{
-		if (IsValid(PlayerCharacter))
-			Weapon->AttachToComponent(PlayerCharacter->GetMesh(), FAttachmentTransformRules::KeepRelativeTransform, Weapon->GetAttachSocketName());
-	}
+	// 무기를 캐릭터에 어태치
+	Weapon->Attach();
 
 	SubWeapon = Weapon;
 
-	(EquipState != EEquipState::SubWeapon) ? SubWeapon->GetSkeletalMesh()->SetVisibility(false)
-		: PlayerCharacter->SetMainWeapon(SubWeapon);
+	if (EquipState == EEquipState::SubWeapon)
+	{
+		PlayerCharacter->SetMainWeapon(SubWeapon);
+	}
 }
 
 void UWeaponComponent::NotifyToAnimInstance()
@@ -215,9 +192,6 @@ void UWeaponComponent::NotifyToAnimInstance()
 
 		PlayerAnim->SetGunType(Gun->GetGunType());
 	}
-		break;
-	case ETypeOfWeapon::Halberd:
-
 		break;
 	case ETypeOfWeapon::Melee:
 	{

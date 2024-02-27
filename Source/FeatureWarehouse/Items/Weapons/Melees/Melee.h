@@ -36,6 +36,9 @@ protected:
 	UFUNCTION()
 	virtual	void HoldMeleeWeapon();
 
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "State", meta = (AllowPrivateAccess = "true"))
+	bool bIsEquip;
+
 private:
 	// Functions
 	UFUNCTION()
@@ -100,4 +103,5 @@ private:
 
 public:
 	FORCEINLINE ETypeOfMelee GetMeleeType() { return MeleeType; }
+	FORCEINLINE void SetMeleeType(ETypeOfMelee Type) { MeleeType = Type; }
 };

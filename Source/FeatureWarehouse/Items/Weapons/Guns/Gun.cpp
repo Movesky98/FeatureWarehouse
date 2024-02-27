@@ -18,6 +18,8 @@
 #include "Enums/UseTypeOfWeapon.h"
 #include "Enums/FireMode.h"
 
+#include "AnimInstance/PlayerAnimInstance.h"
+#include "GameFramework/Character.h"
 
 AGun::AGun()
 {
@@ -28,6 +30,16 @@ AGun::AGun()
 	HiveShotArrow->SetupAttachment(GetSkeletalMesh());
 
 	BurstIndex = 0;
+}
+
+void AGun::Equip()
+{
+	AttachToComponent(GetWeaponOwner()->GetMesh(), FAttachmentTransformRules::KeepRelativeTransform, EquipName);
+}
+
+void AGun::Unequip()
+{
+	AttachToComponent(GetWeaponOwner()->GetMesh(), FAttachmentTransformRules::KeepRelativeTransform, GetAttachSocketName());
 }
 
 void AGun::Attack(EStateOfViews CurView, FVector HitLocation)

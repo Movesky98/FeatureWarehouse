@@ -8,5 +8,6 @@ enum class ETypeOfMelee : uint8
 {
 	None UMETA(DisplayName = "None"),
 	Katana UMETA(DisplayName = "Katana"),
-	SwordAndBoard UMETA(DisplayName = "SwordAndBoard")
+	SwordAndBoard UMETA(DisplayName = "SwordAndBoard"),
+	Halberd UMETA(DisplayName = "Halberd")
 };
