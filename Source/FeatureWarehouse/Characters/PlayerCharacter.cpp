@@ -336,17 +336,29 @@ void APlayerCharacter::AttackTriggered(const FInputActionValue& Value)
 
 void APlayerCharacter::Zoom(const FInputActionValue& Value)
 {
+	if (!IsValid(MainWeapon)) return;
+
 	bool IsPressed = Value.Get<bool>();
 
 	if (Controller != nullptr)
 	{
-		if (IsPressed)
+		switch (MainWeapon->GetWeaponType())
 		{
-			StartZoom();
-		}
-		else
-		{
-			StopZoom();
+		case ETypeOfWeapon::Gun:
+			if (IsPressed)
+			{
+				StartZoom();
+			}
+			else
+			{
+				StopZoom();
+			}
+			break;
+		case ETypeOfWeapon::Melee:
+			HeavyAttack();
+			break;
+		default:
+			break;
 		}
 	}
 }
@@ -531,6 +543,26 @@ void APlayerCharacter::Attack()
 {
 	if (!PlayerController) return;
 	if (!MainWeapon) return;
+
+	ActionState = EActionState::EAS_Attacking;
+
+	if (PlayerController->GetPerspective() == EStateOfViews::TDP)
+	{
+		FVector HitLocation = PlayerController->ViewClickLocation();
+		MainWeapon->Attack(PlayerController->GetPerspective(), HitLocation);
+
+		return;
+	}
+
+	MainWeapon->Attack(PlayerController->GetPerspective());
+}
+
+void APlayerCharacter::HeavyAttack()
+{
+	if (!PlayerController) return;
+	if (!MainWeapon) return;
+
+	ActionState = EActionState::EAS_HeavyAttacking;
 
 	if (PlayerController->GetPerspective() == EStateOfViews::TDP)
 	{

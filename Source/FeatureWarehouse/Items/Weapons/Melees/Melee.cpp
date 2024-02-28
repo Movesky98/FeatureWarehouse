@@ -33,6 +33,7 @@ void AMelee::BeginPlay()
 	AttackMontages.Add(JumpAttackMontage);
 	AttackMontages.Add(AttackMontage);
 	AttackMontages.Add(SprintAttackMontage);
+	AttackMontages.Add(HeavyAttackMontage);
 }
 
 // 무기를 장착했을 때, WeaponComponent에서 실행되는 함수.
@@ -108,6 +109,9 @@ void AMelee::OnAttackEnded(class UAnimMontage* Montage, bool bInterrupted)
 {
 	if (!IsAttackMontage(Montage)) return;
 
+	APlayerCharacter* Character = Cast<APlayerCharacter>(GetWeaponOwner());
+	if (!IsValid(Character)) return;
+
 	// 콤보가 존재하는 공격 몽타주일 때
 	if (Montage == AttackMontage)
 	{
@@ -121,6 +125,25 @@ void AMelee::OnAttackEnded(class UAnimMontage* Montage, bool bInterrupted)
 			MontageIndex = 0;
 			CanCombo = false;
 			SetIsAttacking(false);
+			Character->SetActionState(EActionState::EAS_Idle);
+		}
+
+		return;
+	}
+
+	if (Montage == HeavyAttackMontage)
+	{
+		UAnimInstance* p_AnimInstance = GetWeaponOwner()->GetMesh()->GetAnimInstance();
+		if (!IsValid(p_AnimInstance)) return;
+
+		bool IsPlaying = p_AnimInstance->Montage_IsPlaying(HeavyAttackMontage);
+
+		if (!IsPlaying)
+		{
+			MontageIndex = 0;
+			CanCombo = false;
+			SetIsAttacking(false);
+			Character->SetActionState(EActionState::EAS_Idle);
 		}
 
 		return;
@@ -130,6 +153,7 @@ void AMelee::OnAttackEnded(class UAnimMontage* Montage, bool bInterrupted)
 	MontageIndex = 0;
 	CanCombo = false;
 	SetIsAttacking(false);
+	Character->SetActionState(EActionState::EAS_Idle);
 }
 
 void AMelee::OnNextAttackChecked()
@@ -276,7 +300,8 @@ UAnimMontage* AMelee::FindAppropriateAttackAnimation()
 
 			break;
 		default:
-			ReturnMontage = AttackMontage;
+			// Idle, Walking 상태일 때 약공, 강공 선택.
+			ReturnMontage = (Character->GetAction() == EActionState::EAS_HeavyAttacking) ? HeavyAttackMontage : AttackMontage;
 			break;
 		}
 	}

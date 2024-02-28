@@ -27,7 +27,7 @@ public:
 protected:
 	virtual void BeginPlay() override;
 
-	virtual void Attack(EStateOfViews CurView, FVector HitLocation = FVector(0.0f)) override;
+	void Attack(EStateOfViews CurView, FVector HitLocation = FVector(0.0f)) override;
 
 	virtual bool CanAttack() override;
 
@@ -81,6 +81,9 @@ private:
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Montage", meta = (AllowPrivateAccess = "true"))
 	class UAnimMontage* JumpAttackLandMontage;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Montage", meta = (AllowPrivateAccess = "true"))
+	class UAnimMontage* HeavyAttackMontage;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Montage", meta = (AllowPrivateAccess = "true"))
 	int MontageIndex;

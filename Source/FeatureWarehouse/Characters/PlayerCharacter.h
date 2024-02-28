@@ -26,6 +26,7 @@ enum class EActionState : uint8
 {
 	EAS_Idle UMETA(DisplayName = "Idle"),
 	EAS_Attacking UMETA(DisplayName = "Attacking"),
+	EAS_HeavyAttacking UMETA(DisplayName = "Heavy Attacking"),
 	EAS_Swapping UMETA(DisplayName = "Swapping")
 };
 
@@ -88,6 +89,8 @@ protected:
 
 	UFUNCTION()
 	void Aiming();
+
+	void HeavyAttack();
 
 	FVector DrawCameraLineTrace();
 	
