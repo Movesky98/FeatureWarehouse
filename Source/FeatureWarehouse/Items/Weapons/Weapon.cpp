@@ -43,6 +43,7 @@ void AWeapon::Interact(AActor* InteractActor)
 void AWeapon::TakeUp(ACharacter* NewOwner)
 {
 	GetTriggerZone()->SetCollisionProfileName(FName("NoCollision"));
+	GetItemCollision()->SetCollisionProfileName(FName("NoCollision"));
 
 	SetActorLocation(FVector(0.0f, 0.0f, 0.0f));
 
@@ -58,7 +59,8 @@ void AWeapon::ThrowAway(FVector Location)
 	DetachFromActor(FDetachmentTransformRules::KeepWorldTransform);
 	Detach();
 
-	GetTriggerZone()->SetCollisionProfileName(FName("Item"));
+	GetItemCollision()->SetCollisionProfileName(FName("Item"));
+	GetTriggerZone()->SetCollisionProfileName(FName("PlayerTrigger"));
 
 	SetActorLocation(Location);
 	SetActorRotation(FRotator(0.0f, 0.0f, 0.0f));

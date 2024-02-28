@@ -49,7 +49,7 @@ void AMelee::BindMontage()
 	if (PlayerAnim)
 	{
 		PlayerAnim->OnMontageEnded.AddDynamic(this, &AMelee::OnAttackEnded);
-		PlayerAnim->OnNextAttackCheck.AddUFunction(this, FName("OnNextAttackChecked"));
+		PlayerAnim->OnNextAttackCheck.BindUFunction(this, FName("OnNextAttackChecked"));
 		PlayerAnim->OnHoldMeleeWeapon.BindUFunction(this, FName("HoldMeleeWeapon"));
 	}
 }

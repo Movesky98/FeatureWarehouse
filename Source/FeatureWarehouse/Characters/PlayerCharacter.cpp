@@ -776,7 +776,7 @@ void APlayerCharacter::OnMovementModeChanged(EMovementMode PrevMovementMode, uin
 	if (GetCharacterMovement()->MovementMode == EMovementMode::MOVE_Walking)
 	{
 		// Jump Ended.
-		if(MainWeapon->IsAttacking())
+		if(IsValid(MainWeapon) && MainWeapon->IsAttacking())
 			WeaponComponent->JumpAttackLanding();
 		
 		MovementState = EMovementState::Idle;

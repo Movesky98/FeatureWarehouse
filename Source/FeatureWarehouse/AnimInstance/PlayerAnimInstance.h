@@ -12,7 +12,7 @@ enum class ETypeOfMelee :uint8;
 
 DECLARE_DELEGATE(FOnHoldMeleeWeaponDelegate);
 DECLARE_DELEGATE(FOnUnequipEndDelegate);
-DECLARE_MULTICAST_DELEGATE(FOnNextAttackCheckDelegate);
+DECLARE_DELEGATE(FOnNextAttackCheckDelegate);
 
 /**
  * 

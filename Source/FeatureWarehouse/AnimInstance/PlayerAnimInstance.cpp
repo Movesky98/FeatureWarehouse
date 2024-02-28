@@ -45,7 +45,10 @@ void UPlayerAnimInstance::NativeUpdateAnimation(float DeltaSeconds)
 
 void UPlayerAnimInstance::AnimNotify_NextAttackCheck()
 {
-	OnNextAttackCheck.Broadcast();
+	if (OnNextAttackCheck.IsBound())
+	{
+		OnNextAttackCheck.Execute();
+	}
 }
 
 void UPlayerAnimInstance::AnimNotify_EquipEnd()
