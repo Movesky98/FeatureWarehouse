@@ -32,6 +32,12 @@ AItem::AItem()
 
 	ItemDescriptionComponent = CreateDefaultSubobject<UItemDescriptionComponent>(TEXT("ItemDescriptionComponent"));
 	ItemDescriptionComponent->SetupAttachment(RootComponent);
+
+	static ConstructorHelpers::FObjectFinder<UMaterialInterface> MI_ItemOutline(TEXT("/Game/Project/Materials/MI_Item_Outline"));
+	if (MI_ItemOutline.Succeeded())
+	{
+		OutlineMaterial = MI_ItemOutline.Object;
+	}
 }
 
 void AItem::PostInitializeComponents()
@@ -56,6 +62,7 @@ void AItem::OnTriggerBeginOverlap(class UPrimitiveComponent* SelfComp, class AAc
 	if (OtherActor->ActorHasTag(FName("Player")))
 	{
 		ItemDescriptionComponent->ShowUI();
+		ActiveOverlay();
 	}
 }
 
@@ -64,5 +71,16 @@ void AItem::OnTriggerEndOverlap(class UPrimitiveComponent* SelfComp, class AActo
 	if (OtherActor->ActorHasTag(FName("Player")))
 	{
 		ItemDescriptionComponent->HideUI();
+		DeactiveOverlay();
 	}
+}
+
+void AItem::ActiveOverlay()
+{
+	SkeletalMesh->SetOverlayMaterial(OutlineMaterial);
+}
+
+void AItem::DeactiveOverlay()
+{
+	SkeletalMesh->SetOverlayMaterial(nullptr);
 }

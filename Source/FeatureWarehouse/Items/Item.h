@@ -36,6 +36,13 @@ protected:
 	UFUNCTION()
 	void OnTriggerEndOverlap(class UPrimitiveComponent* SelfComp, class AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex);
 
+	virtual void ActiveOverlay();
+
+	virtual void DeactiveOverlay();
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Overlay")
+	TObjectPtr<UMaterialInterface> OutlineMaterial;
+
 private:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = Mesh, meta = (AllowPrivateAccess = "true"))
 	USkeletalMeshComponent* SkeletalMesh;

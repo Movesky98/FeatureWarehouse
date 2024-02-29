@@ -85,3 +85,15 @@ void AKatana::Detach()
 {
 	Scabbard->AttachToComponent(GetSkeletalMesh(), FAttachmentTransformRules::KeepRelativeTransform);
 }
+
+void AKatana::ActiveOverlay()
+{
+	GetSkeletalMesh()->SetOverlayMaterial(OutlineMaterial);
+	Scabbard->SetOverlayMaterial(OutlineMaterial);
+}
+
+void AKatana::DeactiveOverlay()
+{
+	GetSkeletalMesh()->SetOverlayMaterial(nullptr);
+	Scabbard->SetOverlayMaterial(nullptr);
+}

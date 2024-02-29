@@ -28,6 +28,10 @@ protected:
 
 	void HoldMeleeWeapon() override;
 
+	void ActiveOverlay() override;
+
+	void DeactiveOverlay() override;
+
 private:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Mesh", meta = (AllowPrivateAccess = "true"))
 	USkeletalMeshComponent* Scabbard;
