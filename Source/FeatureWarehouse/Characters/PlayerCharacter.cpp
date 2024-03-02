@@ -23,6 +23,9 @@
 #include "Enums/TypeOfWeapon.h"
 #include "Enums/StateOfViews.h"
 #include "Enums/UseTypeOfWeapon.h"
+#include "Enums/MovementState.h"
+#include "Enums/ActionState.h"
+
 #include "Components/WeaponComponent.h"
 #include "Components/StatComponent.h"
 
@@ -51,9 +54,6 @@ APlayerCharacter::APlayerCharacter()
 	GetCharacterMovement()->bCanWalkOffLedgesWhenCrouching = true;
 	GetCharacterMovement()->NavAgentProps.bCanCrouch = true;
 
-	WeaponComponent = CreateDefaultSubobject<UWeaponComponent>(TEXT("WeaponComponent"));
-	StatComponent = CreateDefaultSubobject<UStatComponent>(TEXT("StatComponent"));
-
 	static ConstructorHelpers::FObjectFinder<USkeletalMesh> SKM_Manny(TEXT("/Game/Characters/Mannequins/Meshes/SKM_Manny"));
 	if (SKM_Manny.Succeeded())
 	{
@@ -66,7 +66,7 @@ APlayerCharacter::APlayerCharacter()
 		GetMesh()->SetAnimInstanceClass(ABP_Player.Class);
 	}
 
-	MovementState = EMovementState::Idle;
+	MovementState = EMovementState::EMS_Idle;
 
 	Tags.Add(FName("Player"));
 }
@@ -154,9 +154,9 @@ void APlayerCharacter::MoveForward(const FInputActionValue& Value)
 
 		AddMovementInput(ForwardVector, Movement);
 
-		if (MovementState == EMovementState::Idle)
+		if (MovementState == EMovementState::EMS_Idle)
 		{
-			MovementState = EMovementState::Walking;
+			MovementState = EMovementState::EMS_Walking;
 		}
 	}
 }
@@ -221,13 +221,13 @@ void APlayerCharacter::JumpTriggered(const FInputActionValue& Value)
 		{
 			UnCrouch();
 
-			MovementState = EMovementState::Idle;
+			MovementState = EMovementState::EMS_Idle;
 		}
 		else
 		{
 			Jump();
 
-			MovementState = EMovementState::Jumping;
+			MovementState = EMovementState::EMS_Jumping;
 		}
 	}
 }
@@ -242,13 +242,13 @@ void APlayerCharacter::CrouchTriggered(const FInputActionValue& Value)
 		{
 			UnCrouch();
 
-			MovementState = EMovementState::Idle;
+			MovementState = EMovementState::EMS_Idle;
 		}
 		else
 		{
 			Crouch();
 
-			MovementState = EMovementState::Crouching;
+			MovementState = EMovementState::EMS_Crouching;
 		}
 	}
 }
@@ -261,18 +261,18 @@ void APlayerCharacter::Run(const FInputActionValue& Value)
 	{
 		GetCharacterMovement()->MaxWalkSpeed = 600.0f;
 
-		if (MovementState == EMovementState::Idle || MovementState == EMovementState::Walking)
+		if (MovementState == EMovementState::EMS_Idle || MovementState == EMovementState::EMS_Walking)
 		{
-			MovementState = EMovementState::Running;
+			MovementState = EMovementState::EMS_Running;
 		}
 	} 
 	else
 	{
 		GetCharacterMovement()->MaxWalkSpeed = 300.0f;
 
-		if (MovementState == EMovementState::Running)
+		if (MovementState == EMovementState::EMS_Running)
 		{
-			MovementState = EMovementState::Walking;
+			MovementState = EMovementState::EMS_Walking;
 		}
 	}
 }
@@ -336,13 +336,13 @@ void APlayerCharacter::AttackTriggered(const FInputActionValue& Value)
 
 void APlayerCharacter::Zoom(const FInputActionValue& Value)
 {
-	if (!IsValid(MainWeapon)) return;
+	if (!IsValid(EquipWeapon)) return;
 
 	bool IsPressed = Value.Get<bool>();
 
 	if (Controller != nullptr)
 	{
-		switch (MainWeapon->GetWeaponType())
+		switch (EquipWeapon->GetWeaponType())
 		{
 		case ETypeOfWeapon::Gun:
 			if (IsPressed)
@@ -369,8 +369,8 @@ void APlayerCharacter::SetMovementStateIdle()
 	{
 		GEngine->AddOnScreenDebugMessage(-1, 3.0f, FColor::Blue, FString("Button Released"));
 
-		if(MovementState == EMovementState::Walking || MovementState == EMovementState::Running)
-			MovementState = EMovementState::Idle;
+		if(MovementState == EMovementState::EMS_Walking || MovementState == EMovementState::EMS_Running)
+			MovementState = EMovementState::EMS_Idle;
 	}
 }
 
@@ -502,12 +502,12 @@ void APlayerCharacter::EquipFirstWeapon()
 
 	if (WeaponComponent->CurEquipState() == EEquipState::SubWeapon)
 	{
-		if (MainWeapon->GetWeaponType() == ETypeOfWeapon::Gun)
+		if (EquipWeapon->GetWeaponType() == ETypeOfWeapon::Gun)
 		{
-			MainWeapon->Unequip();
+			EquipWeapon->Unequip();
 		}
 
-		if (MainWeapon->HasEquipMontage())
+		if (EquipWeapon->HasEquipMontage())
 		{
 			WeaponComponent->Swap();
 			return;
@@ -524,12 +524,12 @@ void APlayerCharacter::EquipSecondWeapon()
 
 	if (WeaponComponent->CurEquipState() == EEquipState::MainWeapon)
 	{
-		if (MainWeapon->GetWeaponType() == ETypeOfWeapon::Gun)
+		if (EquipWeapon->GetWeaponType() == ETypeOfWeapon::Gun)
 		{
-			MainWeapon->Unequip();
+			EquipWeapon->Unequip();
 		}
 
-		if (MainWeapon->HasEquipMontage())
+		if (EquipWeapon->HasEquipMontage())
 		{
 			WeaponComponent->Swap();
 			return;
@@ -542,44 +542,44 @@ void APlayerCharacter::EquipSecondWeapon()
 void APlayerCharacter::Attack()
 {
 	if (!PlayerController) return;
-	if (!MainWeapon) return;
+	if (!EquipWeapon) return;
 
 	ActionState = EActionState::EAS_Attacking;
 
 	if (PlayerController->GetPerspective() == EStateOfViews::TDP)
 	{
 		FVector HitLocation = PlayerController->ViewClickLocation();
-		MainWeapon->Attack(PlayerController->GetPerspective(), HitLocation);
+		EquipWeapon->Attack(PlayerController->GetPerspective(), HitLocation);
 
 		return;
 	}
 
-	MainWeapon->Attack(PlayerController->GetPerspective());
+	EquipWeapon->Attack(PlayerController->GetPerspective());
 }
 
 void APlayerCharacter::HeavyAttack()
 {
 	if (!PlayerController) return;
-	if (!MainWeapon) return;
+	if (!EquipWeapon) return;
 
 	ActionState = EActionState::EAS_HeavyAttacking;
 
 	if (PlayerController->GetPerspective() == EStateOfViews::TDP)
 	{
 		FVector HitLocation = PlayerController->ViewClickLocation();
-		MainWeapon->Attack(PlayerController->GetPerspective(), HitLocation);
+		EquipWeapon->Attack(PlayerController->GetPerspective(), HitLocation);
 
 		return;
 	}
 
-	MainWeapon->Attack(PlayerController->GetPerspective());
+	EquipWeapon->Attack(PlayerController->GetPerspective());
 }
 
 void APlayerCharacter::StopAttack()
 {
-	if (!MainWeapon) return;
+	if (!EquipWeapon) return;
 
-	MainWeapon->StopAttack();
+	EquipWeapon->StopAttack();
 }
 
 void APlayerCharacter::PlayMontage(UAnimMontage* Montage)
@@ -690,7 +690,7 @@ void APlayerCharacter::StopZoom()
 
 void APlayerCharacter::Aiming()
 {
-	AGun* Gun = Cast<AGun>(MainWeapon);
+	AGun* Gun = Cast<AGun>(EquipWeapon);
 	if (!Gun) return;
 
 	// Gun->DrawMuzzleLineTrace();
@@ -776,11 +776,10 @@ void APlayerCharacter::OnMovementModeChanged(EMovementMode PrevMovementMode, uin
 	if (GetCharacterMovement()->MovementMode == EMovementMode::MOVE_Walking)
 	{
 		// Jump Ended.
-		if(IsValid(MainWeapon) && MainWeapon->IsAttacking())
+		if(IsValid(EquipWeapon) && EquipWeapon->IsAttacking())
 			WeaponComponent->JumpAttackLanding();
 		
-		MovementState = EMovementState::Idle;
-		GEngine->AddOnScreenDebugMessage(-1, 3.0f, FColor::Blue, FString("Jump ended."));
+		MovementState = EMovementState::EMS_Idle;
 	}
 }
 

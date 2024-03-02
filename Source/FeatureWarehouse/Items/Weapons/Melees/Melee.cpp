@@ -7,6 +7,8 @@
 #include "Characters/Dummy.h"
 #include "AnimInstance/PlayerAnimInstance.h"
 #include "Components/StatComponent.h"
+#include "Enums/MovementState.h"
+#include "Enums/ActionState.h"
 
 #include "Animation/AnimMontage.h"
 #include "Kismet/KismetSystemLibrary.h"
@@ -288,20 +290,20 @@ UAnimMontage* AMelee::FindAppropriateAttackAnimation()
 
 	if (Character)
 	{
-		switch (Character->GetMovementState())
+		switch (Character->CurMovementState())
 		{
-		case EMovementState::Jumping:
+		case EMovementState::EMS_Jumping:
 			ReturnMontage = JumpAttackMontage;
 			break;
-		case EMovementState::Running:
+		case EMovementState::EMS_Running:
 			ReturnMontage = SprintAttackMontage;
 			break;
-		case EMovementState::Crouching:
+		case EMovementState::EMS_Crouching:
 
 			break;
 		default:
 			// Idle, Walking 상태일 때 약공, 강공 선택.
-			ReturnMontage = (Character->GetAction() == EActionState::EAS_HeavyAttacking) ? HeavyAttackMontage : AttackMontage;
+			ReturnMontage = (Character->CurActionState() == EActionState::EAS_HeavyAttacking) ? HeavyAttackMontage : AttackMontage;
 			break;
 		}
 	}

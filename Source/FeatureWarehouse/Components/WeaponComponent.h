@@ -71,7 +71,7 @@ private:
 	class UPlayerAnimInstance* PlayerAnim;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "State", meta = (AllowPrivateAccess = "true"))
-	class APlayerCharacter* PlayerCharacter;
+	class AWeaponWielder* WeaponWielder;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "State", meta = (AllowPrivateAccess = "true"))
 	EEquipState EquipState;

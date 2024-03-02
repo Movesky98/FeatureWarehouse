@@ -32,8 +32,6 @@ bool UStatComponent::GetDamaged(float Damage)
 {
 	if (!bIsDamagable) return false;
 
-	bIsDamagable = false;
-
 	CurrentHP -= Damage;
 
 	if (GetDamagedMontage)
@@ -58,11 +56,6 @@ bool UStatComponent::GetDamaged(float Damage)
 
 			return true;
 		}
-	}
-	else
-	{
-		FTimerHandle DamagableTimerHandle;
-		GetWorld()->GetTimerManager().SetTimer(DamagableTimerHandle, this, &UStatComponent::SetDamagable, 0.1f);
 	}
 
 	return true;

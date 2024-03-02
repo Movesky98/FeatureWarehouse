@@ -3,35 +3,19 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "GameFramework/Character.h"
+#include "Characters/WeaponWielder.h"
 #include "InputAction.h"
 #include "PlayerCharacter.generated.h"
 
 enum class EStateOfViews :uint8;
+enum class EMovementState :uint8;
+enum class EActionState :uint8;
+
 class UWeaponComponent;
 class UStatComponent;
 
-UENUM(BlueprintType)
-enum class EMovementState : uint8
-{
-	Idle UMETA(DisplayName = "Idle"),
-	Walking UMETA(DisplayName = "Walking"),
-	Running UMETA(DisplayName = "Running"),
-	Jumping UMETA(DisplayName = "Jumping"),
-	Crouching UMETA(DisplayName = "Crouching")
-};
-
-UENUM(BlueprintType)
-enum class EActionState : uint8
-{
-	EAS_Idle UMETA(DisplayName = "Idle"),
-	EAS_Attacking UMETA(DisplayName = "Attacking"),
-	EAS_HeavyAttacking UMETA(DisplayName = "Heavy Attacking"),
-	EAS_Swapping UMETA(DisplayName = "Swapping")
-};
-
 UCLASS()
-class FEATUREWAREHOUSE_API APlayerCharacter : public ACharacter
+class FEATUREWAREHOUSE_API APlayerCharacter : public AWeaponWielder
 {
 	GENERATED_BODY()
 public:
@@ -49,7 +33,7 @@ public:
 
 	void SetTDP();
 
-	void GetDamaged(float Damage);
+	void GetDamaged(float Damage) override;
 
 	UFUNCTION(BlueprintCallable)
 	void UpdateHealth();
@@ -60,20 +44,22 @@ protected:
 
 	virtual void Tick(float DeltaSeconds) override;
 
+	virtual void OnMovementModeChanged(EMovementMode PrevMovementMode, uint8 PreviousCustomMode) override;
+
 	UFUNCTION(BlueprintCallable)
 	AActor* FindInteractableActor(const FVector Start, const FVector End);
 
 	UFUNCTION(BlueprintCallable)
-	void EquipFirstWeapon();
+	void EquipFirstWeapon() override;
 
 	UFUNCTION(BlueprintCallable)
-	void EquipSecondWeapon();
+	void EquipSecondWeapon() override;
 
 	UFUNCTION(BlueprintCallable)
-	void Attack();
+	void Attack() override;
 
 	UFUNCTION(BlueprintCallable)
-	void StopAttack();
+	void StopAttack() override;
 
 	UFUNCTION()
 	void ZoomIn();
@@ -90,7 +76,7 @@ protected:
 	UFUNCTION()
 	void Aiming();
 
-	void HeavyAttack();
+	void HeavyAttack() override;
 
 	FVector DrawCameraLineTrace();
 	
@@ -101,18 +87,6 @@ private:
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = Camera, meta = (AllowPrivateAccess = "true"))
 	class UCameraComponent* Camera;
-
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = Component, meta = (AllowPrivateAccess = "true"))
-	UWeaponComponent* WeaponComponent;
-
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = Component, meta = (AllowPrivateAccess = "true"))
-	UStatComponent* StatComponent;
-
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Weapon, meta = (AllowPrivateAccess = "true"))
-	bool HasWeapon;
-
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Weapon, meta = (AllowPrivateAccess = "true"))
-	class AWeapon* MainWeapon;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = GamePlay, meta = (AllowPrivateAccess = "true"))
 	class AFW_PlayerController* PlayerController;
@@ -126,41 +100,15 @@ private:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = State, meta = (AllowPrivateAccess = "true"))
 	float LookPitch;
 
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Zoom|InOut", meta = (AllowPrivateAccess = "true"))
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Zoom", meta = (AllowPrivateAccess = "true"))
 	float MaxArmLength;
 
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Zoom|InOut", meta = (AllowPrivateAccess = "true"))
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Zoom", meta = (AllowPrivateAccess = "true"))
 	float MinArmLength;
 
 	FTimerHandle ZoomTimerHandle;
 
 	FTimerHandle AimingTimerHandle;
-
-#pragma region State
-protected:
-	virtual void OnMovementModeChanged(EMovementMode PrevMovementMode, uint8 PreviousCustomMode) override;
-
-private:
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "State|Movement", meta = (AllowPrivateAccess = "true"))
-	EMovementState MovementState;
-
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "State|Action", meta = (AllowPrivateAccess = "true"))
-	EActionState ActionState;
-#pragma endregion
-
-#pragma region GetterSetter
-public:
-	FORCEINLINE UWeaponComponent* GetWeaponComponent() { return WeaponComponent; }
-	FORCEINLINE UStatComponent* GetStatComponent() { return StatComponent; }
-
-	FORCEINLINE class AWeapon* GetMainWeapon() { return MainWeapon; }
-	FORCEINLINE EMovementState GetMovementState() { return MovementState; }
-	FORCEINLINE void SetMovementState(EMovementState State) { MovementState = State; }
-	FORCEINLINE void SetActionState(EActionState State) { ActionState = State; }
-	FORCEINLINE EActionState GetAction() { return ActionState; }
-
-	FORCEINLINE void SetMainWeapon(class AWeapon* Weapon) { MainWeapon = Weapon; }
-#pragma endregion
 
 #pragma region InputAction
 protected:

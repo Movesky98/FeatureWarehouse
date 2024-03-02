@@ -66,8 +66,5 @@ public:
 
 	FORCEINLINE float GetCurrentMP() { return CurrentMP; }
 	FORCEINLINE void SetCurrentMP(float NewCurrentMP) { CurrentMP = NewCurrentMP; }
-
-	FORCEINLINE void SetDamagable() { bIsDamagable = true; }
-	
 #pragma endregion
 };
