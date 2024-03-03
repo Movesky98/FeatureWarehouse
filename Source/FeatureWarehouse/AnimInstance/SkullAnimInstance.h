@@ -6,7 +6,7 @@
 #include "Animation/AnimInstance.h"
 #include "SkullAnimInstance.generated.h"
 
-DECLARE_MULTICAST_DELEGATE(FOnNextAttackCheckDelegate);
+DECLARE_DELEGATE(FOnNextAttackCheckDelegate);
 
 /**
  * 

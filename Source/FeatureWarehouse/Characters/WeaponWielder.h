@@ -24,7 +24,6 @@ class FEATUREWAREHOUSE_API AWeaponWielder : public ACharacter
 	GENERATED_BODY()
 
 public:
-	// Sets default values for this character's properties
 	AWeaponWielder();
 
 	void PlayMontage(UAnimMontage* Montage);

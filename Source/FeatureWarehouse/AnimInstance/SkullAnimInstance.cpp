@@ -36,5 +36,8 @@ void USkullAnimInstance::NativeUpdateAnimation(float DeltaSeconds)
 
 void USkullAnimInstance::AnimNotify_NextAttackCheck()
 {
-	OnNextAttackCheck.Broadcast();
+	if (OnNextAttackCheck.IsBound())
+	{
+		OnNextAttackCheck.Execute();
+	}
 }

@@ -45,7 +45,7 @@ void AKnightSkull::BeginPlay()
 	if (SkullAnim)
 	{
 		SkullAnim->OnMontageEnded.AddDynamic(this, &AKnightSkull::OnAttackEnded);
-		SkullAnim->OnNextAttackCheck.AddUFunction(this, FName("OnNextAttackChecked"));
+		SkullAnim->OnNextAttackCheck.BindUFunction(this, FName("OnNextAttackChecked"));
 	}
 }
 
