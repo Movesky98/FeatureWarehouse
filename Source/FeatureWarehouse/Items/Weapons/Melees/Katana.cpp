@@ -36,6 +36,8 @@ void AKatana::HoldMeleeWeapon()
 {
 	if (!GetWeaponOwner()) return;
 
+	GEngine->AddOnScreenDebugMessage(-1, 3.0f, FColor::Green, FString("HoldMeleeWeapon"));
+
 	UAnimInstance* AnimInstance = GetWeaponOwner()->GetMesh()->GetAnimInstance();
 	if (IsValid(AnimInstance))
 	{

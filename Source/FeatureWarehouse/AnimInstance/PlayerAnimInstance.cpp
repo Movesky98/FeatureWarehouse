@@ -42,34 +42,3 @@ void UPlayerAnimInstance::NativeUpdateAnimation(float DeltaSeconds)
 		Pitch = Player->GetBaseAimRotation().Pitch >= 180 ? Player->GetBaseAimRotation().Pitch - 360 : Player->GetBaseAimRotation().Pitch;
 	}
 }
-
-void UPlayerAnimInstance::AnimNotify_NextAttackCheck()
-{
-	if (OnNextAttackCheck.IsBound())
-	{
-		OnNextAttackCheck.Execute();
-	}
-}
-
-void UPlayerAnimInstance::AnimNotify_EquipEnd()
-{
-	if (!IsValid(Player)) return;
-
-	GEngine->AddOnScreenDebugMessage(-1, 3.0f, FColor::Green, FString("AnimNotify :: Equip End."));
-}
-
-void UPlayerAnimInstance::AnimNotify_UnequipEnd()
-{
-	if (OnUnequipEnd.IsBound())
-	{
-		OnUnequipEnd.Execute();
-	}
-}
-
-void UPlayerAnimInstance::AnimNotify_HoldMeleeWeapon()
-{
-	if (OnHoldMeleeWeapon.IsBound())
-	{
-		OnHoldMeleeWeapon.Execute();
-	}
-}

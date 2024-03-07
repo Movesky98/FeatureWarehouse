@@ -3,16 +3,14 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "Wielder.h"
-#include "Samurai.generated.h"
+#include "AIController.h"
+#include "WielderAI.generated.h"
 
 /**
  * 
  */
 UCLASS()
-class FEATUREWAREHOUSE_API ASamurai : public AWielder
+class FEATUREWAREHOUSE_API AWielderAI : public AAIController
 {
 	GENERATED_BODY()
-public:
-	ASamurai();
 };

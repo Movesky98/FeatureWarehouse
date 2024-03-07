@@ -3,33 +3,23 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "Animation/AnimInstance.h"
+#include "WielderAnimInstance.h"
 #include "PlayerAnimInstance.generated.h"
 
 enum class ETypeOfWeapon :uint8;
 enum class ETypeOfGun :uint8;
 enum class ETypeOfMelee :uint8;
 
-DECLARE_DELEGATE(FOnHoldMeleeWeaponDelegate);
-DECLARE_DELEGATE(FOnUnequipEndDelegate);
-DECLARE_DELEGATE(FOnNextAttackCheckDelegate);
-
 /**
  * 
  */
 UCLASS()
-class FEATUREWAREHOUSE_API UPlayerAnimInstance : public UAnimInstance
+class FEATUREWAREHOUSE_API UPlayerAnimInstance : public UWielderAnimInstance
 {
 	GENERATED_BODY()
 	
 public:
 	UPlayerAnimInstance();
-
-	FOnNextAttackCheckDelegate OnNextAttackCheck;
-	
-	FOnUnequipEndDelegate OnUnequipEnd;
-
-	FOnHoldMeleeWeaponDelegate OnHoldMeleeWeapon;
 
 protected:
 	void NativeInitializeAnimation() override;
@@ -37,37 +27,9 @@ protected:
 	void NativeUpdateAnimation(float DeltaSeconds) override;
 	
 private:
-	// Functions
-	UFUNCTION()
-	void AnimNotify_NextAttackCheck();
-
-	UFUNCTION()
-	void AnimNotify_EquipEnd();
-
-	UFUNCTION()
-	void AnimNotify_UnequipEnd();
-
-	UFUNCTION()
-	void AnimNotify_HoldMeleeWeapon();
-
 	// Variables
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = State, meta = (AllowPrivateAccess = "true"))
-	float Speed;
-
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = State, meta = (AllowPrivateAccess = "true"))
-	float Direction;
-
 	UPROPERTY(VisibleDefaultsOnly, BlueprintReadOnly, Category = State, meta = (AllowPrivateAccess = "true"))
 	float Pitch;
-
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = State, meta = (AllowPrivateAccess = "true"))
-	bool bIsFalling;
-
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = State, meta = (AllowPrivateAccess = "true"))
-	bool bIsCrouch;
-
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = State, meta = (AllowPrivateAccess = "true"))
-	bool bShouldMove;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = State, meta = (AllowPrivateAccess = "true"))
 	ETypeOfWeapon WeaponType;
@@ -82,16 +44,10 @@ private:
 	bool bHasWeapon;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = State, meta = (AllowPrivateAccess = "true"))
-	bool bIsEquip;
-
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = State, meta = (AllowPrivateAccess = "true"))
 	bool bAttemptToggleEquip;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Player, meta = (AllowPrivateAccess = "true"))
 	class APlayerCharacter* Player;
-
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Player, meta = (AllowPrivateAccess = "true"))
-	class UCharacterMovementComponent* MovementComponent;
 
 #pragma region GetterSetter
 public:

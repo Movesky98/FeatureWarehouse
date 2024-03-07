@@ -60,7 +60,7 @@ APlayerCharacter::APlayerCharacter()
 		GetMesh()->SetSkeletalMesh(SKM_Manny.Object);
 	}
 
-	static ConstructorHelpers::FClassFinder<UPlayerAnimInstance> ABP_Player(TEXT("/Game/Project/Animations/ABP_Player"));
+	static ConstructorHelpers::FClassFinder<UPlayerAnimInstance> ABP_Player(TEXT("/Game/Project/Animations/Player/ABP_Player"));
 	if (ABP_Player.Succeeded())
 	{
 		GetMesh()->SetAnimInstanceClass(ABP_Player.Class);
@@ -367,8 +367,6 @@ void APlayerCharacter::SetMovementStateIdle()
 {
 	if (IsValid(Controller))
 	{
-		GEngine->AddOnScreenDebugMessage(-1, 3.0f, FColor::Blue, FString("Button Released"));
-
 		if(MovementState == EMovementState::EMS_Walking || MovementState == EMovementState::EMS_Running)
 			MovementState = EMovementState::EMS_Idle;
 	}
@@ -387,7 +385,6 @@ void APlayerCharacter::SetTPP()
 
 	if (IsSuccess)
 	{
-		GEngine->AddOnScreenDebugMessage(-1, 3.0f, FColor::Green, FString("Successed springarm attach to skeletalmesh."));
 		GetMesh()->UnHideBoneByName(FName("head"));
 
 		bUseControllerRotationYaw = true;
@@ -416,8 +413,6 @@ void APlayerCharacter::SetFPP()
 
 	if (IsSuccess)
 	{
-		GEngine->AddOnScreenDebugMessage(-1, 3.0f, FColor::Green, FString("Successed springarm attach to skeletalmesh's CameraSocket."));
-
 		PlayerController->bShowMouseCursor = false;
 		GetMesh()->HideBoneByName(FName("head"), EPhysBodyOp::PBO_None);
 
@@ -445,8 +440,6 @@ void APlayerCharacter::SetTDP()
 
 	if (IsSuccess)
 	{
-		GEngine->AddOnScreenDebugMessage(-1, 3.0f, FColor::Green, FString("Successed springarm attach to the CapsuleComponent."));
-
 		PlayerController->bShowMouseCursor = true;
 		GetMesh()->UnHideBoneByName(FName("head"));
 
@@ -669,7 +662,6 @@ void APlayerCharacter::StopZoom()
 
 	bIsZoom = false;
 	GetWorldTimerManager().ClearTimer(AimingTimerHandle);
-	GEngine->AddOnScreenDebugMessage(-1, 3.0f, FColor::Green, FString("Stop Zoom."));
 
 	LookYaw = 0.0f;
 	LookPitch = 0.0f;
@@ -704,9 +696,6 @@ void APlayerCharacter::Aiming()
 	DrawDebugLine(GetWorld(), GetActorLocation(), HitLocation, FColor::Green, false, 0, 0, 10);
 
 	// Set character's LookYaw, LookPitch
-	FString RotationString = GoalRotation.ToString();
-	GEngine->AddOnScreenDebugMessage(-1, 0, FColor::Cyan, RotationString);
-
 	LookYaw = UKismetMathLibrary::ClampAngle(GoalRotation.Yaw - GetActorRotation().Yaw, -90.0f, 90.0f);
 	LookPitch = UKismetMathLibrary::ClampAngle(GoalRotation.Pitch - GetActorRotation().Pitch, -90.0f, 90.0f);
 }

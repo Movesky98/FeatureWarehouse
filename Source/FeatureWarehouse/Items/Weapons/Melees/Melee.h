@@ -36,6 +36,12 @@ protected:
 	UFUNCTION()
 	virtual	void HoldMeleeWeapon();
 
+	UFUNCTION()
+	void EquipEnded();
+
+	UFUNCTION()
+	void UnequipEnded();
+
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "State", meta = (AllowPrivateAccess = "true"))
 	bool bIsEquip;
 

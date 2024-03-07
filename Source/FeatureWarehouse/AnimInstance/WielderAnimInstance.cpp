@@ -31,3 +31,35 @@ void UWielderAnimInstance::NativeUpdateAnimation(float DeltaSeconds)
 		bShouldMove = (MovementComponent->GetCurrentAcceleration() != FVector::ZeroVector) && (Speed > 3.0f);
 	}
 }
+
+void UWielderAnimInstance::AnimNotify_NextAttackCheck()
+{
+	if (OnNextAttackCheck.IsBound())
+	{
+		OnNextAttackCheck.Execute();
+	}
+}
+
+void UWielderAnimInstance::AnimNotify_EquipEnd()
+{
+	if (OnEquipEnd.IsBound())
+	{
+		OnEquipEnd.Execute();
+	}
+}
+
+void UWielderAnimInstance::AnimNotify_UnequipEnd()
+{
+	if (OnUnequipEnd.IsBound())
+	{
+		OnUnequipEnd.Execute();
+	}
+}
+
+void UWielderAnimInstance::AnimNotify_HoldMeleeWeapon()
+{
+	if (OnHoldMeleeWeapon.IsBound())
+	{
+		OnHoldMeleeWeapon.Execute();
+	}
+}

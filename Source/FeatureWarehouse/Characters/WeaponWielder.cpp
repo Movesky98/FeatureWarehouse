@@ -36,6 +36,7 @@ void AWeaponWielder::BeginPlay()
 {
 	Super::BeginPlay();
 	
+
 }
 
 void AWeaponWielder::PlayMontage(UAnimMontage* Montage)
@@ -73,6 +74,11 @@ void AWeaponWielder::EquipSecondWeapon()
 
 }
 
+void AWeaponWielder::Unequip()
+{
+
+}
+
 void AWeaponWielder::OnMovementModeChanged(EMovementMode PrevMovementMode, uint8 PreviousCustomMode)
 {
 	ACharacter::OnMovementModeChanged(PrevMovementMode, PreviousCustomMode);
@@ -97,4 +103,14 @@ void AWeaponWielder::GetDamaged(float Damage)
 	{
 		UpdateHealth();
 	}*/
+}
+
+void AWeaponWielder::EquipEnded()
+{
+
+}
+
+void AWeaponWielder::UnequipEnded()
+{
+
 }

@@ -7,7 +7,7 @@
 #include "Enums/TypeOfWeapon.h"
 #include "Enums/StateOfViews.h"
 
-#include "Characters/PlayerCharacter.h"
+#include "Characters/WeaponWielder.h"
 #include "Components/WeaponComponent.h"
 
 #include "Components/SphereComponent.h"
@@ -32,11 +32,11 @@ void AWeapon::PostInitializeComponents()
 
 void AWeapon::Interact(AActor* InteractActor)
 {
-	APlayerCharacter* PlayerCharacter = Cast<APlayerCharacter>(InteractActor);
+	AWeaponWielder* InteractOwner = Cast<AWeaponWielder>(InteractActor);
 
-	if (PlayerCharacter)
+	if (InteractOwner)
 	{
-		PlayerCharacter->GetWeaponComponent()->SaveAcquiredWeaponInfo(this);
+		InteractOwner->GetWeaponComponent()->SaveAcquiredWeaponInfo(this);
 	}
 }
 

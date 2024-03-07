@@ -106,7 +106,7 @@ void AEnemyController::OnTragetDetected(AActor* Actor, FAIStimulus Stimulus)
 		else
 		{
 			bIsIdentifiedPlayer = false;
-
+			
 			GetWorldTimerManager().SetTimer(ClearSightEntryHandle, this, &AEnemyController::ClearSightEntryInBlackboard, LineOfSightTime, false);
 		}
 	}

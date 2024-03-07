@@ -3,9 +3,11 @@
 
 #include "Melee.h"
 
+#include "Characters/WeaponWielder.h"
 #include "Characters/PlayerCharacter.h"
-#include "Characters/Dummy.h"
-#include "AnimInstance/PlayerAnimInstance.h"
+#include "AnimInstance/WielderAnimInstance.h"
+
+#include "Components/WeaponComponent.h"
 #include "Components/StatComponent.h"
 #include "Enums/MovementState.h"
 #include "Enums/ActionState.h"
@@ -43,16 +45,17 @@ void AMelee::BindMontage()
 {
 	if (!GetWeaponOwner()) return;
 
-	APlayerCharacter* Player = Cast<APlayerCharacter>(GetWeaponOwner());
-	if (!Player) return;
+	AWeaponWielder* Wielder = Cast<AWeaponWielder>(GetWeaponOwner());
+	if (!Wielder) return;
 
-	UPlayerAnimInstance* PlayerAnim = Cast<UPlayerAnimInstance>(Player->GetMesh()->GetAnimInstance());
-
-	if (PlayerAnim)
+	UWielderAnimInstance* WielderAnim = Cast<UWielderAnimInstance>(Wielder->GetMesh()->GetAnimInstance());
+	if (WielderAnim)
 	{
-		PlayerAnim->OnMontageEnded.AddDynamic(this, &AMelee::OnAttackEnded);
-		PlayerAnim->OnNextAttackCheck.BindUFunction(this, FName("OnNextAttackChecked"));
-		PlayerAnim->OnHoldMeleeWeapon.BindUFunction(this, FName("HoldMeleeWeapon"));
+		WielderAnim->OnMontageEnded.AddDynamic(this, &AMelee::OnAttackEnded);
+		WielderAnim->OnNextAttackCheck.BindUFunction(this, FName("OnNextAttackChecked"));
+		WielderAnim->OnHoldMeleeWeapon.BindUFunction(this, FName("HoldMeleeWeapon"));
+		WielderAnim->OnUnequipEnd.BindUFunction(this, FName("UnequipEnded"));
+		WielderAnim->OnEquipEnd.BindUFunction(this, FName("EquipEnded"));
 	}
 }
 
@@ -67,18 +70,17 @@ void AMelee::Attack(EStateOfViews CurView, FVector HitLocation)
 		if (!GetWeaponOwner()) 
 			return;
 
-		APlayerCharacter* Player = Cast<APlayerCharacter>(GetWeaponOwner());
-		if (!Player) 
-			return;
+		AWeaponWielder* Wielder = Cast<AWeaponWielder>(GetWeaponOwner());
+		if (!Wielder) return;
 
-		UPlayerAnimInstance* PlayerAnim = Cast<UPlayerAnimInstance>(Player->GetMesh()->GetAnimInstance());
+		UWielderAnimInstance* WielderAnim = Cast<UWielderAnimInstance>(Wielder->GetMesh()->GetAnimInstance());
 
-		if (PlayerAnim)
+		if (WielderAnim)
 		{
 			UAnimMontage* PlayMontage = FindAppropriateAttackAnimation();
 			FName SectionName = PlayMontage->GetSectionName(MontageIndex);
-			Player->PlayMontage(PlayMontage);
-			PlayerAnim->Montage_JumpToSection(SectionName, PlayMontage);
+			Wielder->PlayMontage(PlayMontage);
+			WielderAnim->Montage_JumpToSection(SectionName, PlayMontage);
 
 			MontageIndex++;
 			CanCombo = false;
@@ -89,11 +91,12 @@ void AMelee::Attack(EStateOfViews CurView, FVector HitLocation)
 		// First attack.
 		SetIsAttacking(true);
 
-		APlayerCharacter* Player = Cast<APlayerCharacter>(GetWeaponOwner());
-		if (Player)
+		AWeaponWielder* Wielder = Cast<AWeaponWielder>(GetWeaponOwner());
+		
+		if (Wielder)
 		{
 			UAnimMontage* PlayMontage = FindAppropriateAttackAnimation();
-			Player->PlayMontage(PlayMontage);
+			Wielder->PlayMontage(PlayMontage);
 
 			MontageIndex++;
 		}
@@ -111,8 +114,8 @@ void AMelee::OnAttackEnded(class UAnimMontage* Montage, bool bInterrupted)
 {
 	if (!IsAttackMontage(Montage)) return;
 
-	APlayerCharacter* Character = Cast<APlayerCharacter>(GetWeaponOwner());
-	if (!IsValid(Character)) return;
+	AWeaponWielder* Wielder = Cast<AWeaponWielder>(GetWeaponOwner());
+	if (!IsValid(Wielder)) return;
 
 	// 콤보가 존재하는 공격 몽타주일 때
 	if (Montage == AttackMontage)
@@ -127,7 +130,7 @@ void AMelee::OnAttackEnded(class UAnimMontage* Montage, bool bInterrupted)
 			MontageIndex = 0;
 			CanCombo = false;
 			SetIsAttacking(false);
-			Character->SetActionState(EActionState::EAS_Idle);
+			Wielder->SetActionState(EActionState::EAS_Idle);
 		}
 
 		return;
@@ -145,7 +148,7 @@ void AMelee::OnAttackEnded(class UAnimMontage* Montage, bool bInterrupted)
 			MontageIndex = 0;
 			CanCombo = false;
 			SetIsAttacking(false);
-			Character->SetActionState(EActionState::EAS_Idle);
+			Wielder->SetActionState(EActionState::EAS_Idle);
 		}
 
 		return;
@@ -155,7 +158,7 @@ void AMelee::OnAttackEnded(class UAnimMontage* Montage, bool bInterrupted)
 	MontageIndex = 0;
 	CanCombo = false;
 	SetIsAttacking(false);
-	Character->SetActionState(EActionState::EAS_Idle);
+	Wielder->SetActionState(EActionState::EAS_Idle);
 }
 
 void AMelee::OnNextAttackChecked()
@@ -285,12 +288,14 @@ void AMelee::DrawAttackLineTrace(const FVector& LineStart, const FVector& LineEn
 
 UAnimMontage* AMelee::FindAppropriateAttackAnimation()
 {
-	APlayerCharacter* Character = Cast<APlayerCharacter>(GetWeaponOwner());
+	AWeaponWielder* Wielder = Cast<AWeaponWielder>(GetWeaponOwner());
+	if (!IsValid(Wielder)) return nullptr;
+
 	UAnimMontage* ReturnMontage = nullptr;
 
-	if (Character)
+	if (Wielder)
 	{
-		switch (Character->CurMovementState())
+		switch (Wielder->CurMovementState())
 		{
 		case EMovementState::EMS_Jumping:
 			ReturnMontage = JumpAttackMontage;
@@ -303,7 +308,7 @@ UAnimMontage* AMelee::FindAppropriateAttackAnimation()
 			break;
 		default:
 			// Idle, Walking 상태일 때 약공, 강공 선택.
-			ReturnMontage = (Character->CurActionState() == EActionState::EAS_HeavyAttacking) ? HeavyAttackMontage : AttackMontage;
+			ReturnMontage = (Wielder->CurActionState() == EActionState::EAS_HeavyAttacking) ? HeavyAttackMontage : AttackMontage;
 			break;
 		}
 	}
@@ -313,15 +318,14 @@ UAnimMontage* AMelee::FindAppropriateAttackAnimation()
 
 void AMelee::JumpAttackLanding()
 {
-	APlayerCharacter* Player = Cast<APlayerCharacter>(GetWeaponOwner());
-	if (!Player)
-		return;
+	AWeaponWielder* Wielder = Cast<AWeaponWielder>(GetWeaponOwner());
+	if (!IsValid(Wielder)) return;
 
-	UPlayerAnimInstance* PlayerAnim = Cast<UPlayerAnimInstance>(Player->GetMesh()->GetAnimInstance());
-	if (IsValid(PlayerAnim))
+	UWielderAnimInstance* WielderAnim = Cast<UWielderAnimInstance>(Wielder->GetMesh()->GetAnimInstance());
+	if (IsValid(WielderAnim))
 	{
-		PlayerAnim->Montage_Stop(1.0f, JumpAttackMontage);
-		PlayerAnim->Montage_Play(JumpAttackLandMontage);
+		WielderAnim->Montage_Stop(1.0f, JumpAttackMontage);
+		WielderAnim->Montage_Play(JumpAttackLandMontage);
 	}
 }
 
@@ -335,4 +339,38 @@ bool AMelee::IsAttackMontage(UAnimMontage* Montage)
 void AMelee::HoldMeleeWeapon()
 {
 
+}
+
+void AMelee::EquipEnded()
+{
+	AWeaponWielder* Wielder = Cast<AWeaponWielder>(GetWeaponOwner());
+	if (!IsValid(Wielder)) return;
+
+	if (Wielder->IsA<APlayerCharacter>())
+	{
+		// Player일 경우
+	}
+	else
+	{
+		// Wielder일 경우
+		Wielder->EquipEnded();
+	}
+}
+
+void AMelee::UnequipEnded()
+{
+	AWeaponWielder* Wielder = Cast<AWeaponWielder>(GetWeaponOwner());
+	if (!IsValid(Wielder)) return;
+
+	Wielder->SetActionState(EActionState::EAS_Idle);
+
+	if (Wielder->IsA<APlayerCharacter>())
+	{
+		// Unequip이 끝났으므로, 무기 교체.
+		Wielder->GetWeaponComponent()->CurEquipState() == EEquipState::SubWeapon ? Wielder->GetWeaponComponent()->EquipMainWeapon() : Wielder->GetWeaponComponent()->EquipSubWeapon();
+	}
+	else
+	{
+		Wielder->UnequipEnded();
+	}
 }

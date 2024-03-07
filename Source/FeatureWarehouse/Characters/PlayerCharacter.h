@@ -49,10 +49,8 @@ protected:
 	UFUNCTION(BlueprintCallable)
 	AActor* FindInteractableActor(const FVector Start, const FVector End);
 
-	UFUNCTION(BlueprintCallable)
 	void EquipFirstWeapon() override;
 
-	UFUNCTION(BlueprintCallable)
 	void EquipSecondWeapon() override;
 
 	UFUNCTION(BlueprintCallable)

@@ -4,7 +4,10 @@
 #include "WeaponComponent.h"
 
 #include "Characters/WeaponWielder.h"
+#include "Characters/PlayerCharacter.h"
+
 #include "AnimInstance/PlayerAnimInstance.h"
+#include "AnimInstance/WielderAnimInstance.h"
 
 #include "Weapon.h"
 #include "Guns/Gun.h"
@@ -35,14 +38,17 @@ void UWeaponComponent::BeginPlay()
 
 	WeaponWielder = Cast<AWeaponWielder>(GetOwner());
 
-	if (WeaponWielder)
-	{
-		UPlayerAnimInstance* AnimInstance = Cast<UPlayerAnimInstance>(WeaponWielder->GetMesh()->GetAnimInstance());
+	if (!IsValid(WeaponWielder)) return;
 
-		if (AnimInstance)
+	UWielderAnimInstance* AnimInstance = Cast<UWielderAnimInstance>(WeaponWielder->GetMesh()->GetAnimInstance());
+
+	if (AnimInstance)
+	{
+		WielderAnim = Cast<UWielderAnimInstance>(AnimInstance);
+
+		if (IsValid(WielderAnim))
 		{
-			PlayerAnim = AnimInstance;
-			PlayerAnim->OnUnequipEnd.BindUFunction(this, FName("OnUnequipEnd"));
+			WielderAnim->OnUnequipEnd.BindUFunction(this, FName("OnUnequipEnd"));
 		}
 	}
 }
@@ -52,19 +58,23 @@ void UWeaponComponent::OnUnequipEnd()
 	if (!WeaponWielder) return;
 	WeaponWielder->SetActionState(EActionState::EAS_Idle);
 
-	// Unequip이 끝났으므로, 무기 교체.
-	EquipState == EEquipState::SubWeapon ? EquipMainWeapon() : EquipSubWeapon();
+	if (WeaponWielder->IsA<APlayerCharacter>())
+	{
+		// Unequip이 끝났으므로, 무기 교체.
+		EquipState == EEquipState::SubWeapon ? EquipMainWeapon() : EquipSubWeapon();
+	}
 }
 
 void UWeaponComponent::EquipMainWeapon()
 {
-	if (!IsValid(MainWeapon) || WeaponWielder->CurWeapon() == MainWeapon) return;
+	if (!IsValid(MainWeapon)) return;
+	if (WeaponWielder->CurWeapon() == MainWeapon) return;
 
 	EquipState = EEquipState::MainWeapon;
 
 	WeaponWielder->SetWeapon(MainWeapon);
 	
-	NotifyToAnimInstance();
+	NotifyToAnimInstance(MainWeapon);
 }
 
 void UWeaponComponent::EquipSubWeapon()
@@ -75,7 +85,19 @@ void UWeaponComponent::EquipSubWeapon()
 
 	WeaponWielder->SetWeapon(SubWeapon);
 
-	NotifyToAnimInstance();
+	NotifyToAnimInstance(SubWeapon);
+}
+
+void UWeaponComponent::Unequip()
+{
+	GEngine->AddOnScreenDebugMessage(-1, 3.0f, FColor::Cyan, FString("UWeaponComponent :: Unequip is called."));
+	if (!IsValid(WeaponWielder->CurWeapon()) && EquipState == EEquipState::None) return;
+
+	GEngine->AddOnScreenDebugMessage(-1, 3.0f, FColor::Cyan, FString("UWeaponComponent :: Weapon Unequip."));
+	WeaponWielder->CurWeapon()->Unequip();
+	WeaponWielder->SetWeapon(nullptr);
+	NotifyToAnimInstance(WeaponWielder->CurWeapon());
+	EquipState = EEquipState::None;
 }
 
 void UWeaponComponent::SaveAcquiredWeaponInfo(AWeapon* NewWeapon)
@@ -87,8 +109,6 @@ void UWeaponComponent::SaveAcquiredWeaponInfo(AWeapon* NewWeapon)
 	case 0:
 		// 처음 획득한 무기일 때 == 메인 무기로 등록.
 		EquipNum++;
-		EquipState = EEquipState::MainWeapon;
-		NotifyHasWeaponToAnim();
 		SaveMainWeaponInfo(NewWeapon);
 		break;
 	case 1:
@@ -105,7 +125,7 @@ void UWeaponComponent::SaveAcquiredWeaponInfo(AWeapon* NewWeapon)
 		break;
 	}
 
-	NotifyToAnimInstance();
+	NotifyToAnimInstance(NewWeapon);
 }
 
 void UWeaponComponent::SaveSingleWeaponInfo(AWeapon* Weapon)
@@ -151,6 +171,8 @@ void UWeaponComponent::SaveMainWeaponInfo(AWeapon* Weapon)
 	{
 		WeaponWielder->SetWeapon(MainWeapon);
 	}
+
+	NotifyHasWeaponToAnim();
 }
 
 void UWeaponComponent::SaveSubWeaponInfo(AWeapon* Weapon)
@@ -174,48 +196,93 @@ void UWeaponComponent::SaveSubWeaponInfo(AWeapon* Weapon)
 	{
 		WeaponWielder->SetWeapon(SubWeapon);
 	}
+
+	NotifyHasWeaponToAnim();
 }
 
-void UWeaponComponent::NotifyToAnimInstance()
+void UWeaponComponent::NotifyToAnimInstance(AWeapon* Weapon)
 {
-	if (!IsValid(WeaponWielder->CurWeapon())) return;
+	if (!IsValid(WielderAnim)) return;
+	if (!IsValid(Weapon)) return;
 
-	AWeapon* Weapon = WeaponWielder->CurWeapon();
 	ETypeOfWeapon WeaponType = Weapon->GetWeaponType();
 
-	PlayerAnim->SetWeaponType(WeaponType);
-
-	switch (WeaponType)
+	UPlayerAnimInstance* PlayerAnim = Cast<UPlayerAnimInstance>(WielderAnim);
+	if (IsValid(PlayerAnim))
 	{
-	case ETypeOfWeapon::Gun:
+		// 플레이어일 경우
+		if (!IsValid(WeaponWielder->CurWeapon()))
+		{
+			PlayerAnim->SetHasWeapon(false);
+			return;
+		}
+
+		WeaponWielder->CurWeapon()->Equip();
+
+		PlayerAnim->SetWeaponType(WeaponType);
+		PlayerAnim->SetHasWeapon(true);
+
+		switch (WeaponType)
+		{
+		case ETypeOfWeapon::Gun:
+		{
+			// Check gun's type.
+			AGun* Gun = Cast<AGun>(Weapon);
+			if (!Gun) break;
+
+			PlayerAnim->SetGunType(Gun->GetGunType());
+		}
+		break;
+		case ETypeOfWeapon::Melee:
+		{
+			AMelee* Melee = Cast<AMelee>(Weapon);
+			if (!Melee) break;
+
+			PlayerAnim->SetMeleeType(Melee->GetMeleeType());
+			Melee->BindMontage();
+		}
+		break;
+		case ETypeOfWeapon::Wand:
+			break;
+		default:
+			break;
+		}
+	}
+	else
 	{
-		// Check gun's type.
-		AGun* Gun = Cast<AGun>(Weapon);
-		if (!Gun) break;
+		if (!IsValid(WeaponWielder->CurWeapon())) return;
 
-		PlayerAnim->SetGunType(Gun->GetGunType());
-	}
-		break;
-	case ETypeOfWeapon::Melee:
-	{
-		AMelee* Melee = Cast<AMelee>(Weapon);
-		if (!Melee) break;
+		WeaponWielder->CurWeapon()->Equip();
 
-		PlayerAnim->SetMeleeType(Melee->GetMeleeType());
-		Melee->BindMontage();
-	}
-		break;
-	case ETypeOfWeapon::Wand:
-		break;
-	default:
-		break;
-	}
+		// Wielder일 경우
+		switch (WeaponType)
+		{
+		case ETypeOfWeapon::Gun:
+		{
+			// Check gun's type.
 
-	WeaponWielder->CurWeapon()->Equip();
+		}
+		break;
+		case ETypeOfWeapon::Melee:
+		{
+			AMelee* Melee = Cast<AMelee>(Weapon);
+			if (!Melee) break;
+
+			Melee->BindMontage();
+		}
+		break;
+		case ETypeOfWeapon::Wand:
+			break;
+		default:
+			break;
+		}
+	}
 }
 
 void UWeaponComponent::NotifyHasWeaponToAnim()
 {
+	UPlayerAnimInstance* PlayerAnim = Cast<UPlayerAnimInstance>(WielderAnim);
+
 	if (IsValid(PlayerAnim))
 	{
 		PlayerAnim->SetHasWeapon(true);

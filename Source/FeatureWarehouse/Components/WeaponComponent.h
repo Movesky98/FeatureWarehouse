@@ -29,10 +29,12 @@ public:
 
 	void EquipSubWeapon();
 
+	void Unequip();
+
 	void SaveAcquiredWeaponInfo(AWeapon* NewWeapon);
 
 	UFUNCTION(BlueprintCallable)
-	void NotifyToAnimInstance();
+	void NotifyToAnimInstance(AWeapon* Weapon);
 
 	void JumpAttackLanding();
 
@@ -56,7 +58,6 @@ protected:
 	void OnUnequipEnd();
 
 private:
-
 	// Variables
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "State", meta = (AllowPrivateAccess = "true"))
 	AWeapon* MainWeapon;
@@ -68,12 +69,12 @@ private:
 	int EquipNum;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "State", meta = (AllowPrivateAccess = "true"))
-	class UPlayerAnimInstance* PlayerAnim;
+	class UWielderAnimInstance* WielderAnim;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "State", meta = (AllowPrivateAccess = "true"))
 	class AWeaponWielder* WeaponWielder;
 
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "State", meta = (AllowPrivateAccess = "true"))
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "State", meta = (AllowPrivateAccess = "true"))
 	EEquipState EquipState;
 
 #pragma region GetterSetter

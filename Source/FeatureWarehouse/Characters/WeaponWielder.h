@@ -30,6 +30,10 @@ public:
 
 	virtual void GetDamaged(float Damage);
 
+	virtual void EquipEnded();
+
+	virtual void UnequipEnded();
+
 protected:
 	virtual void BeginPlay() override;
 
@@ -40,9 +44,14 @@ protected:
 
 	virtual void HeavyAttack();
 
+	UFUNCTION(BlueprintCallable)
 	virtual void EquipFirstWeapon();
 
+	UFUNCTION(BlueprintCallable)
 	virtual void EquipSecondWeapon();
+
+	UFUNCTION(BlueprintCallable)
+	virtual void Unequip();
 
 	virtual void OnMovementModeChanged(EMovementMode PrevMovementMode, uint8 PreviousCustomMode) override;
 
