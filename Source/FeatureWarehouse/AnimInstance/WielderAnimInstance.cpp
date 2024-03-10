@@ -63,3 +63,11 @@ void UWielderAnimInstance::AnimNotify_HoldMeleeWeapon()
 		OnHoldMeleeWeapon.Execute();
 	}
 }
+
+void UWielderAnimInstance::AnimNotify_DeathEnd() 
+{
+	if (OnDeathEnd.IsBound())
+	{
+		OnDeathEnd.Execute();
+	}
+}

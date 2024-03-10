@@ -10,6 +10,7 @@ DECLARE_DELEGATE(FOnHoldMeleeWeaponDelegate);
 DECLARE_DELEGATE(FOnUnequipEndDelegate);
 DECLARE_DELEGATE(FOnEquipEndDelegate);
 DECLARE_DELEGATE(FOnNextAttackCheckDelegate);
+DECLARE_DELEGATE(FOnDeathEndDelegate);
 
 /**
  * 
@@ -27,10 +28,15 @@ public:
 
 	FOnEquipEndDelegate OnEquipEnd;
 
+	FOnDeathEndDelegate OnDeathEnd;
+
 protected:
 	virtual void NativeInitializeAnimation() override;
 
 	virtual void NativeUpdateAnimation(float DeltaSeconds) override;
+
+	UFUNCTION()
+	void AnimNotify_DeathEnd();
 
 	UFUNCTION()
 	void AnimNotify_NextAttackCheck();

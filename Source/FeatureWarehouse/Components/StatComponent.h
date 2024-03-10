@@ -22,11 +22,16 @@ public:
 
 	void ShowBloodEffect(FVector Location, FRotator Rotation);
 
+	void SetMontages(UAnimMontage* p_GetDamagedMontage, UAnimMontage* p_DeathMontage);
+
 protected:
 	// Called when the game starts
 	virtual void BeginPlay() override;
 
 	void PlayMontage(UAnimMontage* PlayMontage);
+
+	UFUNCTION()
+	void OnDeathEnded();
 
 private:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = State, meta = (AllowPrivateAccess = "true"))

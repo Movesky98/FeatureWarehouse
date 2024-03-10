@@ -9,6 +9,7 @@
 
 #include "Characters/WeaponWielder.h"
 #include "Components/WeaponComponent.h"
+#include "Components/StatComponent.h"
 
 #include "Components/SphereComponent.h"
 #include "Kismet/GameplayStatics.h"
@@ -34,10 +35,10 @@ void AWeapon::Interact(AActor* InteractActor)
 {
 	AWeaponWielder* InteractOwner = Cast<AWeaponWielder>(InteractActor);
 
-	if (InteractOwner)
-	{
-		InteractOwner->GetWeaponComponent()->SaveAcquiredWeaponInfo(this);
-	}
+	if (!IsValid(InteractOwner)) return;
+	
+	InteractOwner->GetWeaponComponent()->SaveAcquiredWeaponInfo(this);
+	InteractOwner->GetStatComponent()->SetMontages(GetDamagedMontage, DeathMontage);
 }
 
 void AWeapon::TakeUp(ACharacter* NewOwner)

@@ -2,8 +2,11 @@
 
 
 #include "StatComponent.h"
-#include "Animation/AnimMontage.h"
+#include "Characters/WeaponWielder.h"
+#include "AnimInstance/WielderAnimInstance.h"
 
+#include "Animation/AnimMontage.h"
+#include "Components/CapsuleComponent.h"
 #include "Kismet/KismetSystemLibrary.h"
 #include "Kismet/GamePlayStatics.h"
 #include "Particles/ParticleSystem.h"
@@ -26,6 +29,34 @@ void UStatComponent::BeginPlay()
 {
 	Super::BeginPlay();
 
+	AWeaponWielder* WeaponWielder = Cast<AWeaponWielder>(GetOwner());
+
+	if (!IsValid(WeaponWielder)) return;
+
+	UWielderAnimInstance* AnimInstance = Cast<UWielderAnimInstance>(WeaponWielder->GetMesh()->GetAnimInstance());
+
+	if (AnimInstance)
+	{
+		AnimInstance->OnDeathEnd.BindUFunction(this, FName("OnDeathEnded"));
+	}
+}
+
+void UStatComponent::OnDeathEnded()
+{
+	ACharacter* OwnerCharacter = Cast<AWeaponWielder>(GetOwner());
+
+	if (IsValid(OwnerCharacter))
+	{
+		OwnerCharacter->GetCapsuleComponent()->SetCollisionProfileName(FName("Ragdoll"));
+		OwnerCharacter->GetMesh()->SetCollisionProfileName(FName("Ragdoll"));
+		OwnerCharacter->GetMesh()->SetSimulatePhysics(true);
+	}
+}
+
+void UStatComponent::SetMontages(UAnimMontage* p_GetDamagedMontage, UAnimMontage* p_DeathMontage)
+{
+	GetDamagedMontage = IsValid(p_GetDamagedMontage) ? p_GetDamagedMontage : nullptr;
+	DeathMontage = IsValid(p_DeathMontage) ? p_DeathMontage : nullptr;
 }
 
 bool UStatComponent::GetDamaged(float Damage)
@@ -41,9 +72,9 @@ bool UStatComponent::GetDamaged(float Damage)
 
 	if (CurrentHP <= 0.0f)
 	{
-		USkeletalMeshComponent* OwnerSkeletalMesh = Cast<USkeletalMeshComponent>(GetOwner()->GetComponentByClass(USkeletalMeshComponent::StaticClass()));
+		ACharacter* OwnerCharacter = Cast<AWeaponWielder>(GetOwner());
 
-		if (OwnerSkeletalMesh)
+		if (IsValid(OwnerCharacter))
 		{
 			if (DeathMontage)
 			{
@@ -51,7 +82,9 @@ bool UStatComponent::GetDamaged(float Damage)
 			}
 			else
 			{
-				OwnerSkeletalMesh->SetSimulatePhysics(true);
+				OwnerCharacter->GetCapsuleComponent()->SetCollisionProfileName(FName("Ragdoll"));
+				OwnerCharacter->GetMesh()->SetCollisionProfileName(FName("Ragdoll"));
+				OwnerCharacter->GetMesh()->SetSimulatePhysics(true);
 			}
 
 			return true;
