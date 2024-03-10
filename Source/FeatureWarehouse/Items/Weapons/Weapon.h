@@ -29,6 +29,9 @@ public:
 
 	UFUNCTION(BlueprintCallable)
 	void ThrowAway(FVector Location);
+	
+	UFUNCTION(BlueprintCallable)
+	virtual void Attack();
 
 	virtual void Attack(EStateOfViews CurView, FVector HitLocation = FVector(0.0f));
 

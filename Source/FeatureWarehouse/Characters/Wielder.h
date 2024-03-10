@@ -7,6 +7,7 @@
 #include "Wielder.generated.h"
 
 enum class EStateOfEnemy :uint8;
+enum class EBattleState :uint8;
 
 UENUM(BlueprintType)
 enum class ETypeOfWielder : uint8
@@ -26,8 +27,13 @@ class FEATUREWAREHOUSE_API AWielder : public AWeaponWielder
 public:
 	AWielder();
 
+	void CheckEquipWeapon();
+
 	/* 플레이어가 AI에게 접근했는지 */
 	UFUNCTION(BlueprintCallable) bool IsPlayerApproached();
+
+	/* 무언가를 인식했는지 */
+	UFUNCTION(BlueprintCallable) bool IsRecognizedSomething();
 
 	/* AI가 Combat에 들어가기 시작했을 때 실행하는 함수 */
 	virtual void EngagingInCombat(AActor* AdversaryActor);
@@ -36,21 +42,27 @@ public:
 	UFUNCTION(BlueprintCallable) void SetMovementSpeed(float Speed);
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "State|Speed")
-	float WalkSpeed;
+	float WalkSpeed;	// 걸을 때 속도
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "State|Speed")
-	float SprintSpeed;
+	float SprintSpeed;	// 뛸 때 속도
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "State|Speed")
-	float CreepSpeed;
+	float CreepSpeed;	// 천천히 걸을 때 속도
 
 protected:
 	virtual void BeginPlay() override;
 
 	virtual void PostInitializeComponents() override;
 
+	UFUNCTION(BlueprintCallable)
+	virtual void Attack() override;
+
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "State")
 	EStateOfEnemy CurState;			// 현재 AI의 상태
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "State")
+	EBattleState BattleState;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "State")
 	ETypeOfWielder WielderType;		// Wielder 타입
@@ -123,6 +135,9 @@ public:
 	// Getter and Setter
 	FORCEINLINE EStateOfEnemy GetCurState() { return CurState; }
 	FORCEINLINE void SetCurState(EStateOfEnemy State) { CurState = State; }
+
+	FORCEINLINE EBattleState CurBattleState() { return BattleState; }
+	FORCEINLINE void SetBattleState(EBattleState State) { BattleState = State; }
 
 	FORCEINLINE ETypeOfWielder GetWielderType() { return WielderType; }
 

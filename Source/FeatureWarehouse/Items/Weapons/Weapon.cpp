@@ -67,6 +67,11 @@ void AWeapon::ThrowAway(FVector Location)
 	SetActorScale3D(FVector(1.0f));
 }
 
+void AWeapon::Attack()
+{
+
+}
+
 void AWeapon::Attack(EStateOfViews CurView, FVector HitLocation)
 {
 

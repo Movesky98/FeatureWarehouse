@@ -74,7 +74,7 @@ void UWeaponComponent::EquipMainWeapon()
 
 	WeaponWielder->SetWeapon(MainWeapon);
 	
-	NotifyToAnimInstance(MainWeapon);
+	NotifyToAnimInstance();
 }
 
 void UWeaponComponent::EquipSubWeapon()
@@ -85,18 +85,16 @@ void UWeaponComponent::EquipSubWeapon()
 
 	WeaponWielder->SetWeapon(SubWeapon);
 
-	NotifyToAnimInstance(SubWeapon);
+	NotifyToAnimInstance();
 }
 
 void UWeaponComponent::Unequip()
 {
-	GEngine->AddOnScreenDebugMessage(-1, 3.0f, FColor::Cyan, FString("UWeaponComponent :: Unequip is called."));
 	if (!IsValid(WeaponWielder->CurWeapon()) && EquipState == EEquipState::None) return;
 
-	GEngine->AddOnScreenDebugMessage(-1, 3.0f, FColor::Cyan, FString("UWeaponComponent :: Weapon Unequip."));
 	WeaponWielder->CurWeapon()->Unequip();
 	WeaponWielder->SetWeapon(nullptr);
-	NotifyToAnimInstance(WeaponWielder->CurWeapon());
+	NotifyToAnimInstance();
 	EquipState = EEquipState::None;
 }
 
@@ -125,7 +123,7 @@ void UWeaponComponent::SaveAcquiredWeaponInfo(AWeapon* NewWeapon)
 		break;
 	}
 
-	NotifyToAnimInstance(NewWeapon);
+	NotifyToAnimInstance();
 }
 
 void UWeaponComponent::SaveSingleWeaponInfo(AWeapon* Weapon)
@@ -200,82 +198,90 @@ void UWeaponComponent::SaveSubWeaponInfo(AWeapon* Weapon)
 	NotifyHasWeaponToAnim();
 }
 
-void UWeaponComponent::NotifyToAnimInstance(AWeapon* Weapon)
+void UWeaponComponent::NotifyToAnimInstance()
 {
 	if (!IsValid(WielderAnim)) return;
-	if (!IsValid(Weapon)) return;
+
+	WeaponWielder->IsA<APlayerCharacter>() ? 
+		UpdateWeaponInfoToPlayerAnimInstance() :
+		UpdateWeaponInfoToWielderAnimInstance();
+}
+
+void UWeaponComponent::UpdateWeaponInfoToPlayerAnimInstance()
+{
+	UPlayerAnimInstance* PlayerAnim = Cast<UPlayerAnimInstance>(WielderAnim);
+	if (!IsValid(PlayerAnim)) return;
+
+	if (!IsValid(WeaponWielder->CurWeapon()))
+	{
+		PlayerAnim->SetHasWeapon(false);
+		return;
+	}
+
+	AWeapon* Weapon = WeaponWielder->CurWeapon();
+	Weapon->Equip();
+
+	ETypeOfWeapon WeaponType = Weapon->GetWeaponType();
+	PlayerAnim->SetWeaponType(WeaponType);
+	PlayerAnim->SetHasWeapon(true);
+
+	switch (WeaponType)
+	{
+	case ETypeOfWeapon::Gun:
+	{
+		// Check gun's type.
+		AGun* Gun = Cast<AGun>(Weapon);
+		if (!Gun) break;
+
+		PlayerAnim->SetGunType(Gun->GetGunType());
+	}
+	break;
+	case ETypeOfWeapon::Melee:
+	{
+		AMelee* Melee = Cast<AMelee>(Weapon);
+		if (!Melee) break;
+
+		PlayerAnim->SetMeleeType(Melee->GetMeleeType());
+		Melee->BindMontage();
+	}
+	break;
+	case ETypeOfWeapon::Wand:
+		break;
+	default:
+		break;
+	}
+}
+
+void UWeaponComponent::UpdateWeaponInfoToWielderAnimInstance()
+{
+	if (!IsValid(WeaponWielder->CurWeapon())) return;
+	
+	AWeapon* Weapon = WeaponWielder->CurWeapon();
+
+	Weapon->Equip();
 
 	ETypeOfWeapon WeaponType = Weapon->GetWeaponType();
 
-	UPlayerAnimInstance* PlayerAnim = Cast<UPlayerAnimInstance>(WielderAnim);
-	if (IsValid(PlayerAnim))
+	switch (WeaponType)
 	{
-		// 플레이어일 경우
-		if (!IsValid(WeaponWielder->CurWeapon()))
-		{
-			PlayerAnim->SetHasWeapon(false);
-			return;
-		}
+	case ETypeOfWeapon::Gun:
+	{
+		// Check gun's type.
 
-		WeaponWielder->CurWeapon()->Equip();
-
-		PlayerAnim->SetWeaponType(WeaponType);
-		PlayerAnim->SetHasWeapon(true);
-
-		switch (WeaponType)
-		{
-		case ETypeOfWeapon::Gun:
-		{
-			// Check gun's type.
-			AGun* Gun = Cast<AGun>(Weapon);
-			if (!Gun) break;
-
-			PlayerAnim->SetGunType(Gun->GetGunType());
-		}
-		break;
-		case ETypeOfWeapon::Melee:
-		{
-			AMelee* Melee = Cast<AMelee>(Weapon);
-			if (!Melee) break;
-
-			PlayerAnim->SetMeleeType(Melee->GetMeleeType());
-			Melee->BindMontage();
-		}
-		break;
-		case ETypeOfWeapon::Wand:
-			break;
-		default:
-			break;
-		}
 	}
-	else
+	break;
+	case ETypeOfWeapon::Melee:
 	{
-		if (!IsValid(WeaponWielder->CurWeapon())) return;
+		AMelee* Melee = Cast<AMelee>(Weapon);
+		if (!Melee) break;
 
-		WeaponWielder->CurWeapon()->Equip();
-
-		// Wielder일 경우
-		switch (WeaponType)
-		{
-		case ETypeOfWeapon::Gun:
-		{
-			// Check gun's type.
-
-		}
+		Melee->BindMontage();
+	}
+	break;
+	case ETypeOfWeapon::Wand:
 		break;
-		case ETypeOfWeapon::Melee:
-		{
-			AMelee* Melee = Cast<AMelee>(Weapon);
-			if (!Melee) break;
-
-			Melee->BindMontage();
-		}
+	default:
 		break;
-		case ETypeOfWeapon::Wand:
-			break;
-		default:
-			break;
-		}
 	}
 }
 

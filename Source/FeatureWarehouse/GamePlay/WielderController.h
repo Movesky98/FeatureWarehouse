@@ -7,6 +7,8 @@
 #include "Perception/AIPerceptionTypes.h"
 #include "WielderController.generated.h"
 
+enum class EBattleState :uint8;
+
 /**
  * 
  */
@@ -49,6 +51,20 @@ public:
 
 	/* 적 캐릭터를 블랙보드에 저장하는 함수 */
 	void SetEnemyToBlackboard(AActor* Enemy);
+	////////////////////////////////////////////////////////////////////    Battle    ////////////////////////////////////////////////////////////////////
+	
+	/* In-Battle 상태를 BehaviorTree에 알리는 함수 */
+	void NotifyBattleState(EBattleState State);
+
+	////////////////////////////////////////////////////////////////////    Battle - Approaching    ////////////////////////////////////////////////////////////////////
+	
+	/* In-Battle 상태일 때, Behavior Tree에 적에게 다가가는 상태임을 알리는 함수. */
+	UFUNCTION(BlueprintCallable) void NotifyApproaching();
+
+	////////////////////////////////////////////////////////////////////    Battle - Attacking    ////////////////////////////////////////////////////////////////////
+
+	/* 적이 공격 범위 내에 있음을 BehaviorTree에 알리는 함수. */
+	void NotifyEnemyInAttackRange();
 
 protected:
 	virtual void BeginPlay() override;

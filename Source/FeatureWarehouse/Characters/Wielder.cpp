@@ -10,6 +10,8 @@
 #include "Enums/TypeOfWeapon.h"
 #include "Enums/ActionState.h"
 #include "Enums/StateOfEnemy.h"
+#include "Enums/BattleState.h"
+
 #include "Weapons/Weapon.h"
 #include "Melees/Katana.h"
 
@@ -71,7 +73,6 @@ void AWielder::BeginPlay()
 			SpawnParams.Owner = this;
 			FRotator Rotator;
 			FVector SpawnLocation = GetActorLocation();
-			SpawnLocation.Z += 200.0f;
 
 			AWeapon* SpawnWeapon = World->SpawnActor<AWeapon>(WeaponBlueprint, SpawnLocation, Rotator, SpawnParams);
 			SpawnWeapon->Interact(this);
@@ -111,6 +112,14 @@ void AWielder::OnDetectionRangeBeginOverlap(class UPrimitiveComponent* SelfComp,
 	if (OtherActor->ActorHasTag(FName("Player")))
 	{
 		bIsPlayerApproached = true;
+
+		AWielderController* WielderController = Cast<AWielderController>(GetController());
+
+		if (IsValid(WielderController) && WielderController->IsIdentifiedPlayer())
+		{
+			EquipFirstWeapon();
+			WielderController->NotifyEngageInBattle(OtherActor);
+		}
 	}
 }
 
@@ -126,7 +135,18 @@ void AWielder::OnAttackRangeBeginOverlap(class UPrimitiveComponent* SelfComp, cl
 {
 	if (OtherActor->ActorHasTag(FName("Player")))
 	{
+		GEngine->AddOnScreenDebugMessage(-1, 3.0f, FColor::Green, FString("Player is In Attack Range."));
 
+		AWielderController* WielderController = Cast<AWielderController>(GetController());
+
+		if (IsValid(WielderController) && WielderController->IsIdentifiedPlayer())
+		{
+			EquipFirstWeapon();
+			
+			BattleState = EBattleState::Attacking;
+			WielderController->NotifyBattleState(BattleState);
+			WielderController->NotifyEnemyInAttackRange();
+		}
 	}
 }
 
@@ -136,6 +156,16 @@ void AWielder::OnAttackRangeEndOverlap(class UPrimitiveComponent* SelfComp, clas
 	{
 
 	}
+}
+
+void AWielder::Attack()
+{
+	if (!IsValid(EquipWeapon))
+		return;
+
+	ActionState = EActionState::EAS_Attacking;
+
+	EquipWeapon->Attack();
 }
 
 void AWielder::EquipEnded()
@@ -168,6 +198,15 @@ void AWielder::UnequipEnded()
 	}
 }
 
+void AWielder::CheckEquipWeapon()
+{
+	// 현재 무기를 장착하고 있지 않다면 착용.
+	if (!IsValid(EquipWeapon))
+		EquipFirstWeapon();
+
+	// 무기를 착용중이라면 아무것도 하지 않음.
+
+}
 
 void AWielder::EquipFirstWeapon()
 {
@@ -203,6 +242,12 @@ bool AWielder::IsPlayerApproached()
 	return bIsPlayerApproached;
 }
 
+bool AWielder::IsRecognizedSomething()
+{
+	return bIsRecognizedSomething;
+}
+
+// 이거 필요없을수도 있음. 참고할 것.
 void AWielder::EngagingInCombat(AActor* AdversaryActor)
 {
 

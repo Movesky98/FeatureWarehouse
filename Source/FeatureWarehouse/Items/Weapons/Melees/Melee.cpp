@@ -59,6 +59,50 @@ void AMelee::BindMontage()
 	}
 }
 
+void AMelee::Attack()
+{
+	if (!CanAttack())
+		return;
+
+	if (CanCombo)
+	{
+		// Combo attack.
+		if (!GetWeaponOwner())
+			return;
+
+		AWeaponWielder* Wielder = Cast<AWeaponWielder>(GetWeaponOwner());
+		if (!Wielder) return;
+
+		UWielderAnimInstance* WielderAnim = Cast<UWielderAnimInstance>(Wielder->GetMesh()->GetAnimInstance());
+
+		if (WielderAnim)
+		{
+			UAnimMontage* PlayMontage = FindAppropriateAttackAnimation();
+			FName SectionName = PlayMontage->GetSectionName(MontageIndex);
+			Wielder->PlayMontage(PlayMontage);
+			WielderAnim->Montage_JumpToSection(SectionName, PlayMontage);
+
+			MontageIndex++;
+			CanCombo = false;
+		}
+	}
+	else
+	{
+		// First attack.
+		SetIsAttacking(true);
+
+		AWeaponWielder* Wielder = Cast<AWeaponWielder>(GetWeaponOwner());
+
+		if (Wielder)
+		{
+			UAnimMontage* PlayMontage = FindAppropriateAttackAnimation();
+			Wielder->PlayMontage(PlayMontage);
+
+			MontageIndex++;
+		}
+	}
+}
+
 void AMelee::Attack(EStateOfViews CurView, FVector HitLocation)
 {
 	if (!CanAttack())
@@ -117,7 +161,7 @@ void AMelee::OnAttackEnded(class UAnimMontage* Montage, bool bInterrupted)
 	AWeaponWielder* Wielder = Cast<AWeaponWielder>(GetWeaponOwner());
 	if (!IsValid(Wielder)) return;
 
-	// 콤보가 존재하는 공격 몽타주일 때
+	// 기본 공격 몽타주일 때
 	if (Montage == AttackMontage)
 	{
 		UAnimInstance* p_AnimInstance = GetWeaponOwner()->GetMesh()->GetAnimInstance();
@@ -136,6 +180,7 @@ void AMelee::OnAttackEnded(class UAnimMontage* Montage, bool bInterrupted)
 		return;
 	}
 
+	// 강 공격 몽타주일 때
 	if (Montage == HeavyAttackMontage)
 	{
 		UAnimInstance* p_AnimInstance = GetWeaponOwner()->GetMesh()->GetAnimInstance();

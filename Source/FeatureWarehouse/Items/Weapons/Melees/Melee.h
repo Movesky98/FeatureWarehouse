@@ -27,6 +27,8 @@ public:
 protected:
 	virtual void BeginPlay() override;
 
+	void Attack() override;
+
 	void Attack(EStateOfViews CurView, FVector HitLocation = FVector(0.0f)) override;
 
 	virtual bool CanAttack() override;

@@ -5,6 +5,7 @@
 #include "Characters/Wielder.h"
 
 #include "Enums/StateOfEnemy.h"
+#include "Enums/BattleState.h"
 
 #include "BehaviorTree/BehaviorTree.h"
 #include "BehaviorTree/BlackboardComponent.h"
@@ -21,7 +22,7 @@ AWielderController::AWielderController()
 	Sight = CreateDefaultSubobject<UAISenseConfig_Sight>(TEXT("Sight Config"));
 	Sight->SightRadius = 1000.0f;
 	Sight->LoseSightRadius = 1500.0f;
-	Sight->PeripheralVisionAngleDegrees = 120.0f;
+	Sight->PeripheralVisionAngleDegrees = 80.0f;
 
 	Sight->DetectionByAffiliation.bDetectEnemies = true;
 	Sight->DetectionByAffiliation.bDetectFriendlies = true;
@@ -68,7 +69,6 @@ void AWielderController::PostInitializeComponents()
 	Super::PostInitializeComponents();
 
 	AIPerception->OnTargetPerceptionUpdated.AddDynamic(this, &AWielderController::OnTargetDetected);
-	GEngine->AddOnScreenDebugMessage(-1, 3.0f, FColor::Green, FString("Binding AIPerception's OnTargetPerceptionUpdated."));
 }
 
 void AWielderController::BeginPlay()
@@ -81,7 +81,6 @@ void AWielderController::BeginPlay()
 
 void AWielderController::OnTargetDetected(AActor* Actor, FAIStimulus Stimulus)
 {
-	GEngine->AddOnScreenDebugMessage(-1, 3.0f, FColor::Green, FString("Something Detected."));
 	if (!Actor->ActorHasTag(FName("Player"))) return;
 	
 	if (Stimulus.WasSuccessfullySensed())
@@ -89,10 +88,25 @@ void AWielderController::OnTargetDetected(AActor* Actor, FAIStimulus Stimulus)
 		bIsIdentifiedPlayer = true;
 
 		AWielder* Wielder = Cast<AWielder>(GetPawn());
-		if (IsValid(Wielder) && Wielder->IsPlayerApproached())
+		if (!IsValid(Wielder)) return;
+
+		// 플레이어가 이미 공격 범위 내에 있을 경우도 만들어야 함. (바로 공격하던가 뒤로 피한 다음 무기를 장착하던가)
+
+		// 플레이어가 이미 접근하였으며, AI가 플레이어를 인식한 경우
+		if (Wielder->IsPlayerApproached())
 		{
-			// 플레이어가 이미 접근해있고 인식된 경우 전투상황에 들어감.
+			Wielder->CheckEquipWeapon();
 			NotifyEngageInBattle(Actor);
+			return;
+		}
+
+		// AI가 무언가 접근한 것을 인식했으나, 아직 거리가 있는 경우
+		if (Wielder->IsRecognizedSomething())
+		{
+			// 무언가가 위치한 장소로 정찰
+			Wielder->CheckEquipWeapon();
+			NotifyPerceiveSomething(Actor->GetActorLocation());
+			return;
 		}
 	}
 	else
@@ -148,9 +162,11 @@ void AWielderController::NotifyEngageInBattle(AActor* Enemy)
 	if (IsValid(Wielder))
 	{
 		Wielder->SetCurState(EStateOfEnemy::In_Battle);
+		Wielder->SetMovementSpeed(Wielder->SprintSpeed);
 
 		Blackboard->SetValueAsEnum(FName("CurState"), (uint8)Wielder->GetCurState());
 		SetEnemyToBlackboard(Enemy);
+		NotifyApproaching();
 	}
 }
 
@@ -177,6 +193,27 @@ void AWielderController::SetHomePosToBlackboard(FVector HomePos)
 void AWielderController::SetEnemyToBlackboard(AActor* Enemy)
 { 
 	Blackboard->SetValueAsObject(BlackboardEnemyKey, Enemy); 
+}
+
+void AWielderController::NotifyBattleState(EBattleState State)
+{
+	Blackboard->SetValueAsEnum(FName("BattleState"), (uint8)State);
+}
+
+void AWielderController::NotifyApproaching()
+{
+	AWielder* Wielder = Cast<AWielder>(GetPawn());
+	if (IsValid(Wielder))
+	{
+		Wielder->SetBattleState(EBattleState::Approaching);
+	}
+
+	NotifyBattleState(Wielder->CurBattleState());
+}
+
+void AWielderController::NotifyEnemyInAttackRange()
+{
+	Blackboard->SetValueAsBool(FName("IsInAttackRange"), true);
 }
 
 AActor* AWielderController::GetSeeingPawn()

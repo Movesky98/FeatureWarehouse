@@ -34,7 +34,7 @@ public:
 	void SaveAcquiredWeaponInfo(AWeapon* NewWeapon);
 
 	UFUNCTION(BlueprintCallable)
-	void NotifyToAnimInstance(AWeapon* Weapon);
+	void NotifyToAnimInstance();
 
 	void JumpAttackLanding();
 
@@ -51,6 +51,10 @@ protected:
 	void SaveMainWeaponInfo(AWeapon* Weapon);
 
 	void SaveSubWeaponInfo(AWeapon* Weapon);
+
+	void UpdateWeaponInfoToPlayerAnimInstance();
+
+	void UpdateWeaponInfoToWielderAnimInstance();
 
 	void NotifyHasWeaponToAnim();
 

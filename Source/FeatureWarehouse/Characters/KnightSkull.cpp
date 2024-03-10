@@ -252,8 +252,6 @@ void AKnightSkull::OnAttackEnded(class UAnimMontage* Montage, bool bInterrupted)
 {
 	if (Montage == AttackMontage)
 	{
-		GEngine->AddOnScreenDebugMessage(-1, 3.0f, FColor::Green, FString("KnightSkull :: Attack montage is ended."));
-
 		ResetAttackState();
 	}
 }
