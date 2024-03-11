@@ -6,6 +6,7 @@
 #include "GamePlay/WielderController.h"
 
 #include "Components/WeaponComponent.h"
+#include "Components/StatComponent.h"
 
 #include "Enums/TypeOfWeapon.h"
 #include "Enums/ActionState.h"
@@ -56,6 +57,8 @@ void AWielder::PostInitializeComponents()
 
 	AttackRangeComponent->OnComponentBeginOverlap.AddDynamic(this, &AWielder::OnAttackRangeBeginOverlap);
 	AttackRangeComponent->OnComponentEndOverlap.AddDynamic(this, &AWielder::OnAttackRangeEndOverlap);
+
+	StatComponent->OnRetreatFromEnemy.BindUFunction(this, FName("RetreatFromEnemy"));
 }
 
 void AWielder::BeginPlay()
@@ -79,6 +82,28 @@ void AWielder::BeginPlay()
 
 			bIsEquipWeapon = true;
 		}
+	}
+}
+
+AActor* AWielder::GetSeeingPawn()
+{
+	AWielderController* WielderController = Cast<AWielderController>(GetController());
+
+	if (IsValid(WielderController))
+	{
+		return WielderController->GetSeeingPawn();
+	}
+
+	return nullptr;
+}
+
+void AWielder::DesignateEnemy(AActor* Enemy)
+{
+	AWielderController* WielderController = Cast<AWielderController>(GetController());
+
+	if (IsValid(WielderController))
+	{
+		WielderController->DesignateEnemy(Enemy);
 	}
 }
 
@@ -163,9 +188,20 @@ void AWielder::Attack()
 	if (!IsValid(EquipWeapon))
 		return;
 
+	// 기본 공격
 	ActionState = EActionState::EAS_Attacking;
 
 	EquipWeapon->Attack();
+}
+
+void AWielder::RetreatFromEnemy()
+{
+	AWielderController* WielderController = Cast<AWielderController>(GetController());
+	if (IsValid(WielderController))
+	{
+		// 잠시 일시정지.
+		// WielderController->NotifyRetreat();
+	}
 }
 
 void AWielder::EquipEnded()

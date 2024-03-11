@@ -145,7 +145,7 @@ void AWielderController::NotifyChaseEnemy(AActor* Enemy)
 	if (IsValid(Wielder))
 	{
 		Wielder->SetCurState(EStateOfEnemy::Chase);
-		SetEnemyToBlackboard(Enemy);
+		DesignateEnemy(Enemy);
 	}
 }
 
@@ -154,6 +154,24 @@ void AWielderController::ClearRangeKey()
 	Blackboard->SetValueAsBool(FName("IsRecognizedSomething"), false);
 	Blackboard->SetValueAsBool(FName("IsPlayerApproached"), false);
 	Blackboard->SetValueAsBool(FName("IsInAttackRange"), false);
+}
+
+void AWielderController::NotifyRetreat(AActor* Enemy)
+{
+	AWielder* Wielder = Cast<AWielder>(GetPawn());
+	if (IsValid(Wielder))
+	{
+		Wielder->SetBattleState(EBattleState::Retreating);
+
+		// In_Battle 상태로 들어감.
+		if (Wielder->GetCurState() != EStateOfEnemy::In_Battle)
+		{
+			Wielder->SetCurState(EStateOfEnemy::In_Battle);
+			Blackboard->SetValueAsEnum(FName("CurState"), (uint8)Wielder->GetCurState());
+		}
+
+		Blackboard->SetValueAsEnum(FName("BattleState"), (uint8)Wielder->CurBattleState());
+	}
 }
 
 void AWielderController::NotifyEngageInBattle(AActor* Enemy)
@@ -165,7 +183,7 @@ void AWielderController::NotifyEngageInBattle(AActor* Enemy)
 		Wielder->SetMovementSpeed(Wielder->SprintSpeed);
 
 		Blackboard->SetValueAsEnum(FName("CurState"), (uint8)Wielder->GetCurState());
-		SetEnemyToBlackboard(Enemy);
+		DesignateEnemy(Enemy);
 		NotifyApproaching();
 	}
 }
@@ -190,7 +208,7 @@ void AWielderController::SetHomePosToBlackboard(FVector HomePos)
 	Blackboard->SetValueAsVector(BlackboardHomePosKey, HomePos); 
 }
 
-void AWielderController::SetEnemyToBlackboard(AActor* Enemy)
+void AWielderController::DesignateEnemy(AActor* Enemy)
 { 
 	Blackboard->SetValueAsObject(BlackboardEnemyKey, Enemy); 
 }

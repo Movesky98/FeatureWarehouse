@@ -50,7 +50,11 @@ public:
 	void SetHomePosToBlackboard(FVector HomePos);
 
 	/* 적 캐릭터를 블랙보드에 저장하는 함수 */
-	void SetEnemyToBlackboard(AActor* Enemy);
+	void DesignateEnemy(AActor* Enemy);
+
+	/* 공격받았을 때, 거리를 벌려야 함을 Behavior Tree에 알리는 함수. */
+	void NotifyRetreat(AActor* Enemy);
+
 	////////////////////////////////////////////////////////////////////    Battle    ////////////////////////////////////////////////////////////////////
 	
 	/* In-Battle 상태를 BehaviorTree에 알리는 함수 */

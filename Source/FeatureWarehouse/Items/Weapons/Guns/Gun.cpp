@@ -148,7 +148,11 @@ void AGun::FPPFire()
 			: FireRotation = UKismetMathLibrary::FindLookAtRotation(FireLocation, CameraEnd);
 
 		SpawnParticles();
-		AProjectile* Projectile = World->SpawnActor<AProjectile>(Info.ProjectileClass, FireLocation, FireRotation);
+
+		FActorSpawnParameters SpawnParams;
+		SpawnParams.Instigator = GetWeaponOwner();
+
+		AProjectile* Projectile = World->SpawnActor<AProjectile>(Info.ProjectileClass, FireLocation, FireRotation, SpawnParams);
 		if (Projectile)
 		{
 			Info.CurrentRounds--;

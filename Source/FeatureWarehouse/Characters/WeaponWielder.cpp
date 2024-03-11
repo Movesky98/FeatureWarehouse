@@ -9,8 +9,10 @@
 
 #include "Components/StatComponent.h"
 #include "Components/WeaponComponent.h"
+#include "Components/CapsuleComponent.h"
 
 #include "GameFramework/CharacterMovementComponent.h"
+#include "Kismet/KismetMathLibrary.h"
 // 나중에 수정 필요.
 #include "GamePlay/FW_GameInstance.h"
 #include "Widgets/PlayerMenu.h"
@@ -32,6 +34,13 @@ AWeaponWielder::AWeaponWielder()
 	MovementState = EMovementState::EMS_Idle;
 }
 
+void AWeaponWielder::PostInitializeComponents()
+{
+	Super::PostInitializeComponents();
+
+	this->OnTakePointDamage.AddDynamic(this, &AWeaponWielder::OnReceivePointDamageEvent);
+}
+
 void AWeaponWielder::BeginPlay()
 {
 	Super::BeginPlay();
@@ -47,6 +56,26 @@ void AWeaponWielder::PlayMontage(UAnimMontage* Montage)
 	{
 		CharacterAnim->Montage_Play(Montage);
 	}
+}
+
+void AWeaponWielder::OnReceivePointDamageEvent(AActor* DamagedActor, float Damage, AController* InstigatedBy, 
+	FVector HitLocation, UPrimitiveComponent* FHitComponent, FName BoneName, 
+	FVector ShotFromDirection, const UDamageType* DamageType, AActor* DamageCauser)
+{
+	/* 
+	* To Do List
+	* 1. Decrease HP
+	* 2. Show Blood effect.
+	* 3. Play hit sound.
+	*/
+	APawn* ControlledPawn = InstigatedBy->GetPawn();
+
+	GEngine->AddOnScreenDebugMessage(-1, 3.0f, FColor::Cyan, FString("Instigator Pawn Name : ") + ControlledPawn->GetName());
+
+	StatComponent->DecreaseHP(Damage);
+
+	FRotator ImpactRotation = UKismetMathLibrary::MakeRotFromZ(ShotFromDirection);
+	StatComponent->ShowBloodEffect(HitLocation, ImpactRotation);
 }
 
 void AWeaponWielder::Attack()
@@ -95,14 +124,11 @@ void AWeaponWielder::OnMovementModeChanged(EMovementMode PrevMovementMode, uint8
 	}
 }
 
-void AWeaponWielder::GetDamaged(float Damage)
+void AWeaponWielder::Dead()
 {
-	StatComponent->GetDamaged(Damage);
-
-	/*if (IsDamaged)
-	{
-		UpdateHealth();
-	}*/
+	GetCapsuleComponent()->SetCollisionProfileName(FName("Ragdoll"));
+	GetMesh()->SetCollisionProfileName(FName("Ragdoll"));
+	GetMesh()->SetSimulatePhysics(true);
 }
 
 void AWeaponWielder::EquipEnded()

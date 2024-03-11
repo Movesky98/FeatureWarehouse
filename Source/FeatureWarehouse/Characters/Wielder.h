@@ -29,6 +29,12 @@ public:
 
 	void CheckEquipWeapon();
 
+	/* 현재 타겟으로 지정된 액터를 가져오는 함수 */
+	UFUNCTION() AActor* GetSeeingPawn();
+
+	/* 타겟을 지정하는 함수 */
+	UFUNCTION() void DesignateEnemy(AActor* Enemy);
+
 	/* 플레이어가 AI에게 접근했는지 */
 	UFUNCTION(BlueprintCallable) bool IsPlayerApproached();
 
@@ -57,6 +63,9 @@ protected:
 
 	UFUNCTION(BlueprintCallable)
 	virtual void Attack() override;
+
+	UFUNCTION()
+	void RetreatFromEnemy();
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "State")
 	EStateOfEnemy CurState;			// 현재 AI의 상태

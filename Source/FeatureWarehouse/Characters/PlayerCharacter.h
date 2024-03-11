@@ -33,8 +33,6 @@ public:
 
 	void SetTDP();
 
-	void GetDamaged(float Damage) override;
-
 	UFUNCTION(BlueprintCallable)
 	void UpdateHealth();
 

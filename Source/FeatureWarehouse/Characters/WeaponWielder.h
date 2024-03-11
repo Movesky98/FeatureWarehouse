@@ -28,18 +28,25 @@ public:
 
 	void PlayMontage(UAnimMontage* Montage);
 
-	virtual void GetDamaged(float Damage);
-
 	virtual void EquipEnded();
 
 	virtual void UnequipEnded();
 
+	virtual void Dead();
+
 protected:
+	virtual void PostInitializeComponents() override;
+	
 	virtual void BeginPlay() override;
 
 	// Functions
 	virtual void Attack();
 
+	/* Receive Point Damage Function */
+	UFUNCTION() void OnReceivePointDamageEvent(AActor* DamagedActor, float Damage, AController* InstigatedBy, 
+		FVector HitLocation, UPrimitiveComponent* FHitComponent, FName BoneName,
+		FVector ShotFromDirection, const UDamageType* DamageType, AActor* DamageCauser);
+	
 	virtual void StopAttack();
 
 	virtual void HeavyAttack();

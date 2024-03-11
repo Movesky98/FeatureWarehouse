@@ -37,31 +37,67 @@ void UStatComponent::BeginPlay()
 
 	if (AnimInstance)
 	{
+		AnimInstance->OnMontageEnded.AddDynamic(this, &UStatComponent::OnGetDamagedEnded);
 		AnimInstance->OnDeathEnd.BindUFunction(this, FName("OnDeathEnded"));
 	}
 }
 
 void UStatComponent::OnDeathEnded()
 {
-	ACharacter* OwnerCharacter = Cast<AWeaponWielder>(GetOwner());
+	AWeaponWielder* WeaponWielder = Cast<AWeaponWielder>(GetOwner());
 
-	if (IsValid(OwnerCharacter))
+	if (IsValid(WeaponWielder))
 	{
-		OwnerCharacter->GetCapsuleComponent()->SetCollisionProfileName(FName("Ragdoll"));
-		OwnerCharacter->GetMesh()->SetCollisionProfileName(FName("Ragdoll"));
-		OwnerCharacter->GetMesh()->SetSimulatePhysics(true);
+		WeaponWielder->Dead();
 	}
 }
 
-void UStatComponent::SetMontages(UAnimMontage* p_GetDamagedMontage, UAnimMontage* p_DeathMontage)
+void UStatComponent::OnGetDamagedEnded(UAnimMontage* Montage, bool bInterrupted)
 {
-	GetDamagedMontage = IsValid(p_GetDamagedMontage) ? p_GetDamagedMontage : nullptr;
-	DeathMontage = IsValid(p_DeathMontage) ? p_DeathMontage : nullptr;
+	// 회피 델리게이트를 실행시킴.
+	if (Montage == GetDamagedMontage)
+	{
+		OnRetreatFromEnemy.IsBound() ? OnRetreatFromEnemy.Execute() : nullptr;
+
+		PlayMontage(RetreatMontage);
+	}
 }
 
-bool UStatComponent::GetDamaged(float Damage)
+void UStatComponent::SetMontages(TMap<FString, UAnimMontage*> AnimMontages)
 {
-	if (!bIsDamagable) return false;
+	for (auto& AnimMontage : AnimMontages)
+	{
+		FString MontageString = AnimMontage.Key;
+
+		if (MontageString.Equals(FString("GetDamagedMontage")))
+		{
+			GetDamagedMontage = IsValid(AnimMontage.Value) ? AnimMontage.Value : nullptr;
+			continue;
+		}
+
+		if (MontageString.Equals(FString("DeathMontage")))
+		{
+			DeathMontage = IsValid(AnimMontage.Value) ? AnimMontage.Value : nullptr;
+			continue;
+		}
+
+		if (MontageString.Equals(FString("KnockdownMontage")))
+		{
+
+			continue;
+		}
+
+		if (MontageString.Equals(FString("RetreatMontage")))
+		{
+			RetreatMontage = IsValid(AnimMontage.Value) ? AnimMontage.Value : nullptr;
+			continue;
+		}
+	}
+}
+
+void UStatComponent::DecreaseHP(float Damage)
+{
+	if (!bIsDamagable) return;
 
 	CurrentHP -= Damage;
 
@@ -70,28 +106,22 @@ bool UStatComponent::GetDamaged(float Damage)
 		PlayMontage(GetDamagedMontage);
 	}
 
+	AWeaponWielder* WeaponWielder = Cast<AWeaponWielder>(GetOwner());
+	if (!IsValid(WeaponWielder)) return;
+
 	if (CurrentHP <= 0.0f)
 	{
-		ACharacter* OwnerCharacter = Cast<AWeaponWielder>(GetOwner());
-
-		if (IsValid(OwnerCharacter))
+		if (DeathMontage)
 		{
-			if (DeathMontage)
-			{
-				PlayMontage(DeathMontage);
-			}
-			else
-			{
-				OwnerCharacter->GetCapsuleComponent()->SetCollisionProfileName(FName("Ragdoll"));
-				OwnerCharacter->GetMesh()->SetCollisionProfileName(FName("Ragdoll"));
-				OwnerCharacter->GetMesh()->SetSimulatePhysics(true);
-			}
-
-			return true;
+			PlayMontage(DeathMontage);
+		}
+		else
+		{
+			WeaponWielder->GetCapsuleComponent()->SetCollisionProfileName(FName("Ragdoll"));
+			WeaponWielder->GetMesh()->SetCollisionProfileName(FName("Ragdoll"));
+			WeaponWielder->GetMesh()->SetSimulatePhysics(true);
 		}
 	}
-
-	return true;
 }
 
 void UStatComponent::ShowBloodEffect(FVector Location, FRotator Rotation)

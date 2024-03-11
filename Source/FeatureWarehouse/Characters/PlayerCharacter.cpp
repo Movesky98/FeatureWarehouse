@@ -735,16 +735,6 @@ FVector APlayerCharacter::DrawCameraLineTrace()
 	}
 }
 
-void APlayerCharacter::GetDamaged(float Damage)
-{
-	bool IsDamaged = StatComponent->GetDamaged(Damage);
-
-	if (IsDamaged)
-	{
-		UpdateHealth();
-	}
-}
-
 void APlayerCharacter::UpdateHealth()
 {
 	UFW_GameInstance* GameInstance = Cast<UFW_GameInstance>(GetGameInstance());

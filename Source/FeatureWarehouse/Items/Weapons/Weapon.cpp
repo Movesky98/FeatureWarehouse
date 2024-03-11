@@ -36,9 +36,15 @@ void AWeapon::Interact(AActor* InteractActor)
 	AWeaponWielder* InteractOwner = Cast<AWeaponWielder>(InteractActor);
 
 	if (!IsValid(InteractOwner)) return;
-	
+	TMap<FString, UAnimMontage*> DeliverMontages;
+
+	DeliverMontages.Emplace(FString("DeathMontage"), DeathMontage);
+	DeliverMontages.Emplace(FString("GetDamagedMontage"), GetDamagedMontage);
+	DeliverMontages.Emplace(FString("KnockdownMontage"), KnockdownMontage);
+	DeliverMontages.Emplace(FString("RetreatMontage"), RetreatMontage);
+
 	InteractOwner->GetWeaponComponent()->SaveAcquiredWeaponInfo(this);
-	InteractOwner->GetStatComponent()->SetMontages(GetDamagedMontage, DeathMontage);
+	InteractOwner->GetStatComponent()->SetMontages(DeliverMontages);
 }
 
 void AWeapon::TakeUp(ACharacter* NewOwner)

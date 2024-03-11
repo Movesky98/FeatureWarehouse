@@ -15,6 +15,7 @@
 #include "Animation/AnimMontage.h"
 #include "Kismet/KismetSystemLibrary.h"
 #include "Kismet/KismetMathLibrary.h"
+#include "Kismet/GameplayStatics.h"
 
 #include "Components/BoxComponent.h"
 #include "DrawDebugHelpers.h"
@@ -314,20 +315,19 @@ void AMelee::DrawAttackLineTrace(const FVector& LineStart, const FVector& LineEn
 
 	if (IsHit)
 	{
-		UStatComponent* HitActorComponent = Cast<UStatComponent>(Hit.GetActor()->GetComponentByClass(UStatComponent::StaticClass()));
+		APawn* HitPawn = Cast<APawn>(Hit.GetActor());
+		if (!IsValid(HitPawn)) return;
 
-		if (HitActorComponent)
-		{
-			IgnoreActor.Add(Hit.GetActor());
+		IgnoreActor.Add(Hit.GetActor());
+		TSubclassOf<UDamageType> DamageType;
 
-			HitActorComponent->GetDamaged(30.0f);
+		UGameplayStatics::ApplyPointDamage(Hit.GetActor(), 30.0f, Hit.ImpactNormal, Hit, HitPawn->GetController(), this, DamageType);
 
-			ShakePlayerCamera();
+		ShakePlayerCamera();
 
-			// Show Blood effet.
-			FRotator ImpactRotation = UKismetMathLibrary::MakeRotFromZ(-Hit.ImpactNormal);
-			HitActorComponent->ShowBloodEffect(Hit.ImpactPoint, ImpactRotation);
-		}
+		// Show Blood effet.
+		/*FRotator ImpactRotation = UKismetMathLibrary::MakeRotFromZ(-Hit.ImpactNormal);
+		HitActorComponent->ShowBloodEffect(Hit.ImpactPoint, ImpactRotation);*/
 	}
 }
 

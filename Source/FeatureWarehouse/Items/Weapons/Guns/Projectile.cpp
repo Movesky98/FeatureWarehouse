@@ -7,6 +7,7 @@
 
 #include "GameFramework/ProjectileMovementComponent.h"
 #include "Kismet/KismetSystemLibrary.h"
+#include "Kismet/GameplayStatics.h"
 
 // Sets default values
 AProjectile::AProjectile()
@@ -44,20 +45,19 @@ void AProjectile::Tick(float DeltaTime)
 
 void AProjectile::OnBulletHit(UPrimitiveComponent* HitComponent, AActor* OtherActor, UPrimitiveComponent* OtherComponent, FVector NomalImpulse, const FHitResult& Hit)
 {
-	FString DebugMessage = FString("OnBulletHit :: Hit Actor is ") + UKismetSystemLibrary::GetDisplayName(Hit.GetActor());
-
 	if (!Hit.GetActor()) return;
 
-	AActor* HitActor = Hit.GetActor();
-	UStatComponent* StatComponent = Cast<UStatComponent>(HitActor->GetComponentByClass(UStatComponent::StaticClass()));
-
-	if (StatComponent)
+	APawn* HitPawn = Cast<APawn>(Hit.GetActor());
+	TSubclassOf<UDamageType> DamageType;
+	if (IsValid(HitPawn))
 	{
-		StatComponent->GetDamaged(30.0f);
+		UGameplayStatics::ApplyPointDamage(Hit.GetActor(), 30.0f, Hit.ImpactNormal, Hit, HitPawn->GetController(), this, DamageType);
 	}
 	else
 	{
-		;
+		// This Projectile doesn't hit pawn.
+		// Spawn bullet hole decal.
+
 	}
 
 	Destroy();

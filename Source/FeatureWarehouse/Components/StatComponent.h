@@ -6,6 +6,8 @@
 #include "Components/ActorComponent.h"
 #include "StatComponent.generated.h"
 
+DECLARE_DELEGATE(FOnRetreatFromEnemyDelegate);
+
 class UParticleSystem;
 
 UCLASS(Blueprintable, BlueprintType, ClassGroup = (Custom), meta = (BlueprintSpawnableComponent))
@@ -18,11 +20,13 @@ public:
 	UStatComponent();
 	
 	UFUNCTION(BlueprintCallable)
-	bool GetDamaged(float Damage);
+	void DecreaseHP(float Damage);
 
 	void ShowBloodEffect(FVector Location, FRotator Rotation);
 
-	void SetMontages(UAnimMontage* p_GetDamagedMontage, UAnimMontage* p_DeathMontage);
+	void SetMontages(TMap<FString, UAnimMontage*> AnimMontages);
+
+	FOnRetreatFromEnemyDelegate OnRetreatFromEnemy;
 
 protected:
 	// Called when the game starts
@@ -32,6 +36,9 @@ protected:
 
 	UFUNCTION()
 	void OnDeathEnded();
+
+	/* 데미지를 받은 애니메이션이 끝난 이후 실행되는 함수 */
+	UFUNCTION() void OnGetDamagedEnded(UAnimMontage* Montage, bool bInterrupted);
 
 private:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = State, meta = (AllowPrivateAccess = "true"))
@@ -52,11 +59,14 @@ private:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = State, meta = (AllowPrivateAccess = "true"))
 	UParticleSystem* BloodParticle;
 
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Animation", meta = (AllowPrivateAccess = "true"))
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Montage", meta = (AllowPrivateAccess = "true"))
 	class UAnimMontage* GetDamagedMontage;
 
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Animation", meta = (AllowPrivateAccess = "true"))
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Montage", meta = (AllowPrivateAccess = "true"))
 	class UAnimMontage* DeathMontage;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Montage", meta = (AllowPrivateAccess = "true"))
+	class UAnimMontage* RetreatMontage;
 
 #pragma region GetterSetter
 public:
