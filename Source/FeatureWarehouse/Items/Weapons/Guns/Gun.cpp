@@ -211,7 +211,10 @@ void AGun::TPPFire()
 		}
 
 		SpawnParticles();
-		AProjectile* Projectile = World->SpawnActor<AProjectile>(Info.ProjectileClass, FireLocation, FireRotation);
+		FActorSpawnParameters SpawnParams;
+		SpawnParams.Instigator = GetWeaponOwner();
+
+		AProjectile* Projectile = World->SpawnActor<AProjectile>(Info.ProjectileClass, FireLocation, FireRotation, SpawnParams);
 		if (Projectile)
 		{
 			Info.CurrentRounds--;
@@ -236,7 +239,10 @@ void AGun::TDPFire(FVector HitLocation)
 		FRotator FireRotation = UKismetMathLibrary::MakeRotFromX(FireVector);
 
 		SpawnParticles();
-		AProjectile* Projectile = World->SpawnActor<AProjectile>(Info.ProjectileClass, FireLocation, FireRotation);
+
+		FActorSpawnParameters SpawnParams;
+		SpawnParams.Instigator = GetWeaponOwner();
+		AProjectile* Projectile = World->SpawnActor<AProjectile>(Info.ProjectileClass, FireLocation, FireRotation, SpawnParams);
 		if (Projectile)
 		{
 			Info.CurrentRounds--;

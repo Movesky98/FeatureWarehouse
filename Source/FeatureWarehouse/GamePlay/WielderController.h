@@ -26,7 +26,7 @@ public:
 	void ClearRangeKey();
 
 	/* 무언가를 쫒아갈 때 Behavior Tree에 타겟을 알리는 함수. */
-	void NotifyChaseEnemy(AActor* Enemy);
+	void NotifyApproachToEnemy(AActor* Enemy);
 
 	/* 전투 상황에 임했음을 Behavior Tree에 알리는 함수. */
 	void NotifyEngageInBattle(AActor* Enemy);
@@ -53,7 +53,7 @@ public:
 	void DesignateEnemy(AActor* Enemy);
 
 	/* 공격받았을 때, 거리를 벌려야 함을 Behavior Tree에 알리는 함수. */
-	void NotifyRetreat(AActor* Enemy);
+	void NotifyRetreat();
 
 	////////////////////////////////////////////////////////////////////    Battle    ////////////////////////////////////////////////////////////////////
 	
@@ -69,6 +69,11 @@ public:
 
 	/* 적이 공격 범위 내에 있음을 BehaviorTree에 알리는 함수. */
 	void NotifyEnemyInAttackRange();
+
+	////////////////////////////////////////////////////////////////////    Battle - Monitoring    ////////////////////////////////////////////////////////////////////
+	
+	/* In-Battle 상태일 때, Behavior Tree에 Monitor 상태에 들어감을 알리는 함수 */
+	void NotifyMonitoring();
 
 protected:
 	virtual void BeginPlay() override;
@@ -99,4 +104,7 @@ private:
 	const FName BlackboardEnemyKey = FName("EnemyActor");
 	const FName BlackboardHomePosKey = FName("HomePos");
 	const FName BlackboardMovePosKey = FName("MovePos");
+
+public:
+	FORCEINLINE class UAIPerceptionComponent* GetPerception() { return AIPerception; }
 };

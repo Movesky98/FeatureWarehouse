@@ -32,7 +32,7 @@ public:
 
 	virtual void UnequipEnded();
 
-	virtual void Dead();
+	virtual void Die();
 
 protected:
 	virtual void PostInitializeComponents() override;
@@ -43,7 +43,7 @@ protected:
 	virtual void Attack();
 
 	/* Receive Point Damage Function */
-	UFUNCTION() void OnReceivePointDamageEvent(AActor* DamagedActor, float Damage, AController* InstigatedBy, 
+	UFUNCTION() virtual void OnReceivePointDamageEvent(AActor* DamagedActor, float Damage, AController* InstigatedBy, 
 		FVector HitLocation, UPrimitiveComponent* FHitComponent, FName BoneName,
 		FVector ShotFromDirection, const UDamageType* DamageType, AActor* DamageCauser);
 	

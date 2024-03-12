@@ -81,5 +81,7 @@ public:
 
 	FORCEINLINE float GetCurrentMP() { return CurrentMP; }
 	FORCEINLINE void SetCurrentMP(float NewCurrentMP) { CurrentMP = NewCurrentMP; }
+
+	FORCEINLINE class UAnimMontage* GetBackstepMontage() { return RetreatMontage; }
 #pragma endregion
 };

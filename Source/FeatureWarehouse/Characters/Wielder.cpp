@@ -17,7 +17,11 @@
 #include "Melees/Katana.h"
 
 #include "GameFramework/CharacterMovementComponent.h"
+#include "Kismet/KismetMathLibrary.h"
+#include "Kismet/KismetSystemLibrary.h"
 #include "Components/SphereComponent.h"
+
+#include "DrawDebugHelpers.h"
 
 AWielder::AWielder()
 {
@@ -58,7 +62,7 @@ void AWielder::PostInitializeComponents()
 	AttackRangeComponent->OnComponentBeginOverlap.AddDynamic(this, &AWielder::OnAttackRangeBeginOverlap);
 	AttackRangeComponent->OnComponentEndOverlap.AddDynamic(this, &AWielder::OnAttackRangeEndOverlap);
 
-	StatComponent->OnRetreatFromEnemy.BindUFunction(this, FName("RetreatFromEnemy"));
+	StatComponent->OnRetreatFromEnemy.BindUFunction(this, FName("ChangeToRetreatMode"));
 }
 
 void AWielder::BeginPlay()
@@ -183,6 +187,75 @@ void AWielder::OnAttackRangeEndOverlap(class UPrimitiveComponent* SelfComp, clas
 	}
 }
 
+void AWielder::OnReceivePointDamageEvent(AActor* DamagedActor, float Damage, AController* InstigatedBy,
+	FVector HitLocation, UPrimitiveComponent* FHitComponent, FName BoneName,
+	FVector ShotFromDirection, const UDamageType* DamageType, AActor* DamageCauser)
+{
+	// TO DO
+	// 1. Decrease HP
+	// 2. Show Blood Effect
+	// 3. Change CurState To Retreat
+	// 4. Change BattleState To Retreat
+	
+	StatComponent->DecreaseHP(Damage);
+
+	FRotator ImpactRotation = UKismetMathLibrary::MakeRotFromZ(ShotFromDirection);
+	StatComponent->ShowBloodEffect(HitLocation, ImpactRotation);
+	
+	// 공격 받았을 때, 공격한 대상을 타겟으로 지정.
+	
+	AWielderController* WielderController = Cast<AWielderController>(GetController());
+	if (IsValid(WielderController))
+	{
+		WielderController->DesignateEnemy(InstigatedBy->GetPawn());
+	}
+}
+
+void AWielder::ChangeToRetreatMode()
+{
+	// 공격 받았을 때, Retreat 상태로 변경
+	
+	AWielderController* WielderController = Cast<AWielderController>(GetController());
+	if (IsValid(WielderController))
+	{
+		WielderController->NotifyRetreat();
+	}
+}
+
+void AWielder::RetreatFromEnemy()
+{
+	// TO DO
+	// 1. 현재 타겟으로 하고 있는 액터와의 거리가 '최소 회피 거리'를 넘는지 체크 
+	// 2. 액터로 부터 멀어지기 위해 백스텝 애니메이션 실행
+
+	UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance();
+
+	// 백스텝 몽타주가 재생 중이 아닐 때 재생
+	if (AnimInstance->Montage_IsPlaying(StatComponent->GetBackstepMontage())) return;
+	if (!IsValid(GetSeeingPawn())) return;
+
+	if (GetDistanceTo(GetSeeingPawn()) <= RetreatDistanceMin)
+	{
+		PlayMontage(StatComponent->GetBackstepMontage());
+	}
+	else
+	{
+		// Change BattleState to Approaching.
+
+		if (!IsValid(CurWeapon()))
+		{
+			// 현재 무기를 들고있지 않다면 무기를 우선 장착함.
+			EquipFirstWeapon();
+		}
+
+		AWielderController* WielderController = Cast<AWielderController>(GetController());
+		if (IsValid(WielderController))
+		{
+			WielderController->NotifyApproachToEnemy(GetSeeingPawn());
+		}
+	}
+}
+
 void AWielder::Attack()
 {
 	if (!IsValid(EquipWeapon))
@@ -192,16 +265,6 @@ void AWielder::Attack()
 	ActionState = EActionState::EAS_Attacking;
 
 	EquipWeapon->Attack();
-}
-
-void AWielder::RetreatFromEnemy()
-{
-	AWielderController* WielderController = Cast<AWielderController>(GetController());
-	if (IsValid(WielderController))
-	{
-		// 잠시 일시정지.
-		// WielderController->NotifyRetreat();
-	}
 }
 
 void AWielder::EquipEnded()
@@ -241,7 +304,6 @@ void AWielder::CheckEquipWeapon()
 		EquipFirstWeapon();
 
 	// 무기를 착용중이라면 아무것도 하지 않음.
-
 }
 
 void AWielder::EquipFirstWeapon()
@@ -282,6 +344,98 @@ bool AWielder::IsRecognizedSomething()
 {
 	return bIsRecognizedSomething;
 }
+
+#pragma region Monitor
+void AWielder::Monitoring()
+{
+	bIsStartMonitoring = true;
+
+	AWielderController* WielderController = Cast<AWielderController>(GetController());
+	if (IsValid(WielderController))
+	{
+		WielderController->NotifyMonitoring();
+		WielderController->SetFocus(WielderController->GetSeeingPawn());
+	}
+
+	MonitoringTimerDuration = 5.0f + UKismetMathLibrary::RandomFloatInRange(0.0f, 3.0f);
+	GetWorldTimerManager().SetTimer(MonitoringTimer, this, &AWielder::CalculateMonitoringTime, 0.01f, true);
+}
+
+void AWielder::CalculateMonitoringTime()
+{
+	if (MonitoringTimerDuration < ElapsedTime)
+	{
+		ClearMonitoring();
+
+		// Change Battle State to Approaching.
+		AWielderController* WielderController = Cast<AWielderController>(GetController());
+		if (WielderController)
+		{
+			WielderController->ClearFocus(EAIFocusPriority::Default);
+			WielderController->NotifyApproaching();
+		}
+	}
+	else
+	{
+		ElapsedTime += 0.01f;
+	}
+}
+
+FVector AWielder::CirclingAroundTheEnemy()
+{
+	FVector MoveLocation;
+
+	AActor* Enemy = GetSeeingPawn();
+	if (!IsValid(Enemy)) return GetActorLocation();
+
+	FVector GoalDirection = GetActorRightVector();
+
+	// 적과의 거리가 모니터링 거리 기준보다 가깝다면
+	if (GetDistanceTo(Enemy) < MonitoringDistance)
+	{
+		MoveLocation = GetActorLocation() + GoalDirection * 100.0f;
+
+		DrawDebugLine(GetWorld(), GetActorLocation(), MoveLocation, FColor::Green, true, -1, 0, 10);
+		DrawDebugSolidBox(GetWorld(), MoveLocation, FVector(5.0f), FColor::Green);
+
+		UWorld* World = GetWorld();
+		if (!ensure(World != nullptr)) return GetActorLocation();
+
+		TArray<AActor*> IgnoreActors;
+		FHitResult Hit;
+
+		bool IsSuccess = UKismetSystemLibrary::LineTraceSingle(
+			GetWorld(),
+			MoveLocation,
+			MoveLocation - FVector(0.0f, 0.0f, 1000.0f),
+			ETraceTypeQuery::TraceTypeQuery1,
+			false,
+			IgnoreActors,
+			EDrawDebugTrace::ForDuration,
+			Hit,
+			true
+		);
+
+		if (IsSuccess)
+		{
+			return Hit.ImpactPoint;
+		}
+
+		return MoveLocation;
+	}
+
+	return GetActorLocation();
+}
+
+void AWielder::ClearMonitoring()
+{
+	GetWorldTimerManager().ClearTimer(MonitoringTimer);
+	ElapsedTime = 0.0f;
+	MonitoringTimerDuration = 0.0f;
+	bIsStartMonitoring = false;
+}
+
+#pragma endregion
 
 // 이거 필요없을수도 있음. 참고할 것.
 void AWielder::EngagingInCombat(AActor* AdversaryActor)

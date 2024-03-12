@@ -64,8 +64,47 @@ protected:
 	UFUNCTION(BlueprintCallable)
 	virtual void Attack() override;
 
+	void OnReceivePointDamageEvent(AActor* DamagedActor, float Damage, AController* InstigatedBy,
+		FVector HitLocation, UPrimitiveComponent* FHitComponent, FName BoneName,
+		FVector ShotFromDirection, const UDamageType* DamageType, AActor* DamageCauser) override;
+
 	UFUNCTION()
+	void ChangeToRetreatMode();
+
+	/* 적으로부터 거리를 벌릴 때 실행되는 함수 */
+	UFUNCTION(BlueprintCallable)
 	void RetreatFromEnemy();
+
+#pragma region Monitoring
+public:
+	/* 모니터링을 시작할 때 실행되는 함수 */
+	UFUNCTION(BlueprintCallable) void Monitoring();
+
+protected:
+	/* 모니터링 하는 시간을 구하는 함수 */
+	UFUNCTION() void CalculateMonitoringTime();
+
+	/* 모니터링(경계) 상태일 때 적의 주변을 돌기위해 위치를 구하는 함수 */
+	UFUNCTION(BlueprintCallable)
+	FVector CirclingAroundTheEnemy();
+
+	/* 모니터링 상태에서 사용되는 변수들을 초기화하는 함수 */
+	void ClearMonitoring();
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Monitor")
+	float MonitoringDistance;		// 경계 거리
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Monitor")
+	float ElapsedTime;				// 경과 시간
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Monitor")
+	float MonitoringTimerDuration;	// 모니터링 타이머 시간
+	
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Monitor")
+	bool bIsStartMonitoring;		// 모니터링을 시작했는지
+
+	FTimerHandle MonitoringTimer;
+#pragma endregion
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "State")
 	EStateOfEnemy CurState;			// 현재 AI의 상태
@@ -124,6 +163,9 @@ protected:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Range")
 	float AttackRange;				// 공격 시작 범위
 
+	UPROPERTY(EditDefaultsOnly, BLueprintReadOnly, Category = "Range")
+	float RetreatDistanceMin;		// 최소 회피 거리
+
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Range")
 	bool bIsRecognizedSomething;	// 무언가를 인식했는지
 
@@ -149,5 +191,5 @@ public:
 	FORCEINLINE void SetBattleState(EBattleState State) { BattleState = State; }
 
 	FORCEINLINE ETypeOfWielder GetWielderType() { return WielderType; }
-
+	FORCEINLINE float GetRecognizeRange() { return RecognizeRange; }
 };

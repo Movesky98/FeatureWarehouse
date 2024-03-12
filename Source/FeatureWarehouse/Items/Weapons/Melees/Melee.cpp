@@ -321,13 +321,9 @@ void AMelee::DrawAttackLineTrace(const FVector& LineStart, const FVector& LineEn
 		IgnoreActor.Add(Hit.GetActor());
 		TSubclassOf<UDamageType> DamageType;
 
-		UGameplayStatics::ApplyPointDamage(Hit.GetActor(), 30.0f, Hit.ImpactNormal, Hit, HitPawn->GetController(), this, DamageType);
+		UGameplayStatics::ApplyPointDamage(Hit.GetActor(), 30.0f, Hit.ImpactNormal, Hit, GetWeaponOwner()->GetController(), this, DamageType);
 
 		ShakePlayerCamera();
-
-		// Show Blood effet.
-		/*FRotator ImpactRotation = UKismetMathLibrary::MakeRotFromZ(-Hit.ImpactNormal);
-		HitActorComponent->ShowBloodEffect(Hit.ImpactPoint, ImpactRotation);*/
 	}
 }
 

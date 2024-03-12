@@ -23,7 +23,6 @@ UStatComponent::UStatComponent()
 	}
 }
 
-
 // Called when the game starts
 void UStatComponent::BeginPlay()
 {
@@ -48,7 +47,7 @@ void UStatComponent::OnDeathEnded()
 
 	if (IsValid(WeaponWielder))
 	{
-		WeaponWielder->Dead();
+		WeaponWielder->Die();
 	}
 }
 
@@ -58,8 +57,6 @@ void UStatComponent::OnGetDamagedEnded(UAnimMontage* Montage, bool bInterrupted)
 	if (Montage == GetDamagedMontage)
 	{
 		OnRetreatFromEnemy.IsBound() ? OnRetreatFromEnemy.Execute() : nullptr;
-
-		PlayMontage(RetreatMontage);
 	}
 }
 
@@ -111,16 +108,7 @@ void UStatComponent::DecreaseHP(float Damage)
 
 	if (CurrentHP <= 0.0f)
 	{
-		if (DeathMontage)
-		{
-			PlayMontage(DeathMontage);
-		}
-		else
-		{
-			WeaponWielder->GetCapsuleComponent()->SetCollisionProfileName(FName("Ragdoll"));
-			WeaponWielder->GetMesh()->SetCollisionProfileName(FName("Ragdoll"));
-			WeaponWielder->GetMesh()->SetSimulatePhysics(true);
-		}
+		IsValid(DeathMontage) ? PlayMontage(DeathMontage) : WeaponWielder->Die();
 	}
 }
 

@@ -51,7 +51,7 @@ void AProjectile::OnBulletHit(UPrimitiveComponent* HitComponent, AActor* OtherAc
 	TSubclassOf<UDamageType> DamageType;
 	if (IsValid(HitPawn))
 	{
-		UGameplayStatics::ApplyPointDamage(Hit.GetActor(), 30.0f, Hit.ImpactNormal, Hit, HitPawn->GetController(), this, DamageType);
+		UGameplayStatics::ApplyPointDamage(Hit.GetActor(), 30.0f, Hit.ImpactNormal, Hit, GetInstigatorController(), this, DamageType);
 	}
 	else
 	{

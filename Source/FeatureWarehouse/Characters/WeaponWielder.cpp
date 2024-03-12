@@ -124,7 +124,7 @@ void AWeaponWielder::OnMovementModeChanged(EMovementMode PrevMovementMode, uint8
 	}
 }
 
-void AWeaponWielder::Dead()
+void AWeaponWielder::Die()
 {
 	GetCapsuleComponent()->SetCollisionProfileName(FName("Ragdoll"));
 	GetMesh()->SetCollisionProfileName(FName("Ragdoll"));
