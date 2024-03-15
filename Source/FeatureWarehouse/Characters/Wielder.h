@@ -71,6 +71,9 @@ protected:
 		FVector ShotFromDirection, const UDamageType* DamageType, AActor* DamageCauser) override;
 
 	UFUNCTION()
+	void OnGetDamaged(bool IsRetreat);
+	
+	UFUNCTION()
 	void ChangeToRetreatMode();
 
 	/* 적으로부터 거리를 벌릴 때 실행되는 함수 */

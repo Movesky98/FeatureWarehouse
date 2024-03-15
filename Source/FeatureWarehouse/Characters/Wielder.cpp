@@ -63,7 +63,7 @@ void AWielder::PostInitializeComponents()
 	AttackRangeComponent->OnComponentBeginOverlap.AddDynamic(this, &AWielder::OnAttackRangeBeginOverlap);
 	AttackRangeComponent->OnComponentEndOverlap.AddDynamic(this, &AWielder::OnAttackRangeEndOverlap);
 
-	StatComponent->OnRetreatFromEnemy.BindUFunction(this, FName("ChangeToRetreatMode"));
+	StatComponent->OnGetDamaged.BindUFunction(this, FName("OnGetDamaged"));
 }
 
 void AWielder::BeginPlay()
@@ -203,7 +203,6 @@ void AWielder::OnReceivePointDamageEvent(AActor* DamagedActor, float Damage, ACo
 	StatComponent->ShowBloodEffect(HitLocation, ImpactRotation);
 	
 	// 공격 받았을 때, 공격한 대상을 타겟으로 지정.
-	
 	AWielderController* WielderController = Cast<AWielderController>(GetController());
 	if (IsValid(WielderController))
 	{
@@ -211,10 +210,28 @@ void AWielder::OnReceivePointDamageEvent(AActor* DamagedActor, float Damage, ACo
 	}
 }
 
+void AWielder::OnGetDamaged(bool IsRetreat)
+{
+	// 회피가 필요한 상황이라면
+	if (IsRetreat)
+	{
+		ChangeToRetreatMode();
+		return;
+	}
+
+	// 전투상황이 아니라면 바로 회피
+	if (CurState == EStateOfEnemy::In_Battle)
+	{
+		GEngine->AddOnScreenDebugMessage(-1, 3.0f, FColor::Green, FString("This Wielder is In_Battle State."));
+		return;
+	}
+	
+	ChangeToRetreatMode();
+}
+
 void AWielder::ChangeToRetreatMode()
 {
 	// 공격 받았을 때, Retreat 상태로 변경
-	
 	AWielderController* WielderController = Cast<AWielderController>(GetController());
 	if (IsValid(WielderController))
 	{

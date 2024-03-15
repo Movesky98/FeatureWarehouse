@@ -6,7 +6,7 @@
 #include "Components/ActorComponent.h"
 #include "StatComponent.generated.h"
 
-DECLARE_DELEGATE(FOnRetreatFromEnemyDelegate);
+DECLARE_DELEGATE_OneParam(FOnGetDamagedDelegate, bool);
 
 class UParticleSystem;
 
@@ -26,7 +26,7 @@ public:
 
 	void SetMontages(TMap<FString, UAnimMontage*> AnimMontages);
 
-	FOnRetreatFromEnemyDelegate OnRetreatFromEnemy;
+	FOnGetDamagedDelegate OnGetDamaged;
 
 protected:
 	// Called when the game starts
@@ -37,30 +37,35 @@ protected:
 	UFUNCTION()
 	void OnDeathEnded();
 
-	/* 데미지를 받은 애니메이션이 끝난 이후 실행되는 함수 */
+	/* 피격 애니메이션이 끝난 이후 실행되는 함수 */
 	UFUNCTION() void OnGetDamagedEnded(UAnimMontage* Montage, bool bInterrupted);
 
 private:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Stat", meta = (AllowPrivateAccess = "true"))
-	float MaxHP;
+	float MaxHP;		// 최대 체력
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Stat", meta = (AllowPrivateAccess = "true"))
-	float CurrentHP;
+	float CurrentHP;	// 현재 체력
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Stat", meta = (AllowPrivateAccess = "true"))
-	float MaxMP;
+	float MaxMP;		// 최대 마나
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Stat", meta = (AllowPrivateAccess = "true"))
-	float CurrentMP;
+	float CurrentMP;	// 현제 마나
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Stat", meta = (AllowPrivateAccess = "true"))
+	float DamageAccumulation;	// 데미지 누적량 (한번에 들어오는 피해가 >= CurrentHP's 30% 일 경우, 회피)
+
+	FTimerHandle ResetDamageAccumulationTimer;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Stat", meta = (AllowPrivateAccess = "true"))
-	float StunGauge;
+	float StunGauge;		// 스턴 게이지
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Stat", meta = (AllowPrivateAccess = "true"))
-	float StunGaugeLimit;
+	float StunGaugeLimit;	// 최대 스턴게이지 (<= StunGage일 경우, 그로기 상태)
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "State", meta = (AllowPrivateAccess = "true"))
-	bool bIsDamagable;
+	bool bIsDamagable;		// 데미지를 받는 객체인지
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "State", meta = (AllowPrivateAccess = "true"))
 	UParticleSystem* BloodParticle;

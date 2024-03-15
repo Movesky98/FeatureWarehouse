@@ -57,21 +57,24 @@ void UStatComponent::OnDeathEnded()
 
 void UStatComponent::OnGetDamagedEnded(UAnimMontage* Montage, bool bInterrupted)
 {
-	// 회피 델리게이트를 실행시킴.
-	if (Montage == GetDamagedMontage)
-	{
-		// OnRetreatFromEnemy.IsBound() ? OnRetreatFromEnemy.Execute() : nullptr;
+	if (Montage != GetDamagedMontage) return;
 	
-		AWeaponWielder* WeaponWielder = Cast<AWeaponWielder>(GetOwner());
-		if (!IsValid(WeaponWielder)) return;
+	AWeaponWielder* WeaponWielder = Cast<AWeaponWielder>(GetOwner());
+	if (!IsValid(WeaponWielder)) return;
 
-		UAnimInstance* Anim = WeaponWielder->GetMesh()->GetAnimInstance();
+	UAnimInstance* Anim = WeaponWielder->GetMesh()->GetAnimInstance();
 
-		// 피격 몽타주가 실행되지 않을 때에 상태 변경
-		if (Anim && !Anim->Montage_IsPlaying(GetDamagedMontage))
-		{
-			WeaponWielder->SetActionState(EActionState::EAS_Idle);
-		}
+	// 피격 몽타주가 실행되지 않을 때에 상태 변경
+	if (Anim && !Anim->Montage_IsPlaying(GetDamagedMontage))
+	{
+		WeaponWielder->SetActionState(EActionState::EAS_Idle);
+
+		// 피격 델리게이트 콜백 함수 호출.
+		if (!OnGetDamaged.IsBound()) return;
+
+		(DamageAccumulation >= MaxHP * 0.3f) ? OnGetDamaged.Execute(true) : OnGetDamaged.Execute(false);
+
+		DamageAccumulation = 0.0f;
 	}
 }
 
@@ -127,6 +130,8 @@ void UStatComponent::DecreaseHP(float Damage)
 
 	// 피격 몽타주가 없으면 바로 상태 변경
 	IsValid(GetDamagedMontage) ? PlayMontage(GetDamagedMontage) : WeaponWielder->SetActionState(EActionState::EAS_Idle);
+
+	DamageAccumulation += Damage;
 }
 
 void UStatComponent::ShowBloodEffect(FVector Location, FRotator Rotation)
