@@ -61,6 +61,8 @@ protected:
 
 	virtual void PostInitializeComponents() override;
 
+	void Die() override;
+
 	UFUNCTION(BlueprintCallable)
 	virtual void Attack() override;
 

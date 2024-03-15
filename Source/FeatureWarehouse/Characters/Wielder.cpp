@@ -20,6 +20,7 @@
 #include "Kismet/KismetMathLibrary.h"
 #include "Kismet/KismetSystemLibrary.h"
 #include "Components/SphereComponent.h"
+#include "Components/CapsuleComponent.h"
 
 #include "DrawDebugHelpers.h"
 
@@ -164,8 +165,6 @@ void AWielder::OnAttackRangeBeginOverlap(class UPrimitiveComponent* SelfComp, cl
 {
 	if (OtherActor->ActorHasTag(FName("Player")))
 	{
-		GEngine->AddOnScreenDebugMessage(-1, 3.0f, FColor::Green, FString("Player is In Attack Range."));
-
 		AWielderController* WielderController = Cast<AWielderController>(GetController());
 
 		if (IsValid(WielderController) && WielderController->IsIdentifiedPlayer())
@@ -196,7 +195,8 @@ void AWielder::OnReceivePointDamageEvent(AActor* DamagedActor, float Damage, ACo
 	// 2. Show Blood Effect
 	// 3. Change CurState To Retreat
 	// 4. Change BattleState To Retreat
-	
+	if (bIsDead) return;
+
 	StatComponent->DecreaseHP(Damage);
 
 	FRotator ImpactRotation = UKismetMathLibrary::MakeRotFromZ(ShotFromDirection);
@@ -258,12 +258,22 @@ void AWielder::RetreatFromEnemy()
 
 void AWielder::Attack()
 {
-	if (!IsValid(EquipWeapon))
+	if (bIsDead || !IsValid(EquipWeapon)) return;
+
+	EActionState SpecificAction = EActionState::EAS_Attacking;
+	bool CanTakeAction = CheckTakeAction(SpecificAction);
+	if (CanTakeAction)
+	{
+		DrawDebugString(GetWorld(), FVector(0.0f, 0.0f, 150.0f), FString("Can Attack"), this, FColor::Green, 0.01f);
+	}
+	else
+	{
+		DrawDebugString(GetWorld(), FVector(0.0f, 0.0f, 150.0f), FString("Can't Attack"), this, FColor::Red, 0.01f);
 		return;
+	}
 
-	// 기본 공격
-	ActionState = EActionState::EAS_Attacking;
-
+	// if (!CanTakeAction) return;
+	
 	EquipWeapon->Attack();
 }
 
@@ -308,6 +318,8 @@ void AWielder::CheckEquipWeapon()
 
 void AWielder::EquipFirstWeapon()
 {
+	if (bIsDead) return;
+
 	if (!WeaponComponent->GetMainWeapon() || ActionState == EActionState::EAS_Swapping)
 		return;
 
@@ -371,7 +383,7 @@ void AWielder::CalculateMonitoringTime()
 		AWielderController* WielderController = Cast<AWielderController>(GetController());
 		if (WielderController)
 		{
-			WielderController->ClearFocus(EAIFocusPriority::Default);
+			WielderController->ClearFocus(EAIFocusPriority::LastFocusPriority);
 			WielderController->NotifyApproaching();
 		}
 	}
@@ -395,7 +407,7 @@ FVector AWielder::CirclingAroundTheEnemy()
 	{
 		MoveLocation = GetActorLocation() + GoalDirection * 100.0f;
 
-		DrawDebugLine(GetWorld(), GetActorLocation(), MoveLocation, FColor::Green, true, -1, 0, 10);
+		DrawDebugLine(GetWorld(), GetActorLocation(), MoveLocation, FColor::Green, true, -1, 0, 3);
 		DrawDebugSolidBox(GetWorld(), MoveLocation, FVector(5.0f), FColor::Green);
 
 		UWorld* World = GetWorld();
@@ -423,8 +435,39 @@ FVector AWielder::CirclingAroundTheEnemy()
 
 		return MoveLocation;
 	}
+	else
+	{
+		// 아닐 경우 플레이어에게 천천히 접근
+		MoveLocation = GetActorLocation() + GetActorForwardVector() * 100.0f;
 
-	return GetActorLocation();
+		DrawDebugLine(GetWorld(), GetActorLocation(), MoveLocation, FColor::Green, true, -1, 0, 3);
+		DrawDebugSolidBox(GetWorld(), MoveLocation, FVector(5.0f), FColor::Purple);
+
+		UWorld* World = GetWorld();
+		if (!ensure(World != nullptr)) return GetActorLocation();
+
+		TArray<AActor*> IgnoreActors;
+		FHitResult Hit;
+
+		bool IsSuccess = UKismetSystemLibrary::LineTraceSingle(
+			GetWorld(),
+			MoveLocation,
+			MoveLocation - FVector(0.0f, 0.0f, 1000.0f),
+			ETraceTypeQuery::TraceTypeQuery1,
+			false,
+			IgnoreActors,
+			EDrawDebugTrace::ForDuration,
+			Hit,
+			true
+		);
+
+		if (IsSuccess)
+		{
+			return Hit.ImpactPoint;
+		}
+
+		return MoveLocation;
+	}
 }
 
 void AWielder::ClearMonitoring()
@@ -446,4 +489,15 @@ void AWielder::EngagingInCombat(AActor* AdversaryActor)
 void AWielder::SetMovementSpeed(float Speed)
 {
 	GetCharacterMovement()->MaxWalkSpeed = Speed;
+}
+
+void AWielder::Die()
+{
+	AWielderController* WielderController = Cast<AWielderController>(GetController());
+	if (!IsValid(WielderController)) return;
+
+	WielderController->NotifyDead();
+	GetCapsuleComponent()->SetCollisionProfileName(FName("Ragdoll"));
+	GetMesh()->SetCollisionProfileName(FName("Ragdoll"));
+	GetMesh()->SetSimulatePhysics(true);
 }

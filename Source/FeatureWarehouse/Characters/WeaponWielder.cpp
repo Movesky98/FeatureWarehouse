@@ -68,9 +68,9 @@ void AWeaponWielder::OnReceivePointDamageEvent(AActor* DamagedActor, float Damag
 	* 2. Show Blood effect.
 	* 3. Play hit sound.
 	*/
-	APawn* ControlledPawn = InstigatedBy->GetPawn();
+	if (bIsDead) return;
 
-	GEngine->AddOnScreenDebugMessage(-1, 3.0f, FColor::Cyan, FString("Instigator Pawn Name : ") + ControlledPawn->GetName());
+	APawn* ControlledPawn = InstigatedBy->GetPawn();
 
 	StatComponent->DecreaseHP(Damage);
 
@@ -139,4 +139,17 @@ void AWeaponWielder::EquipEnded()
 void AWeaponWielder::UnequipEnded()
 {
 
+}
+
+bool AWeaponWielder::CheckTakeAction(EActionState SpecificAction)
+{
+	// 특정 액션을 취하고 있지 않는 경우, 실행 가능.
+	if (ActionState == EActionState::EAS_Idle)
+	{
+		ActionState = SpecificAction;
+		return true;
+	}
+
+	// 특정 액션을 취하는데 일치할 경우 true 아니면 false.
+	return  ActionState == SpecificAction ? true : false;
 }

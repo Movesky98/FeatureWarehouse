@@ -279,6 +279,8 @@ void APlayerCharacter::Run(const FInputActionValue& Value)
 
 void APlayerCharacter::Interact(const FInputActionValue& Value)
 {
+	if (bIsDead) return;
+
 	bool IsPressed = Value.Get<bool>();
 
 	if (IsPressed && Controller != nullptr)
@@ -299,6 +301,8 @@ void APlayerCharacter::Interact(const FInputActionValue& Value)
 
 void APlayerCharacter::FirstWeapon(const FInputActionValue& Value)
 {
+	if (bIsDead) return;
+
 	bool IsPressed = Value.Get<bool>();
 
 	if (IsPressed && Controller != nullptr)
@@ -309,6 +313,8 @@ void APlayerCharacter::FirstWeapon(const FInputActionValue& Value)
 
 void APlayerCharacter::SecondWeapon(const FInputActionValue& Value)
 {
+	if (bIsDead) return;
+
 	bool IsPressed = Value.Get<bool>();
 
 	if (IsPressed && Controller != nullptr)
@@ -319,6 +325,8 @@ void APlayerCharacter::SecondWeapon(const FInputActionValue& Value)
 
 void APlayerCharacter::AttackTriggered(const FInputActionValue& Value)
 {
+	if (bIsDead) return;
+
 	bool IsPressed = Value.Get<bool>();
 
 	if (Controller != nullptr)
@@ -336,7 +344,7 @@ void APlayerCharacter::AttackTriggered(const FInputActionValue& Value)
 
 void APlayerCharacter::Zoom(const FInputActionValue& Value)
 {
-	if (!IsValid(EquipWeapon)) return;
+	if (!IsValid(EquipWeapon) || bIsDead) return;
 
 	bool IsPressed = Value.Get<bool>();
 
@@ -493,11 +501,19 @@ void APlayerCharacter::EquipFirstWeapon()
 	if (!WeaponComponent->GetMainWeapon() || ActionState == EActionState::EAS_Swapping)
 		return;
 
+	EActionState SpecificAction = EActionState::EAS_Equipping;
+
+	bool CanTakeAction = CheckTakeAction(SpecificAction);
+	if (!CanTakeAction) return;
+
+	// 현재 들고 있는 무기가 두번째 무기인 경우
 	if (WeaponComponent->CurEquipState() == EEquipState::SubWeapon)
 	{
 		if (EquipWeapon->GetWeaponType() == ETypeOfWeapon::Gun)
 		{
+			// 총의 경우 장착 해제 몽타주가 없으므로 바로 상태를 바꿔줌.
 			EquipWeapon->Unequip();
+			ActionState = EActionState::EAS_Idle;
 		}
 
 		if (EquipWeapon->HasEquipMontage())
@@ -515,11 +531,18 @@ void APlayerCharacter::EquipSecondWeapon()
 	if (!WeaponComponent->GetSubWeapon() || ActionState == EActionState::EAS_Swapping)
 		return;
 
+	EActionState SpecificAction = EActionState::EAS_Equipping;
+
+	bool CanTakeAction = CheckTakeAction(SpecificAction);
+	if (!CanTakeAction) return;
+
 	if (WeaponComponent->CurEquipState() == EEquipState::MainWeapon)
 	{
 		if (EquipWeapon->GetWeaponType() == ETypeOfWeapon::Gun)
 		{
+			// 총의 경우 장착 해제 몽타주가 없으므로 바로 상태를 바꿔줌.
 			EquipWeapon->Unequip();
+			ActionState = EActionState::EAS_Idle;
 		}
 
 		if (EquipWeapon->HasEquipMontage())
@@ -537,7 +560,11 @@ void APlayerCharacter::Attack()
 	if (!PlayerController) return;
 	if (!EquipWeapon) return;
 
-	ActionState = EActionState::EAS_Attacking;
+	EActionState SpecificAction = EActionState::EAS_Attacking;
+
+	bool CanTakeAction = CheckTakeAction(SpecificAction);
+	if (!CanTakeAction) return;
+
 
 	if (PlayerController->GetPerspective() == EStateOfViews::TDP)
 	{
@@ -555,7 +582,10 @@ void APlayerCharacter::HeavyAttack()
 	if (!PlayerController) return;
 	if (!EquipWeapon) return;
 
-	ActionState = EActionState::EAS_HeavyAttacking;
+	EActionState SpecificAction = EActionState::EAS_HeavyAttacking;
+
+	bool CanTakeAction = CheckTakeAction(SpecificAction);
+	if (!CanTakeAction) return;
 
 	if (PlayerController->GetPerspective() == EStateOfViews::TDP)
 	{
@@ -741,6 +771,26 @@ void APlayerCharacter::UpdateHealth()
 	if (GameInstance)
 	{
 		GameInstance->PlayerMenu->UpdatePlayerHealth(StatComponent->GetCurrentHP(), StatComponent->GetMaxHP());
+	}
+}
+
+void APlayerCharacter::EquipEnded()
+{
+	UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance();
+
+	if (AnimInstance)
+	{
+		ActionState = EActionState::EAS_Idle;
+	}
+}
+
+void APlayerCharacter::UnequipEnded()
+{
+	UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance();
+
+	if (AnimInstance)
+	{
+		ActionState = EActionState::EAS_Idle;
 	}
 }
 

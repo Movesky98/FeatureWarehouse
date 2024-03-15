@@ -74,6 +74,9 @@ protected:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Montage|Knockdown", meta = (AllowPrivateAccess = "true"))
 	UAnimMontage* KnockdownMontage;
 
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "State")
+	bool bIsEquip;
+
 private:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "State", meta = (AllowPrivateAccess = "true"))
 	ACharacter* WeaponOwner;

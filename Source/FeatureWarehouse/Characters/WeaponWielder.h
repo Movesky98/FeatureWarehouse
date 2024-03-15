@@ -62,6 +62,9 @@ protected:
 
 	virtual void OnMovementModeChanged(EMovementMode PrevMovementMode, uint8 PreviousCustomMode) override;
 
+	/* 액션을 취할 수 있는지 체크하는 함수. */
+	bool CheckTakeAction(EActionState SpecificAction);
+
 	// Variables
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Component")
 	UWeaponComponent* WeaponComponent;
@@ -81,6 +84,9 @@ protected:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Character|State")
 	EActionState ActionState;
 
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "State")
+	bool bIsDead;
+
 #pragma region GetterSetter
 public:
 	// Equip Weapon
@@ -96,5 +102,8 @@ public:
 	FORCEINLINE void SetMovementState(EMovementState State) { MovementState = State; }
 	FORCEINLINE EActionState CurActionState() { return ActionState; }
 	FORCEINLINE void SetActionState(EActionState State) { ActionState = State; }
+
+	FORCEINLINE bool IsDead() { return bIsDead; }
+	FORCEINLINE void SetIsDead(bool IsDead) { bIsDead = IsDead; }
 #pragma endregion
 };

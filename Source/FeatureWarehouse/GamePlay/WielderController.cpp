@@ -63,6 +63,7 @@ void AWielderController::OnPossess(APawn* InPawn)
 		}
 	}
 
+	// Set AIPerception's Sight Radius.
 	FAISenseID Id = UAISense::GetSenseID(UAISense_Sight::StaticClass());
 
 	if (!Id.IsValid())
@@ -285,6 +286,11 @@ void AWielderController::NotifyMonitoring()
 void AWielderController::NotifyEnemyInAttackRange()
 {
 	Blackboard->SetValueAsBool(FName("IsInAttackRange"), true);
+}
+
+void AWielderController::NotifyDead()
+{
+	Blackboard->SetValueAsBool(FName("IsDead"), true);
 }
 
 AActor* AWielderController::GetSeeingPawn()

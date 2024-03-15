@@ -62,7 +62,7 @@ void AMelee::BindMontage()
 
 void AMelee::Attack()
 {
-	if (!CanAttack())
+	if (!bIsEquip || !CanAttack())
 		return;
 
 	if (CanCombo)
@@ -106,7 +106,7 @@ void AMelee::Attack()
 
 void AMelee::Attack(EStateOfViews CurView, FVector HitLocation)
 {
-	if (!CanAttack())
+	if (!bIsEquip || !CanAttack())
 		return;
 
 	if (CanCombo)
@@ -175,7 +175,8 @@ void AMelee::OnAttackEnded(class UAnimMontage* Montage, bool bInterrupted)
 			MontageIndex = 0;
 			CanCombo = false;
 			SetIsAttacking(false);
-			Wielder->SetActionState(EActionState::EAS_Idle);
+
+			Wielder->CurActionState() == EActionState::EAS_Attacking ? Wielder->SetActionState(EActionState::EAS_Idle) : nullptr;
 		}
 
 		return;
@@ -194,13 +195,13 @@ void AMelee::OnAttackEnded(class UAnimMontage* Montage, bool bInterrupted)
 			MontageIndex = 0;
 			CanCombo = false;
 			SetIsAttacking(false);
-			Wielder->SetActionState(EActionState::EAS_Idle);
+			Wielder->CurActionState() == EActionState::EAS_HeavyAttacking ? Wielder->SetActionState(EActionState::EAS_Idle) : nullptr;
 		}
 
 		return;
 	}
 
-	// 콤보가 존재하지 않는다면 상태 초기화
+	// 콤보가 존재하지 않는다면 상태 초기화 (SprintAttack, JumpAttack)
 	MontageIndex = 0;
 	CanCombo = false;
 	SetIsAttacking(false);
@@ -387,6 +388,9 @@ void AMelee::EquipEnded()
 	AWeaponWielder* Wielder = Cast<AWeaponWielder>(GetWeaponOwner());
 	if (!IsValid(Wielder)) return;
 
+	bIsEquip = true;
+	Wielder->SetActionState(EActionState::EAS_Idle);
+
 	if (Wielder->IsA<APlayerCharacter>())
 	{
 		// Player일 경우
@@ -403,6 +407,7 @@ void AMelee::UnequipEnded()
 	AWeaponWielder* Wielder = Cast<AWeaponWielder>(GetWeaponOwner());
 	if (!IsValid(Wielder)) return;
 
+	bIsEquip = false;
 	Wielder->SetActionState(EActionState::EAS_Idle);
 
 	if (Wielder->IsA<APlayerCharacter>())

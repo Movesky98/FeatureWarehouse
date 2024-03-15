@@ -74,6 +74,10 @@ protected:
 
 	void HeavyAttack() override;
 
+	void EquipEnded() override;
+
+	void UnequipEnded() override;
+
 	FVector DrawCameraLineTrace();
 	
 private:

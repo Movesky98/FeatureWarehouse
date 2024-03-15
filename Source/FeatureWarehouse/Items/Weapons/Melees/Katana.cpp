@@ -46,14 +46,12 @@ void AKatana::HoldMeleeWeapon()
 			// ¸ö ¿ÞÂÊ¿¡ Ä®Áý, ¿À¸¥ ¼Õ¿¡ Ä®³¯.
 			GetSkeletalMesh()->AttachToComponent(GetWeaponOwner()->GetMesh(), FAttachmentTransformRules::KeepRelativeTransform, Blade_RightHandSocketName);
 			Scabbard->AttachToComponent(GetWeaponOwner()->GetMesh(), FAttachmentTransformRules::KeepRelativeTransform, Scabbard_UnequipSocketName);
-			bIsEquip = true;
 		}
 		else
 		{
 			// µÑ ´Ù ¸ö ¿ÞÂÊ¿¡ ¾îÅÂÄ¡.
 			GetSkeletalMesh()->AttachToComponent(GetWeaponOwner()->GetMesh(), FAttachmentTransformRules::KeepRelativeTransform, Blade_UnequipSocketName);
 			Scabbard->AttachToComponent(GetWeaponOwner()->GetMesh(), FAttachmentTransformRules::KeepRelativeTransform, Scabbard_UnequipSocketName);
-			bIsEquip = false;
 		}
 	}
 }

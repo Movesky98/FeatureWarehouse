@@ -35,11 +35,13 @@ AGun::AGun()
 void AGun::Equip()
 {
 	AttachToComponent(GetWeaponOwner()->GetMesh(), FAttachmentTransformRules::KeepRelativeTransform, EquipName);
+	bIsEquip = true;
 }
 
 void AGun::Unequip()
 {
 	AttachToComponent(GetWeaponOwner()->GetMesh(), FAttachmentTransformRules::KeepRelativeTransform, GetAttachSocketName());
+	bIsEquip = false;
 }
 
 void AGun::Attack(EStateOfViews CurView, FVector HitLocation)

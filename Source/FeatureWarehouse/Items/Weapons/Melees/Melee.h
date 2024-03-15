@@ -44,9 +44,6 @@ protected:
 	UFUNCTION()
 	void UnequipEnded();
 
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "State", meta = (AllowPrivateAccess = "true"))
-	bool bIsEquip;
-
 private:
 	// Functions
 	UFUNCTION()

@@ -5,6 +5,8 @@
 #include "Characters/WeaponWielder.h"
 #include "AnimInstance/WielderAnimInstance.h"
 
+#include "Enums/ActionState.h"
+
 #include "Animation/AnimMontage.h"
 #include "Components/CapsuleComponent.h"
 #include "Kismet/KismetSystemLibrary.h"
@@ -21,6 +23,8 @@ UStatComponent::UStatComponent()
 	{
 		BloodParticle = P_Blood.Object;
 	}
+
+	StunGauge = 0.0f;
 }
 
 // Called when the game starts
@@ -56,7 +60,18 @@ void UStatComponent::OnGetDamagedEnded(UAnimMontage* Montage, bool bInterrupted)
 	// 회피 델리게이트를 실행시킴.
 	if (Montage == GetDamagedMontage)
 	{
-		OnRetreatFromEnemy.IsBound() ? OnRetreatFromEnemy.Execute() : nullptr;
+		// OnRetreatFromEnemy.IsBound() ? OnRetreatFromEnemy.Execute() : nullptr;
+	
+		AWeaponWielder* WeaponWielder = Cast<AWeaponWielder>(GetOwner());
+		if (!IsValid(WeaponWielder)) return;
+
+		UAnimInstance* Anim = WeaponWielder->GetMesh()->GetAnimInstance();
+
+		// 피격 몽타주가 실행되지 않을 때에 상태 변경
+		if (Anim && !Anim->Montage_IsPlaying(GetDamagedMontage))
+		{
+			WeaponWielder->SetActionState(EActionState::EAS_Idle);
+		}
 	}
 }
 
@@ -96,20 +111,22 @@ void UStatComponent::DecreaseHP(float Damage)
 {
 	if (!bIsDamagable) return;
 
-	CurrentHP -= Damage;
-
-	if (GetDamagedMontage)
-	{
-		PlayMontage(GetDamagedMontage);
-	}
-
 	AWeaponWielder* WeaponWielder = Cast<AWeaponWielder>(GetOwner());
 	if (!IsValid(WeaponWielder)) return;
+	
+	WeaponWielder->SetActionState(EActionState::EAS_GetDamaged);
 
 	if (CurrentHP <= 0.0f)
 	{
+		WeaponWielder->SetIsDead(true);
 		IsValid(DeathMontage) ? PlayMontage(DeathMontage) : WeaponWielder->Die();
+		return;
 	}
+
+	CurrentHP -= Damage;
+
+	// 피격 몽타주가 없으면 바로 상태 변경
+	IsValid(GetDamagedMontage) ? PlayMontage(GetDamagedMontage) : WeaponWielder->SetActionState(EActionState::EAS_Idle);
 }
 
 void UStatComponent::ShowBloodEffect(FVector Location, FRotator Rotation)
@@ -123,18 +140,16 @@ void UStatComponent::ShowBloodEffect(FVector Location, FRotator Rotation)
 
 void UStatComponent::PlayMontage(UAnimMontage* PlayMontage)
 {
-	USkeletalMeshComponent* OwnerSkeletalMesh = Cast<USkeletalMeshComponent>(GetOwner()->GetComponentByClass(USkeletalMeshComponent::StaticClass()));
-	
-	if (!OwnerSkeletalMesh) return;
-	
-	UAnimInstance* OwnerAnim = OwnerSkeletalMesh->GetAnimInstance();
+	AWeaponWielder* WeaponWielder = Cast<AWeaponWielder>(GetOwner());
+
+	UAnimInstance* OwnerAnim = WeaponWielder->GetMesh()->GetAnimInstance();
 	if (OwnerAnim)
 	{
 		// 재생되고 있는 몽타주 중지.
-		OwnerAnim->Montage_Stop(0.0f, nullptr);
+		if(OwnerAnim->IsAnyMontagePlaying())
+			OwnerAnim->StopAllMontages(0.0f);
 
 		// 몽타주 재생 (피격, 죽음)
 		OwnerAnim->Montage_Play(PlayMontage);
 	}
-	
 }

@@ -15,6 +15,7 @@ void AHalberd::Equip()
 		if (OwnerAnim)
 		{
 			OwnerAnim->Montage_Play(EquipMontage);
+			bIsEquip = true;
 		}
 	}
 }
@@ -27,6 +28,7 @@ void AHalberd::Unequip()
 		if (OwnerAnim)
 		{
 			OwnerAnim->Montage_Play(UnequipMontage);
+			bIsEquip = false;
 		}
 	}
 }
@@ -49,12 +51,10 @@ void AHalberd::HoldMeleeWeapon()
 		if (AnimInstance->Montage_IsPlaying(EquipMontage))
 		{
 			AttachToComponent(GetWeaponOwner()->GetMesh(), FAttachmentTransformRules::KeepRelativeTransform, EquipSocketName);
-			bIsEquip = true;
 		}
 		else
 		{
 			AttachToComponent(GetWeaponOwner()->GetMesh(), FAttachmentTransformRules::KeepRelativeTransform, UnequipSocketName);
-			bIsEquip = false;
 		}
 	}
 }
