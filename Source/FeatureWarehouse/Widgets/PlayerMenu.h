@@ -10,6 +10,13 @@ class UImage;
 class UProgressBar;
 class UTextBlock;
 
+UENUM(BlueprintType)
+enum class ETypeOfPlayerUI : uint8 
+{
+	ETP_ShootingGame UMETA(DisplayName = "ShootingGame"),
+	ETP_RPGGame UMETA(DisplayName = "RPGGame")
+};
+
 /**
  * 
  */
@@ -23,12 +30,23 @@ public:
 	UFUNCTION(BlueprintCallable)
 	void SetUp() override;
 
+	void SetRPGPanel();
+
+	void SetShootingPanel();
+
 	UFUNCTION(BlueprintCallable)
 	void UpdatePlayerHealth(float CurHealth, float MaxHealth);
+	
+	void SetStatBarSize();
 
 protected:
 	virtual bool Initialize();
 
+private:
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "State", meta = (AllowPrivateAccess = "true"))
+	ETypeOfPlayerUI UIType;
+
+#pragma region ShootingGame_UI
 private:
 	UPROPERTY(meta = (BindWidget))
 	UImage* HP_BarImage;
@@ -43,9 +61,6 @@ private:
 	UProgressBar* Armor_ProgressBar;
 
 	UPROPERTY(meta = (BindWidget))
-	UImage* Minimap;
-
-	UPROPERTY(meta = (BindWidget))
 	UImage* Crosshair;
 
 	UPROPERTY(meta = (BindWidget))
@@ -53,4 +68,18 @@ private:
 
 	UPROPERTY(meta = (BindWidget))
 	UTextBlock* TotalRoundsTextBlock;
+#pragma endregion
+
+#pragma region RPGGame_UI
+private:
+	UPROPERTY(meta = (BindWidget))
+	UProgressBar* RPG_HP_Bar;
+
+	UPROPERTY(meta = (BindWidget))
+	UProgressBar* RPG_MP_Bar;
+
+	UPROPERTY(meta = (BindWidget))
+	UProgressBar* RPG_Stamina_Bar;
+#pragma endregion
+
 };

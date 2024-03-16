@@ -42,16 +42,22 @@ protected:
 
 private:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Stat", meta = (AllowPrivateAccess = "true"))
-	float MaxHP;		// 최대 체력
+	float MaxHP;			// 최대 체력
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Stat", meta = (AllowPrivateAccess = "true"))
-	float CurrentHP;	// 현재 체력
+	float CurrentHP;		// 현재 체력
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Stat", meta = (AllowPrivateAccess = "true"))
-	float MaxMP;		// 최대 마나
+	float MaxMP;			// 최대 마나
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Stat", meta = (AllowPrivateAccess = "true"))
-	float CurrentMP;	// 현제 마나
+	float CurrentMP;		// 현제 마나
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Stat", meta = (AllowPrivateAccess = "true"))
+	float CurrentStamina;	// 현재 스태미나
+	
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Stat", meta = (AllowPrivateAccess = "true"))
+	float MaxStamina;		// 최대 스태미나
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Stat", meta = (AllowPrivateAccess = "true"))
 	float DamageAccumulation;	// 데미지 누적량 (한번에 들어오는 피해가 >= CurrentHP's 30% 일 경우, 회피)
@@ -92,6 +98,12 @@ public:
 
 	FORCEINLINE float GetCurrentMP() { return CurrentMP; }
 	FORCEINLINE void SetCurrentMP(float NewCurrentMP) { CurrentMP = NewCurrentMP; }
+
+	FORCEINLINE float GetMaxStamina() { return MaxStamina; }
+	FORCEINLINE void SetMaxStamina(float NewMaxStamina) { MaxStamina = NewMaxStamina; }
+
+	FORCEINLINE float GetCurrentStamina() { return CurrentStamina; }
+	FORCEINLINE void SetCurrentStamina(float NewCurrentStamina) { CurrentStamina = NewCurrentStamina; }
 
 	FORCEINLINE class UAnimMontage* GetBackstepMontage() { return RetreatMontage; }
 #pragma endregion

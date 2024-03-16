@@ -5,6 +5,7 @@
 #include "Enums/StateOfViews.h"
 #include "Characters/PlayerCharacter.h"
 #include "GamePlay/FW_GameInstance.h"
+#include "Widgets/PlayerMenu.h"
 
 #include "EnhancedInputComponent.h"
 #include "EnhancedInputSubsystems.h"
@@ -32,12 +33,8 @@ void AFW_PlayerController::BeginPlay()
 	{
 		GEngine->AddOnScreenDebugMessage(-1, 3.0f, FColor::Green, FString("Load player menu."));
 		GameInstance->LoadPlayerMenu();
-
-		APlayerCharacter* PlayerCharacter = Cast<APlayerCharacter>(GetPawn());
-		if (PlayerCharacter)
-		{
-			PlayerCharacter->UpdateHealth();
-		}
+		GameInstance->PlayerMenu->SetOwningPlayer(this);
+		GameInstance->PlayerMenu->SetStatBarSize();
 	}
 }
 

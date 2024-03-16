@@ -69,11 +69,10 @@ void UStatComponent::OnGetDamagedEnded(UAnimMontage* Montage, bool bInterrupted)
 	{
 		WeaponWielder->SetActionState(EActionState::EAS_Idle);
 
-		// 피격 델리게이트 콜백 함수 호출.
 		if (!OnGetDamaged.IsBound()) return;
 
-		(DamageAccumulation >= MaxHP * 0.3f) ? OnGetDamaged.Execute(true) : OnGetDamaged.Execute(false);
-
+		// 피격 델리게이트 콜백 함수 호출.
+		(DamageAccumulation > MaxHP * 0.3f) ? OnGetDamaged.Execute(true) : OnGetDamaged.Execute(false);
 		DamageAccumulation = 0.0f;
 	}
 }

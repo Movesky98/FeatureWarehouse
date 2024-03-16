@@ -257,18 +257,27 @@ void AWielder::RetreatFromEnemy()
 	}
 	else
 	{
-		// Change BattleState to Approaching.
-
+		// Change BattleState to Approaching or monitoring (모니터링 구현 필요).
 		if (!IsValid(CurWeapon()))
 		{
 			// 현재 무기를 들고있지 않다면 무기를 우선 장착함.
 			EquipFirstWeapon();
 		}
 
-		AWielderController* WielderController = Cast<AWielderController>(GetController());
-		if (IsValid(WielderController))
+		
+		bool IsApproach = FMath::RandBool();
+
+		if (IsApproach)
 		{
-			WielderController->NotifyApproachToEnemy(GetSeeingPawn());
+			AWielderController* WielderController = Cast<AWielderController>(GetController());
+			if (IsValid(WielderController))
+			{
+				WielderController->NotifyApproachToEnemy(GetSeeingPawn());
+			}
+		}
+		else
+		{
+			Monitoring();
 		}
 	}
 }

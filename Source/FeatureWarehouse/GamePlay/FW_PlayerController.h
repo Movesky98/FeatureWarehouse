@@ -37,6 +37,9 @@ private:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = InputAction, meta = (AllowPrivateAccess = "true"))
 	UInputMappingContext* DefaultMappingContext;
 
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Menu", meta = (AllowPrivateAccess = "true"))
+	class UPlayerMenu* PlayerMenu;
+
 #pragma region GetterSetter
 public:
 	FORCEINLINE void SetPerspective(EStateOfViews NewState) { ViewState = NewState; }
