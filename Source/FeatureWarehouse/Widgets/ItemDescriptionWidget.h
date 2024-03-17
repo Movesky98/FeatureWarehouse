@@ -21,8 +21,7 @@ public:
 protected:
 	virtual bool Initialize() override;
 
-private:
-	UPROPERTY(meta = (BindWidget))
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Widget", meta = (BindWidget))
 	class UImage* IconImage;
 
 	UPROPERTY(meta = (BindWidget))
@@ -30,4 +29,8 @@ private:
 
 	UPROPERTY(meta = (BindWidget))
 	class UTextBlock* WeaponTypeText;
+
+public:
+	UFUNCTION(BlueprintImplementableEvent, Category = "Widget|Image")
+	UImage* GetItemTexture() const;
 };

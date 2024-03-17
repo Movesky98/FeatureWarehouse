@@ -19,6 +19,8 @@ public:
 	AFW_PlayerController();
 
 	FVector ViewClickLocation();
+	
+	void SwitchPlayerMenu();
 
 protected:
 	virtual void BeginPlay() override;

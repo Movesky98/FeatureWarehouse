@@ -782,6 +782,8 @@ void APlayerCharacter::EquipEnded()
 	{
 		ActionState = EActionState::EAS_Idle;
 	}
+
+	PlayerController->SwitchPlayerMenu();
 }
 
 void APlayerCharacter::UnequipEnded()
@@ -792,6 +794,8 @@ void APlayerCharacter::UnequipEnded()
 	{
 		ActionState = EActionState::EAS_Idle;
 	}
+
+	PlayerController->SwitchPlayerMenu();
 }
 
 #pragma region Movement_State

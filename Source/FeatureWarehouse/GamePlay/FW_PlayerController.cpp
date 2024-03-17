@@ -3,9 +3,11 @@
 
 #include "FW_PlayerController.h"
 #include "Enums/StateOfViews.h"
+#include "Enums/TypeOfWeapon.h"
 #include "Characters/PlayerCharacter.h"
 #include "GamePlay/FW_GameInstance.h"
 #include "Widgets/PlayerMenu.h"
+#include "Weapons/Weapon.h"
 
 #include "EnhancedInputComponent.h"
 #include "EnhancedInputSubsystems.h"
@@ -88,4 +90,31 @@ FVector AFW_PlayerController::ViewClickLocation()
 	}
 
 	return FVector(0.0f);
+}
+
+void AFW_PlayerController::SwitchPlayerMenu()
+{
+	UFW_GameInstance* GameInstance = Cast<UFW_GameInstance>(GetGameInstance());
+	if (!GameInstance) return;
+
+	APlayerCharacter* PlayerCharacter = Cast<APlayerCharacter>(GetPawn());
+	if (!PlayerCharacter) return;
+
+	if (PlayerCharacter->CurWeapon())
+	{
+		switch (PlayerCharacter->CurWeapon()->GetWeaponType())
+		{
+		case ETypeOfWeapon::Gun:
+			GameInstance->PlayerMenu->SetShootingPanel();
+			break;
+		default:
+			GameInstance->PlayerMenu->SetRPGPanel();
+			break;
+		}
+
+		return;
+	}
+	
+	// 무기가 없으면 RPG 패널.
+	GameInstance->PlayerMenu->SetRPGPanel();
 }

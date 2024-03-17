@@ -7,6 +7,8 @@
 #include "Components/StatComponent.h"
 
 #include "Components/CanvasPanelSlot.h"
+#include "Components/WidgetSwitcher.h"
+#include "Components/CanvasPanel.h"
 #include "Components/ProgressBar.h"
 #include "Components/TextBlock.h"
 #include "Components/Image.h"
@@ -55,42 +57,34 @@ void UPlayerMenu::UpdatePlayerHealth(float CurHealth, float MaxHealth)
 
 void UPlayerMenu::SetStatBarSize()
 {
-	GEngine->AddOnScreenDebugMessage(-1, 3.0f, FColor::Green, FString("PlayerMenu :: Set stat bar size."));
 	APlayerCharacter* PlayerCharacter = Cast<APlayerCharacter>(GetOwningPlayerPawn());
 	if (PlayerCharacter)
 	{
 		UStatComponent* StatComponent = PlayerCharacter->GetStatComponent();
 
-		if (!StatComponent)
-		{
-			GEngine->AddOnScreenDebugMessage(-1, 3.0f, FColor::Green, FString("PlayerMenu :: Can't set Bar size. Because the stat component is not valid."));
-			return;
-		}
+		if (!StatComponent) return;
 		
 		UCanvasPanelSlot* PanelSlot;
 		// RPG HP Bar
 		PanelSlot = UWidgetLayoutLibrary::SlotAsCanvasSlot(RPG_HP_Bar);
 		PanelSlot->SetSize(FVector2D(StatComponent->GetMaxHP() * 3, PanelSlot->GetSize().Y));
-		GEngine->AddOnScreenDebugMessage(-1, 3.0f, FColor::Green, FString("HP Bar X Size : ") + FString::SanitizeFloat(StatComponent->GetMaxHP() * 3));
 
 		// RPG MP Bar
 		PanelSlot = UWidgetLayoutLibrary::SlotAsCanvasSlot(RPG_MP_Bar);
 		PanelSlot->SetSize(FVector2D(StatComponent->GetMaxMP() * 3, PanelSlot->GetSize().Y));
-		GEngine->AddOnScreenDebugMessage(-1, 3.0f, FColor::Green, FString("MP Bar X Size : ") + FString::SanitizeFloat(StatComponent->GetMaxMP() * 3));
 
 		// RPG Stamina Bar
 		PanelSlot = UWidgetLayoutLibrary::SlotAsCanvasSlot(RPG_Stamina_Bar);
 		PanelSlot->SetSize(FVector2D(StatComponent->GetMaxStamina() * 3, PanelSlot->GetSize().Y));
-		GEngine->AddOnScreenDebugMessage(-1, 3.0f, FColor::Green, FString("Stamina Bar X Size : ") + FString::SanitizeFloat(StatComponent->GetMaxStamina() * 3));
 	}
 }
 
 void UPlayerMenu::SetRPGPanel()
 {
-	UIType = ETypeOfPlayerUI::ETP_RPGGame;
+	UISwitcher->SetActiveWidget(RPGGamePanel);
 }
 
 void UPlayerMenu::SetShootingPanel()
 {
-	UIType = ETypeOfPlayerUI::ETP_ShootingGame;
+	UISwitcher->SetActiveWidget(ShootingGamePanel);
 }

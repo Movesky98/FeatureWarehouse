@@ -205,6 +205,15 @@ void UWeaponComponent::NotifyToAnimInstance()
 	WeaponWielder->IsA<APlayerCharacter>() ? 
 		UpdateWeaponInfoToPlayerAnimInstance() :
 		UpdateWeaponInfoToWielderAnimInstance();
+
+	// 총의 경우 (애니메이션이 없음. 생기면 코드 수정하기)
+	if (!WeaponWielder->CurWeapon()) return;
+
+	if (WeaponWielder->CurWeapon()->GetWeaponType() == ETypeOfWeapon::Gun)
+	{
+		WeaponWielder->SetActionState(EActionState::EAS_Idle);
+		WeaponWielder->EquipEnded();
+	}
 }
 
 void UWeaponComponent::UpdateWeaponInfoToPlayerAnimInstance()

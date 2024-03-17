@@ -9,11 +9,13 @@
 class UImage;
 class UProgressBar;
 class UTextBlock;
+class UWidgetSwitcher;
+class UCanvasPanel;
 
 UENUM(BlueprintType)
 enum class ETypeOfPlayerUI : uint8 
 {
-	ETP_ShootingGame UMETA(DisplayName = "ShootingGame"),
+	ETP_ShootingGame = 0 UMETA(DisplayName = "ShootingGame"),
 	ETP_RPGGame UMETA(DisplayName = "RPGGame")
 };
 
@@ -30,8 +32,10 @@ public:
 	UFUNCTION(BlueprintCallable)
 	void SetUp() override;
 
+	UFUNCTION(BlueprintCallable)
 	void SetRPGPanel();
 
+	UFUNCTION(BlueprintCallable)
 	void SetShootingPanel();
 
 	UFUNCTION(BlueprintCallable)
@@ -46,8 +50,14 @@ private:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "State", meta = (AllowPrivateAccess = "true"))
 	ETypeOfPlayerUI UIType;
 
+	UPROPERTY(meta = (BindWidget))
+	UWidgetSwitcher* UISwitcher;
+
 #pragma region ShootingGame_UI
 private:
+	UPROPERTY(meta = (BindWidget))
+	UCanvasPanel* ShootingGamePanel;
+
 	UPROPERTY(meta = (BindWidget))
 	UImage* HP_BarImage;
 
@@ -72,6 +82,9 @@ private:
 
 #pragma region RPGGame_UI
 private:
+	UPROPERTY(meta = (BindWidget))
+	UCanvasPanel* RPGGamePanel;
+
 	UPROPERTY(meta = (BindWidget))
 	UProgressBar* RPG_HP_Bar;
 
