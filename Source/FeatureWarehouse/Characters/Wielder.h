@@ -56,6 +56,12 @@ public:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "State|Speed")
 	float CreepSpeed;	// 천천히 걸을 때 속도
 
+	UFUNCTION(BlueprintCallable)
+	void ShowStatBar();
+
+	UFUNCTION(BlueprintCallable)
+	void HideStatBar();
+
 protected:
 	virtual void BeginPlay() override;
 
@@ -119,6 +125,9 @@ protected:
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "State")
 	ETypeOfWielder WielderType;		// Wielder 타입
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Component")
+	UStatBarComponent* StatBarComponent;
 
 	////////////////////////////////////////////////////////////////////    Montage    ////////////////////////////////////////////////////////////////////
 	

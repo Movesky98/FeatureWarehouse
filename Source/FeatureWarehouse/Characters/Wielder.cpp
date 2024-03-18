@@ -7,6 +7,7 @@
 
 #include "Components/WeaponComponent.h"
 #include "Components/StatComponent.h"
+#include "Components/StatBarComponent.h"
 
 #include "Enums/TypeOfWeapon.h"
 #include "Enums/ActionState.h"
@@ -40,6 +41,9 @@ AWielder::AWielder()
 	AttackRangeComponent->SetupAttachment(RootComponent);
 	AttackRangeComponent->SetCollisionProfileName(FName("PlayerTrigger"));
 
+	StatBarComponent = CreateDefaultSubobject<UStatBarComponent>(TEXT("StatBarComponent"));
+	StatBarComponent->SetupAttachment(RootComponent);
+
 	GetMesh()->SetCollisionProfileName(FName("Enemy"));
 
 	AIControllerClass = AWielderController::StaticClass();
@@ -64,6 +68,9 @@ void AWielder::PostInitializeComponents()
 	AttackRangeComponent->OnComponentEndOverlap.AddDynamic(this, &AWielder::OnAttackRangeEndOverlap);
 
 	StatComponent->OnGetDamaged.BindUFunction(this, FName("OnGetDamaged"));
+
+	StatBarComponent->Init();
+	StatBarComponent->HideUI();
 }
 
 void AWielder::BeginPlay()
@@ -149,6 +156,7 @@ void AWielder::OnDetectionRangeBeginOverlap(class UPrimitiveComponent* SelfComp,
 		{
 			EquipFirstWeapon();
 			WielderController->NotifyEngageInBattle(OtherActor);
+			ShowStatBar();
 		}
 	}
 }
@@ -174,6 +182,7 @@ void AWielder::OnAttackRangeBeginOverlap(class UPrimitiveComponent* SelfComp, cl
 			BattleState = EBattleState::Attacking;
 			WielderController->NotifyBattleState(BattleState);
 			WielderController->NotifyEnemyInAttackRange();
+			ShowStatBar();
 		}
 	}
 }
@@ -201,6 +210,11 @@ void AWielder::OnReceivePointDamageEvent(AActor* DamagedActor, float Damage, ACo
 
 	FRotator ImpactRotation = UKismetMathLibrary::MakeRotFromZ(ShotFromDirection);
 	StatComponent->ShowBloodEffect(HitLocation, ImpactRotation);
+
+	if (!StatBarComponent->IsShowing())
+	{
+		StatBarComponent->ShowUI();
+	}
 	
 	// 공격 받았을 때, 공격한 대상을 타겟으로 지정.
 	AWielderController* WielderController = Cast<AWielderController>(GetController());
@@ -526,4 +540,20 @@ void AWielder::Die()
 	GetCapsuleComponent()->SetCollisionProfileName(FName("Ragdoll"));
 	GetMesh()->SetCollisionProfileName(FName("Ragdoll"));
 	GetMesh()->SetSimulatePhysics(true);
+}
+
+void AWielder::ShowStatBar()
+{
+	if (!StatBarComponent->IsShowing())
+	{
+		StatBarComponent->ShowUI();
+	}
+}
+
+void AWielder::HideStatBar()
+{
+	if (StatBarComponent->IsShowing())
+	{
+		StatBarComponent->HideUI();
+	}
 }

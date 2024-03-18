@@ -117,13 +117,14 @@ void AWielderController::OnTargetDetected(AActor* Actor, FAIStimulus Stimulus)
 		AWielder* Wielder = Cast<AWielder>(GetPawn());
 		if (!IsValid(Wielder)) return;
 
-		// 이미 전투 중일 경우
+		// 이미 전투 중일 경우 나감
 		if (Wielder->GetCurState() == EStateOfEnemy::In_Battle && Wielder->GetSeeingPawn())	return;
 
 		// 플레이어가 이미 접근하였으며, AI가 플레이어를 인식한 경우
 		if (Wielder->IsPlayerApproached())
 		{
 			Wielder->CheckEquipWeapon();
+			Wielder->ShowStatBar();
 			NotifyEngageInBattle(Actor);
 			return;
 		}
@@ -133,6 +134,7 @@ void AWielderController::OnTargetDetected(AActor* Actor, FAIStimulus Stimulus)
 		{
 			// 무언가가 위치한 장소로 정찰
 			Wielder->CheckEquipWeapon();
+			Wielder->ShowStatBar();
 			NotifyPerceiveSomething(Actor->GetActorLocation());
 			return;
 		}
