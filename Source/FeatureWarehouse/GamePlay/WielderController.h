@@ -52,6 +52,9 @@ public:
 	/* 적 캐릭터를 블랙보드에 저장하는 함수 */
 	void DesignateEnemy(AActor* Enemy);
 
+	/* HomePos로 돌아가는 함수 */
+	void NotifyGoToHomePos();
+
 	/* 공격받았을 때, 거리를 벌려야 함을 Behavior Tree에 알리는 함수. */
 	void NotifyRetreat();
 
@@ -71,7 +74,7 @@ public:
 	////////////////////////////////////////////////////////////////////    Battle - Attacking    ////////////////////////////////////////////////////////////////////
 
 	/* 적이 공격 범위 내에 있음을 BehaviorTree에 알리는 함수. */
-	void NotifyEnemyInAttackRange();
+	void NotifyEnemyInAttackRange(bool IsInRange);
 
 	////////////////////////////////////////////////////////////////////    Battle - Monitoring    ////////////////////////////////////////////////////////////////////
 	

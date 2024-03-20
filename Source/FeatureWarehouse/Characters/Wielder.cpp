@@ -181,7 +181,7 @@ void AWielder::OnAttackRangeBeginOverlap(class UPrimitiveComponent* SelfComp, cl
 			
 			BattleState = EBattleState::Attacking;
 			WielderController->NotifyBattleState(BattleState);
-			WielderController->NotifyEnemyInAttackRange();
+			WielderController->NotifyEnemyInAttackRange(true);
 			ShowStatBar();
 		}
 	}
@@ -191,7 +191,13 @@ void AWielder::OnAttackRangeEndOverlap(class UPrimitiveComponent* SelfComp, clas
 {
 	if (OtherActor->ActorHasTag(FName("Player")))
 	{
+		AWielderController* WielderController = Cast<AWielderController>(GetController());
 
+		// 현재 AI의 상태가 전투상태일 때.
+		if (IsValid(WielderController) && CurState == EStateOfEnemy::In_Battle)
+		{
+			WielderController->NotifyEnemyInAttackRange(false);
+		}
 	}
 }
 

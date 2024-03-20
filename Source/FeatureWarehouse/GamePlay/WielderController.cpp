@@ -110,12 +110,12 @@ void AWielderController::OnTargetDetected(AActor* Actor, FAIStimulus Stimulus)
 {
 	if (!Actor->ActorHasTag(FName("Player"))) return;
 	
+	AWielder* Wielder = Cast<AWielder>(GetPawn());
+	if (!IsValid(Wielder)) return;
+
 	if (Stimulus.WasSuccessfullySensed())
 	{
 		bIsIdentifiedPlayer = true;
-
-		AWielder* Wielder = Cast<AWielder>(GetPawn());
-		if (!IsValid(Wielder)) return;
 
 		// 이미 전투 중일 경우 나감
 		if (Wielder->GetCurState() == EStateOfEnemy::In_Battle && Wielder->GetSeeingPawn())	return;
@@ -145,10 +145,10 @@ void AWielderController::OnTargetDetected(AActor* Actor, FAIStimulus Stimulus)
 		bIsIdentifiedPlayer = false;
 
 		// 시야에서 벗어난 경우 처리를 해줘야할 듯.
-
-		// 예를 들어, AI가 무언가를 인식해서 움직이고 있는 도중일 때 플레이어가 시야에서 벗어난 경우라던가
-		// 그런 경우엔 AI가 특정 위치로 이동한 후 일정 시간이 지나고나서야 처리하는걸로 할 생각임.
-		// 그런 경우 외에도 어떻게 처리할 지 경우의 수를 생각하고 대처를 해야할 듯.
+		if (!Wielder->IsRecognizedSomething())
+		{
+			NotifyGoToHomePos();
+		}
 	}
 }
 
@@ -285,15 +285,30 @@ void AWielderController::NotifyMonitoring()
 	}
 }
 
-void AWielderController::NotifyEnemyInAttackRange()
+void AWielderController::NotifyEnemyInAttackRange(bool IsInRange)
 {
-	Blackboard->SetValueAsBool(FName("IsInAttackRange"), true);
+	Blackboard->SetValueAsBool(FName("IsInAttackRange"), IsInRange);
+}
+
+void AWielderController::NotifyGoToHomePos()
+{
+	AWielder* Wielder = Cast<AWielder>(GetPawn());
+	if (IsValid(Wielder))
+	{
+		Wielder->SetCurState(EStateOfEnemy::Idle);
+		Wielder->SetMovementSpeed(Wielder->WalkSpeed);
+		
+		// Need to Clear In_Battle State.
+
+		Blackboard->SetValueAsEnum(FName("CurState"), (uint8)Wielder->GetCurState());
+	}
 }
 
 void AWielderController::NotifyDead()
 {
 	Blackboard->SetValueAsBool(FName("IsDead"), true);
 }
+
 
 AActor* AWielderController::GetSeeingPawn()
 {
