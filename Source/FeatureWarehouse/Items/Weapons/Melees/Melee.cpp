@@ -9,6 +9,7 @@
 
 #include "Components/WeaponComponent.h"
 #include "Components/StatComponent.h"
+#include "Structs/MeleeDamage.h"
 #include "Enums/MovementState.h"
 #include "Enums/ActionState.h"
 
@@ -24,7 +25,30 @@ AMelee::AMelee()
 {
 	InterpolateDistance = 20.0f;
 
+	static ConstructorHelpers::FObjectFinder<UDataTable> DT_MeleeDamage(TEXT("/Game/Project/Data/DT_MeleeDamage"));
+	if (DT_MeleeDamage.Succeeded())
+	{
+		UE_LOG(LogTemp, Warning, TEXT("Load DataTable Succeeded."));
+		MeleeTable = DT_MeleeDamage.Object;
+	}
+
 	bIsEquip = false;
+}
+
+void AMelee::PostInitializeComponents()
+{
+	Super::PostInitializeComponents();
+
+	FMeleeDamage* Data = MeleeTable->FindRow<FMeleeDamage>(WeaponName, FString("MeleeDamage Table"));
+
+	if (Data)
+	{
+		MeleeType = Data->D_MeleeType;
+		LightAttackDamage.Append(Data->D_LightAttackDamage);
+		HeavyAttackDamage.Append(Data->D_HeavyAttackDamage);
+		JumpAttackDamage = Data->D_JumpAttack;
+		SprintAttackDamage = Data->D_SprintAttack;
+	}
 }
 
 void AMelee::BeginPlay()
@@ -78,7 +102,7 @@ void AMelee::Attack()
 
 		if (WielderAnim)
 		{
-			UAnimMontage* PlayMontage = FindAppropriateAttackAnimation();
+			UAnimMontage* PlayMontage = FindAppropriateAttackAnimationWithDamage(Damage, MontageIndex);
 			FName SectionName = PlayMontage->GetSectionName(MontageIndex);
 			Wielder->PlayMontage(PlayMontage);
 			WielderAnim->Montage_JumpToSection(SectionName, PlayMontage);
@@ -96,7 +120,7 @@ void AMelee::Attack()
 
 		if (Wielder)
 		{
-			UAnimMontage* PlayMontage = FindAppropriateAttackAnimation();
+			UAnimMontage* PlayMontage = FindAppropriateAttackAnimationWithDamage(Damage, MontageIndex);
 			Wielder->PlayMontage(PlayMontage);
 
 			MontageIndex++;
@@ -122,7 +146,7 @@ void AMelee::Attack(EStateOfViews CurView, FVector HitLocation)
 
 		if (WielderAnim)
 		{
-			UAnimMontage* PlayMontage = FindAppropriateAttackAnimation();
+			UAnimMontage* PlayMontage = FindAppropriateAttackAnimationWithDamage(Damage, MontageIndex);
 			FName SectionName = PlayMontage->GetSectionName(MontageIndex);
 			Wielder->PlayMontage(PlayMontage);
 			WielderAnim->Montage_JumpToSection(SectionName, PlayMontage);
@@ -140,7 +164,7 @@ void AMelee::Attack(EStateOfViews CurView, FVector HitLocation)
 		
 		if (Wielder)
 		{
-			UAnimMontage* PlayMontage = FindAppropriateAttackAnimation();
+			UAnimMontage* PlayMontage = FindAppropriateAttackAnimationWithDamage(Damage, MontageIndex);
 			Wielder->PlayMontage(PlayMontage);
 
 			MontageIndex++;
@@ -322,13 +346,13 @@ void AMelee::DrawAttackLineTrace(const FVector& LineStart, const FVector& LineEn
 		IgnoreActor.Add(Hit.GetActor());
 		TSubclassOf<UDamageType> DamageType;
 
-		UGameplayStatics::ApplyPointDamage(Hit.GetActor(), 30.0f, Hit.ImpactNormal, Hit, GetWeaponOwner()->GetController(), this, DamageType);
+		UGameplayStatics::ApplyPointDamage(Hit.GetActor(), Damage, Hit.ImpactNormal, Hit, GetWeaponOwner()->GetController(), this, DamageType);
 
 		ShakePlayerCamera();
 	}
 }
 
-UAnimMontage* AMelee::FindAppropriateAttackAnimation()
+UAnimMontage* AMelee::FindAppropriateAttackAnimationWithDamage(float& Change_Damage, int Index)
 {
 	AWeaponWielder* Wielder = Cast<AWeaponWielder>(GetWeaponOwner());
 	if (!IsValid(Wielder)) return nullptr;
@@ -341,16 +365,28 @@ UAnimMontage* AMelee::FindAppropriateAttackAnimation()
 		{
 		case EMovementState::EMS_Jumping:
 			ReturnMontage = JumpAttackMontage;
+			Change_Damage = JumpAttackDamage;
 			break;
 		case EMovementState::EMS_Running:
 			ReturnMontage = SprintAttackMontage;
+			Change_Damage = SprintAttackDamage;
 			break;
 		case EMovementState::EMS_Crouching:
 
 			break;
 		default:
 			// Idle, Walking 상태일 때 약공, 강공 선택.
-			ReturnMontage = (Wielder->CurActionState() == EActionState::EAS_HeavyAttacking) ? HeavyAttackMontage : AttackMontage;
+			if (Wielder->CurActionState() == EActionState::EAS_HeavyAttacking)
+			{
+				ReturnMontage = HeavyAttackMontage;
+				Change_Damage = HeavyAttackDamage[Index];
+
+			}
+			else
+			{
+				ReturnMontage = AttackMontage;
+				Change_Damage = LightAttackDamage[Index];
+			}
 			break;
 		}
 	}

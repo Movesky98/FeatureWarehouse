@@ -56,26 +56,29 @@ protected:
 	UFUNCTION(BlueprintImplementableEvent)
 	void StopShake();
 
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Montage", meta = (AllowPrivateAccess = "true"))
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Montage")
 	UAnimMontage* EquipMontage;
 
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Montage", meta = (AllowPrivateAccess = "true"))
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Montage")
 	UAnimMontage* UnequipMontage;
 
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Montage|Hit", meta = (AllowPrivateAccess = "true"))
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Montage|Hit")
 	UAnimMontage* GetDamagedMontage;
 
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Montage|Death", meta = (AllowPrivateAccess = "true"))
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Montage|Death")
 	UAnimMontage* DeathMontage;
 
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Montage|Dodge", meta = (AllowPrivateAccess = "true"))
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Montage|Dodge")
 	UAnimMontage* RetreatMontage;
 
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Montage|Knockdown", meta = (AllowPrivateAccess = "true"))
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Montage|Knockdown")
 	UAnimMontage* KnockdownMontage;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "State")
 	bool bIsEquip;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "State")
+	FName WeaponName;
 
 private:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "State", meta = (AllowPrivateAccess = "true"))

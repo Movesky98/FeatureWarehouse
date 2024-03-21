@@ -9,6 +9,8 @@
 enum class EStateOfViews :uint8;
 enum class ETypeOfMelee :uint8;
 
+class UDataTable;
+
 /**
  * 
  */
@@ -25,6 +27,8 @@ public:
 	void JumpAttackLanding();
 
 protected:
+	virtual void PostInitializeComponents() override;
+
 	virtual void BeginPlay() override;
 
 	void Attack() override;
@@ -33,7 +37,7 @@ protected:
 
 	virtual bool CanAttack() override;
 
-	virtual class UAnimMontage* FindAppropriateAttackAnimation();
+	virtual class UAnimMontage* FindAppropriateAttackAnimationWithDamage(float& Damage, int Index);
 
 	UFUNCTION()
 	virtual	void HoldMeleeWeapon();
@@ -108,6 +112,24 @@ private:
 	FVector PreStart;
 
 	FVector PreMidpoint;
+
+	UPROPERTY()
+	UDataTable* MeleeTable;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Damage", meta = (AllowPrivateAccess = "true"))
+	float Damage;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Damage", meta = (AllowPrivateAccess = "true"))
+	TArray<float> LightAttackDamage;
+	
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Damage", meta = (AllowPrivateAccess = "true"))
+	TArray<float> HeavyAttackDamage;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Damage", meta = (AllowPrivateAccess = "true"))
+	float JumpAttackDamage;
+	
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Damage", meta = (AllowPrivateAccess = "true"))
+	float SprintAttackDamage;
 
 public:
 	FORCEINLINE ETypeOfMelee GetMeleeType() { return MeleeType; }
