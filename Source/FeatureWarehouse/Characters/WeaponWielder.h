@@ -73,6 +73,9 @@ protected:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Component")
 	UStatComponent* StatComponent;
 
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Component")
+	class UNiagaraComponent* AfterImageComponent;
+
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Weapon")
 	AWeapon* EquipWeapon;
 

@@ -10,12 +10,10 @@
 #include "Components/StatComponent.h"
 #include "Components/WeaponComponent.h"
 #include "Components/CapsuleComponent.h"
+#include "NiagaraComponent.h"
 
 #include "GameFramework/CharacterMovementComponent.h"
 #include "Kismet/KismetMathLibrary.h"
-// 나중에 수정 필요.
-#include "GamePlay/FW_GameInstance.h"
-#include "Widgets/PlayerMenu.h"
 
 AWeaponWielder::AWeaponWielder()
 {
@@ -24,6 +22,18 @@ AWeaponWielder::AWeaponWielder()
 
 	StatComponent = CreateDefaultSubobject<UStatComponent>(TEXT("StatComponent"));
 	WeaponComponent = CreateDefaultSubobject<UWeaponComponent>(TEXT("WeaponComponent"));
+
+	AfterImageComponent = CreateDefaultSubobject<UNiagaraComponent>(TEXT("AfterImageComponent"));
+	AfterImageComponent->SetupAttachment(RootComponent);
+
+	static ConstructorHelpers::FObjectFinder<UNiagaraSystem> NS_AfterImage(TEXT("/Game/Project/Materials/NS_AfterImage"));
+	if (NS_AfterImage.Succeeded())
+	{
+		AfterImageComponent->SetAsset(NS_AfterImage.Object);
+	}
+
+	AfterImageComponent->bAutoActivate = false;
+	AfterImageComponent->Deactivate();
 
 	static ConstructorHelpers::FObjectFinder<USkeletalMesh> SKM_Manny(TEXT("/Game/Characters/Mannequins/Meshes/SKM_Manny"));
 	if (SKM_Manny.Succeeded())
