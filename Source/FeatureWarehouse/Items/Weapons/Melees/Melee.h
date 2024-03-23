@@ -44,6 +44,38 @@ protected:
 	UFUNCTION()
 	virtual	void HoldMeleeWeapon();
 
+	UFUNCTION(BlueprintCallable)
+	void StartAttackTrace();
+
+	UFUNCTION(BlueprintCallable)
+	void StopAttackTrace();
+
+	UFUNCTION()
+	virtual void AttackTrace();
+
+	virtual void DrawAttackLineTrace(const FVector& LineStart, const FVector& LineEnd);
+	
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Attack|Interpolating")
+	float InterpolateDistance;
+
+	float BladeLength;
+
+	FVector PreBladeVector;
+
+	FVector PreStart;
+
+	FVector PreMidpoint;
+	
+	FTimerHandle AttackTraceTimer;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Montage")
+	int MontageIndex;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Montage")
+	TArray<AActor*> IgnoreActor;
+	
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Damage")
+	float Damage;
 private:
 	// Functions
 	UFUNCTION()
@@ -53,17 +85,6 @@ private:
 
 	UFUNCTION()
 	void OnNextAttackChecked();
-
-	UFUNCTION(BlueprintCallable)
-	void StartAttackTrace();
-
-	UFUNCTION(BlueprintCallable)
-	void StopAttackTrace();
-
-	UFUNCTION()
-	void AttackTrace();
-
-	void DrawAttackLineTrace(const FVector& LineStart, const FVector& LineEnd, bool IsInterpolating);
 
 	// Variables
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "State", meta = (AllowPrivateAccess = "true"))
@@ -90,30 +111,9 @@ private:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Montage", meta = (AllowPrivateAccess = "true"))
 	class UAnimMontage* HeavyAttackMontage;
 
-	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Montage", meta = (AllowPrivateAccess = "true"))
-	int MontageIndex;
-	
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Montage", meta = (AllowPrivateAccess = "true"))
-	TArray<AActor*> IgnoreActor;
-
-	FTimerHandle AttackTraceTimer;
-
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Attack|Interpolating", meta = (AllowPrivateAccess = "true"))
-	float InterpolateDistance;
-
-	float BladeLength;
-
-	FVector PreBladeVector;
-
-	FVector PreStart;
-
-	FVector PreMidpoint;
-
 	UPROPERTY()
 	UDataTable* MeleeTable;
 
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Damage", meta = (AllowPrivateAccess = "true"))
-	float Damage;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Damage", meta = (AllowPrivateAccess = "true"))
 	TArray<float> LightAttackDamage;

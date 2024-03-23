@@ -304,7 +304,7 @@ void AMelee::AttackTrace()
 			FVector InterpolatedVector = FMath::VInterpConstantTo(PreBladeVector, CurBladeVector, 1.0f, BladeVectorSpeed);
 			FVector InterpolatedEnd = InterpolatedStart + InterpolatedVector.GetSafeNormal() * BladeLength;
 
-			DrawAttackLineTrace(InterpolatedStart, InterpolatedEnd, true);
+			DrawAttackLineTrace(InterpolatedStart, InterpolatedEnd);
 
 			StartSpeed += StartDelta;
 			BladeVectorSpeed += BladeVectorDelta;
@@ -315,34 +315,13 @@ void AMelee::AttackTrace()
 	PreBladeVector = (End - Start).GetSafeNormal();
 	PreStart = Start;
 
-	DrawAttackLineTrace(Start, End, false);
+	DrawAttackLineTrace(Start, End);
 }
 
-void AMelee::DrawAttackLineTrace(const FVector& LineStart, const FVector& LineEnd, bool IsInterpolating)
+void AMelee::DrawAttackLineTrace(const FVector& LineStart, const FVector& LineEnd)
 {
 	FHitResult Hit;
-	bool IsHit;
-		
-	if (IsInterpolating)
-	{
-		IsHit = UKismetSystemLibrary::LineTraceSingle(
-			GetWorld(),
-			LineStart,
-			LineEnd,
-			ETraceTypeQuery::TraceTypeQuery4,
-			false,
-			IgnoreActor,
-			EDrawDebugTrace::ForDuration,
-			Hit,
-			true,
-			FLinearColor::Blue,
-			FLinearColor::Black,
-			1.0f
-		);
-	}
-	else
-	{
-		IsHit = UKismetSystemLibrary::LineTraceSingle(
+	bool IsHit = UKismetSystemLibrary::LineTraceSingle(
 			GetWorld(),
 			LineStart,
 			LineEnd,
@@ -356,7 +335,6 @@ void AMelee::DrawAttackLineTrace(const FVector& LineStart, const FVector& LineEn
 			FLinearColor::Green,
 			1.0f
 		);
-	}
 
 
 	if (IsHit)

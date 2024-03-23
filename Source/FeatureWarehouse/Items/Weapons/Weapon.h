@@ -25,10 +25,10 @@ public:
 	void Interact(AActor* InteractActor) override;
 
 	UFUNCTION(BlueprintCallable)
-	void TakeUp(ACharacter* NewOwner);
+	virtual void TakeUp(ACharacter* NewOwner);
 
 	UFUNCTION(BlueprintCallable)
-	void ThrowAway(FVector Location);
+	virtual void ThrowAway(FVector Location);
 	
 	virtual void BindMontage();
 

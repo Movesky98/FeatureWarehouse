@@ -2,7 +2,6 @@
 
 #include "PlayerCharacter.h"
 #include "GamePlay/FW_PlayerController.h"
-#include "GamePlay/FW_GameInstance.h"
 #include "Widgets/PlayerMenu.h"
 
 #include "Camera/CameraComponent.h"
@@ -769,23 +768,8 @@ FVector APlayerCharacter::DrawCameraLineTrace()
 	}
 }
 
-// 삭제 고려
-void APlayerCharacter::UpdateHealth()
-{
-	UFW_GameInstance* GameInstance = Cast<UFW_GameInstance>(GetGameInstance());
-	if (GameInstance)
-	{
-		GameInstance->PlayerMenu->UpdatePlayerHealth(StatComponent->GetCurrentHP(), StatComponent->GetMaxHP());
-	}
-}
-
 void APlayerCharacter::OnEquipEnded()
 {
-	// TO DO :
-	// 1. 액션 상태 기본으로 변경
-	// 2. PlayerMenu 업데이트
-	// 3. CurWeapon에 따라 애니메이션 변경할지 ? 고민해봐야할 듯
-
 	ActionState = EActionState::EAS_Idle;
 
 	PlayerController->SwitchPlayerMenu();
