@@ -75,6 +75,11 @@ void AItem::OnTriggerEndOverlap(class UPrimitiveComponent* SelfComp, class AActo
 	}
 }
 
+UTexture2D* AItem::GetItemTexture()
+{
+	return ItemDescriptionComponent->GetIcon();
+}
+
 void AItem::ActiveOverlay()
 {
 	SkeletalMesh->SetOverlayMaterial(OutlineMaterial);

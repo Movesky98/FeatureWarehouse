@@ -7,8 +7,6 @@
 #include "WielderAnimInstance.generated.h"
 
 DECLARE_DELEGATE(FOnHoldMeleeWeaponDelegate);
-DECLARE_DELEGATE(FOnUnequipEndDelegate);
-DECLARE_DELEGATE(FOnEquipEndDelegate);
 DECLARE_DELEGATE(FOnNextAttackCheckDelegate);
 DECLARE_DELEGATE(FOnDeathEndDelegate);
 
@@ -22,11 +20,7 @@ class FEATUREWAREHOUSE_API UWielderAnimInstance : public UAnimInstance
 public:
 	FOnNextAttackCheckDelegate OnNextAttackCheck;
 
-	FOnUnequipEndDelegate OnUnequipEnd;
-
 	FOnHoldMeleeWeaponDelegate OnHoldMeleeWeapon;
-
-	FOnEquipEndDelegate OnEquipEnd;
 
 	FOnDeathEndDelegate OnDeathEnd;
 
@@ -40,12 +34,6 @@ protected:
 
 	UFUNCTION()
 	void AnimNotify_NextAttackCheck();
-
-	UFUNCTION()
-	void AnimNotify_EquipEnd();
-
-	UFUNCTION()
-	void AnimNotify_UnequipEnd();
 
 	UFUNCTION()
 	void AnimNotify_HoldMeleeWeapon();

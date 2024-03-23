@@ -37,4 +37,7 @@ private:
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Widget", meta = (AllowPrivateAccess = "true"))
 	class UItemDescriptionWidget* ItemDescriptionWidget;
+
+public:
+	UTexture2D* GetIcon() { return Icon; }
 };

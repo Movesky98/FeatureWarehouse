@@ -323,8 +323,10 @@ void AWielder::Attack()
 	EquipWeapon->Attack();
 }
 
-void AWielder::EquipEnded()
+void AWielder::OnEquipEnded()
 {
+	ActionState = EActionState::EAS_Idle;
+
 	AWielderController* WielderController = Cast<AWielderController>(GetController());
 	if (IsValid(WielderController))
 	{
@@ -338,8 +340,10 @@ void AWielder::EquipEnded()
 	}
 }
 
-void AWielder::UnequipEnded()
+void AWielder::OnUnequipEnded()
 {
+	ActionState = EActionState::EAS_Idle;
+
 	AWielderController* WielderController = Cast<AWielderController>(GetController());
 	if (IsValid(WielderController))
 	{
@@ -525,12 +529,6 @@ void AWielder::ClearMonitoring()
 }
 
 #pragma endregion
-
-// 이거 필요없을수도 있음. 참고할 것.
-void AWielder::EngagingInCombat(AActor* AdversaryActor)
-{
-
-}
 
 void AWielder::SetMovementSpeed(float Speed)
 {

@@ -31,6 +31,4 @@ protected:
 	class UTextBlock* WeaponTypeText;
 
 public:
-	UFUNCTION(BlueprintImplementableEvent, Category = "Widget|Image")
-	UImage* GetItemTexture() const;
 };

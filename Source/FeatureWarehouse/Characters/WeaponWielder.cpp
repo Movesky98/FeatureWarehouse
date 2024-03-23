@@ -113,6 +113,18 @@ void AWeaponWielder::EquipSecondWeapon()
 
 }
 
+void AWeaponWielder::OnEquipEnded()
+{
+	ActionState = EActionState::EAS_Idle;
+
+	
+}
+
+void AWeaponWielder::OnUnequipEnded()
+{
+	ActionState = EActionState::EAS_Idle;
+}
+
 void AWeaponWielder::Unequip()
 {
 
@@ -139,16 +151,6 @@ void AWeaponWielder::Die()
 	GetCapsuleComponent()->SetCollisionProfileName(FName("Ragdoll"));
 	GetMesh()->SetCollisionProfileName(FName("Ragdoll"));
 	GetMesh()->SetSimulatePhysics(true);
-}
-
-void AWeaponWielder::EquipEnded()
-{
-
-}
-
-void AWeaponWielder::UnequipEnded()
-{
-
 }
 
 bool AWeaponWielder::CheckTakeAction(EActionState SpecificAction)

@@ -8,11 +8,15 @@
 #include "Enums/StateOfViews.h"
 
 #include "Characters/WeaponWielder.h"
+#include "AnimInstance/WielderAnimInstance.h"
+
 #include "Components/WeaponComponent.h"
 #include "Components/StatComponent.h"
+#include "Components/ItemDescriptionComponent.h"
 
 #include "Components/SphereComponent.h"
 #include "Kismet/GameplayStatics.h"
+#include "Kismet/KismetSystemLibrary.h"
 #include "Camera/PlayerCameraManager.h"
 #include "Animation/AnimMontage.h"
 
@@ -28,6 +32,69 @@ void AWeapon::PostInitializeComponents()
 	if (IsValid(EquipMontage) && IsValid(UnequipMontage))
 	{
 		bHasEquipMontage = true;
+	}
+}
+
+void AWeapon::BindMontage()
+{
+	if (!GetWeaponOwner()) return;
+
+	AWeaponWielder* Wielder = Cast<AWeaponWielder>(GetWeaponOwner());
+	if (!Wielder) return;
+
+	UWielderAnimInstance* WielderAnim = Cast<UWielderAnimInstance>(Wielder->GetMesh()->GetAnimInstance());
+	if (WielderAnim)
+	{
+		WielderAnim->OnMontageEnded.AddDynamic(this, &AWeapon::OnEquipEnded);
+		WielderAnim->OnMontageEnded.AddDynamic(this, &AWeapon::OnUnequipEnded);
+
+		UE_LOG(LogTemp, Warning, TEXT("Weapon - %s :: BindMontage is called."), *UKismetSystemLibrary::GetDisplayName(this));
+	}
+}
+
+void AWeapon::UnbindMontage()
+{
+	if (!GetWeaponOwner()) return;
+
+	AWeaponWielder* Wielder = Cast<AWeaponWielder>(GetWeaponOwner());
+	if (!Wielder) return;
+
+	UWielderAnimInstance* WielderAnim = Cast<UWielderAnimInstance>(Wielder->GetMesh()->GetAnimInstance());
+	if (WielderAnim)
+	{
+		WielderAnim->OnMontageEnded.Clear();
+		UE_LOG(LogTemp, Warning, TEXT("Weapon - %s :: UnbindMontage is called."), *UKismetSystemLibrary::GetDisplayName(this));
+	}
+}
+
+void AWeapon::OnEquipEnded(class UAnimMontage* Montage, bool bInterrupted)
+{
+	if (Montage == EquipMontage)
+	{
+		bIsEquip = true;
+
+		// Notify To WeaponOwner.
+		AWeaponWielder* WeaponWielder = Cast<AWeaponWielder>(GetWeaponOwner());
+
+		ensureMsgf(WeaponWielder != nullptr, TEXT("ERROR :: Weapon's Owner is not WeaponWielder."));
+
+		WeaponWielder->OnEquipEnded();
+	}
+}
+
+void AWeapon::OnUnequipEnded(class UAnimMontage* Montage, bool bInterrupted)
+{
+	if (Montage == UnequipMontage)
+	{
+		bIsEquip = false;
+		UnbindMontage();
+
+		// Notify To WeaponOwner.
+		AWeaponWielder* WeaponWielder = Cast<AWeaponWielder>(GetWeaponOwner());
+
+		ensureMsgf(WeaponWielder != nullptr, TEXT("ERROR :: Weapon's Owner is not WeaponWielder."));
+
+		WeaponWielder->OnUnequipEnded();
 	}
 }
 
@@ -129,4 +196,9 @@ void AWeapon::Unequip()
 	{
 		AnimInstance->Montage_Play(UnequipMontage);
 	}
+}
+
+UTexture2D* AWeapon::GetWeaponImage() 
+{ 
+	return ItemDescriptionComponent->GetIcon(); 
 }

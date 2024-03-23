@@ -35,8 +35,10 @@ void AFW_PlayerController::BeginPlay()
 	{
 		GEngine->AddOnScreenDebugMessage(-1, 3.0f, FColor::Green, FString("Load player menu."));
 		GameInstance->LoadPlayerMenu();
-		GameInstance->PlayerMenu->SetOwningPlayer(this);
-		GameInstance->PlayerMenu->SetStatBarSize();
+
+		PlayerMenu = GameInstance->PlayerMenu;
+		PlayerMenu->SetOwningPlayer(this);
+		PlayerMenu->SetStatBarSize();
 	}
 }
 
@@ -94,27 +96,28 @@ FVector AFW_PlayerController::ViewClickLocation()
 
 void AFW_PlayerController::SwitchPlayerMenu()
 {
-	UFW_GameInstance* GameInstance = Cast<UFW_GameInstance>(GetGameInstance());
-	if (!GameInstance) return;
-
 	APlayerCharacter* PlayerCharacter = Cast<APlayerCharacter>(GetPawn());
 	if (!PlayerCharacter) return;
+
+	UE_LOG(LogTemp, Warning, TEXT("Switch the PlayerMenu's game panel."));
 
 	if (PlayerCharacter->CurWeapon())
 	{
 		switch (PlayerCharacter->CurWeapon()->GetWeaponType())
 		{
 		case ETypeOfWeapon::Gun:
-			GameInstance->PlayerMenu->SetShootingPanel();
+			PlayerMenu->SetShootingPanel();
 			break;
 		default:
-			GameInstance->PlayerMenu->SetRPGPanel();
+			PlayerMenu->SetRPGPanel();
 			break;
 		}
 
+		PlayerMenu->ChangeWeaponImage(PlayerCharacter->CurWeapon()->GetWeaponImage());
 		return;
 	}
 	
 	// 무기가 없으면 RPG 패널.
-	GameInstance->PlayerMenu->SetRPGPanel();
+	PlayerMenu->SetRPGPanel();
+	PlayerMenu->ChangeWeaponImage(nullptr);
 }

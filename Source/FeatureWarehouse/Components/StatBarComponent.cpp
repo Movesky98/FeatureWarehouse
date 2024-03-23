@@ -39,7 +39,7 @@ void UStatBarComponent::LookAtPlayer()
 	
 	ensureMsgf(PlayerCharacter != nullptr, TEXT("PlayerCharacter is invalid"));
 
-	FVector Target = UGameplayStatics::GetPlayerCharacter(GetWorld(), 0)->GetActorLocation();
+	FVector Target = UGameplayStatics::GetPlayerCameraManager(GetWorld(), 0)->GetCameraLocation();
 
 	FRotator GoalRotation = UKismetMathLibrary::FindLookAtRotation(Start, Target);
 

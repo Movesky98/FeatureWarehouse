@@ -29,6 +29,8 @@ public:
 
 	void EquipSubWeapon();
 
+	void EquipOtherWeapon();
+
 	void Unequip();
 
 	void SaveAcquiredWeaponInfo(AWeapon* NewWeapon);
@@ -57,9 +59,6 @@ protected:
 	void UpdateWeaponInfoToWielderAnimInstance();
 
 	void NotifyHasWeaponToAnim();
-
-	UFUNCTION()
-	void OnUnequipEnd();
 
 private:
 	// Variables

@@ -40,22 +40,6 @@ void UWielderAnimInstance::AnimNotify_NextAttackCheck()
 	}
 }
 
-void UWielderAnimInstance::AnimNotify_EquipEnd()
-{
-	if (OnEquipEnd.IsBound())
-	{
-		OnEquipEnd.Execute();
-	}
-}
-
-void UWielderAnimInstance::AnimNotify_UnequipEnd()
-{
-	if (OnUnequipEnd.IsBound())
-	{
-		OnUnequipEnd.Execute();
-	}
-}
-
 void UWielderAnimInstance::AnimNotify_HoldMeleeWeapon()
 {
 	if (OnHoldMeleeWeapon.IsBound())

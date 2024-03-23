@@ -15,8 +15,8 @@ class UCanvasPanel;
 UENUM(BlueprintType)
 enum class ETypeOfPlayerUI : uint8 
 {
-	ETP_ShootingGame = 0 UMETA(DisplayName = "ShootingGame"),
-	ETP_RPGGame UMETA(DisplayName = "RPGGame")
+	ETP_ShootingUI = 0 UMETA(DisplayName = "ShootingGame"),
+	ETP_RPGUI UMETA(DisplayName = "RPGGame")
 };
 
 /**
@@ -42,6 +42,8 @@ public:
 	void UpdatePlayerHealth(float CurHealth, float MaxHealth);
 	
 	void SetStatBarSize();
+
+	void ChangeWeaponImage(UTexture2D* Icon);
 
 protected:
 	virtual bool Initialize();
@@ -78,6 +80,9 @@ private:
 
 	UPROPERTY(meta = (BindWidget))
 	UTextBlock* TotalRoundsTextBlock;
+
+	UPROPERTY(meta = (BindWidget))
+	UImage* Shooting_WeaponImage;
 #pragma endregion
 
 #pragma region RPGGame_UI
@@ -93,6 +98,9 @@ private:
 
 	UPROPERTY(meta = (BindWidget))
 	UProgressBar* RPG_Stamina_Bar;
+
+	UPROPERTY(meta = (BindWidget))
+	UImage* RPG_WeaponImage;
 #pragma endregion
 
 };

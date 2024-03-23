@@ -30,6 +30,10 @@ public:
 	UFUNCTION(BlueprintCallable)
 	void ThrowAway(FVector Location);
 	
+	virtual void BindMontage();
+
+	virtual void UnbindMontage();
+
 	UFUNCTION(BlueprintCallable)
 	virtual void Attack();
 
@@ -46,6 +50,12 @@ public:
 	virtual void Unequip();
 
 protected:
+	UFUNCTION()
+	void OnEquipEnded(class UAnimMontage* Montage, bool bInterrupted);
+
+	UFUNCTION()
+	void OnUnequipEnded(class UAnimMontage* Montage, bool bInterrupted);
+
 	virtual bool CanAttack();
 
 	virtual void PostInitializeComponents() override;
@@ -113,5 +123,7 @@ public:
 
 	FORCEINLINE bool HasEquipMontage() { return bHasEquipMontage; }
 	FORCEINLINE bool HasAttachmentInfo() { return bHasAttachmentInfo; }
+
+	UTexture2D* GetWeaponImage();
 #pragma endregion
 };

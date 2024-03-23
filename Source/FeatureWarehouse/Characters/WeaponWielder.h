@@ -29,9 +29,9 @@ public:
 
 	void PlayMontage(UAnimMontage* Montage);
 
-	virtual void EquipEnded();
+	virtual void OnEquipEnded();
 
-	virtual void UnequipEnded();
+	virtual void OnUnequipEnded();
 
 	virtual void Die();
 

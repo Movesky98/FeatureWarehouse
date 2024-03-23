@@ -21,6 +21,8 @@ public:
 	UFUNCTION(BlueprintCallable)
 	FORCEINLINE USkeletalMeshComponent* GetSkeletalMesh() { return SkeletalMesh; }
 
+	UTexture2D* GetItemTexture();
+
 	FORCEINLINE class USphereComponent* GetTriggerZone() { return TriggerZone; }
 	FORCEINLINE class USphereComponent* GetItemCollision() { return ItemCollision; }
 
@@ -42,6 +44,9 @@ protected:
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Overlay")
 	TObjectPtr<UMaterialInterface> OutlineMaterial;
+	
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Description")
+	class UItemDescriptionComponent* ItemDescriptionComponent;
 
 private:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = Mesh, meta = (AllowPrivateAccess = "true"))
@@ -52,9 +57,6 @@ private:
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Collision", meta = (AllowPrivateAccess = "true"))
 	class USphereComponent* TriggerZone;
-
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Description", meta = (AllowPrivateAccess = "true"))
-	class UItemDescriptionComponent* ItemDescriptionComponent;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = State, meta = (AllowPrivateAccess = "true"))
 	ETypeOfItem ItemType;

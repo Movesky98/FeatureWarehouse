@@ -44,6 +44,10 @@ protected:
 
 	virtual void OnMovementModeChanged(EMovementMode PrevMovementMode, uint8 PreviousCustomMode) override;
 
+	void OnEquipEnded() override;
+
+	void OnUnequipEnded() override;
+
 	UFUNCTION(BlueprintCallable)
 	AActor* FindInteractableActor(const FVector Start, const FVector End);
 
@@ -73,10 +77,6 @@ protected:
 	void Aiming();
 
 	void HeavyAttack() override;
-
-	void EquipEnded() override;
-
-	void UnequipEnded() override;
 
 	FVector DrawCameraLineTrace();
 	

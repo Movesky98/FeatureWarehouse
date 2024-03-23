@@ -38,30 +38,9 @@ void UWeaponComponent::BeginPlay()
 
 	WeaponWielder = Cast<AWeaponWielder>(GetOwner());
 
-	if (!IsValid(WeaponWielder)) return;
-
-	UWielderAnimInstance* AnimInstance = Cast<UWielderAnimInstance>(WeaponWielder->GetMesh()->GetAnimInstance());
-
-	if (AnimInstance)
+	if (WeaponWielder)
 	{
-		WielderAnim = Cast<UWielderAnimInstance>(AnimInstance);
-
-		if (IsValid(WielderAnim))
-		{
-			WielderAnim->OnUnequipEnd.BindUFunction(this, FName("OnUnequipEnd"));
-		}
-	}
-}
-
-void UWeaponComponent::OnUnequipEnd()
-{
-	if (!WeaponWielder) return;
-	WeaponWielder->SetActionState(EActionState::EAS_Idle);
-
-	if (WeaponWielder->IsA<APlayerCharacter>())
-	{
-		// Unequip이 끝났으므로, 무기 교체.
-		EquipState == EEquipState::SubWeapon ? EquipMainWeapon() : EquipSubWeapon();
+		WielderAnim = Cast<UWielderAnimInstance>(WeaponWielder->GetMesh()->GetAnimInstance());
 	}
 }
 
@@ -74,6 +53,8 @@ void UWeaponComponent::EquipMainWeapon()
 
 	WeaponWielder->SetWeapon(MainWeapon);
 	
+	UE_LOG(LogTemp, Warning, TEXT("WeaponComponent :: Called EquipMainWeapon."));
+
 	NotifyToAnimInstance();
 }
 
@@ -85,7 +66,16 @@ void UWeaponComponent::EquipSubWeapon()
 
 	WeaponWielder->SetWeapon(SubWeapon);
 
+	UE_LOG(LogTemp, Warning, TEXT("WeaponComponent :: Called EquipSubWeapon."));
+
 	NotifyToAnimInstance();
+}
+
+void UWeaponComponent::EquipOtherWeapon()
+{
+	// 현재 들고 있는 무기가 무엇이냐에 따라 반대 무기를 장착함.
+	EquipState == EEquipState::MainWeapon ? EquipSubWeapon()
+		: EquipMainWeapon();
 }
 
 void UWeaponComponent::Unequip()
@@ -211,8 +201,8 @@ void UWeaponComponent::NotifyToAnimInstance()
 
 	if (WeaponWielder->CurWeapon()->GetWeaponType() == ETypeOfWeapon::Gun)
 	{
-		WeaponWielder->SetActionState(EActionState::EAS_Idle);
-		WeaponWielder->EquipEnded();
+		 WeaponWielder->SetActionState(EActionState::EAS_Idle);
+		 WeaponWielder->OnEquipEnded();
 	}
 }
 
@@ -228,7 +218,9 @@ void UWeaponComponent::UpdateWeaponInfoToPlayerAnimInstance()
 	}
 
 	AWeapon* Weapon = WeaponWielder->CurWeapon();
+
 	Weapon->Equip();
+	Weapon->BindMontage();
 
 	ETypeOfWeapon WeaponType = Weapon->GetWeaponType();
 	PlayerAnim->SetWeaponType(WeaponType);
@@ -251,7 +243,6 @@ void UWeaponComponent::UpdateWeaponInfoToPlayerAnimInstance()
 		if (!Melee) break;
 
 		PlayerAnim->SetMeleeType(Melee->GetMeleeType());
-		Melee->BindMontage();
 	}
 	break;
 	case ETypeOfWeapon::Wand:
@@ -268,9 +259,9 @@ void UWeaponComponent::UpdateWeaponInfoToWielderAnimInstance()
 	AWeapon* Weapon = WeaponWielder->CurWeapon();
 
 	Weapon->Equip();
-
+	Weapon->BindMontage();
+	
 	ETypeOfWeapon WeaponType = Weapon->GetWeaponType();
-
 	switch (WeaponType)
 	{
 	case ETypeOfWeapon::Gun:
@@ -281,10 +272,7 @@ void UWeaponComponent::UpdateWeaponInfoToWielderAnimInstance()
 	break;
 	case ETypeOfWeapon::Melee:
 	{
-		AMelee* Melee = Cast<AMelee>(Weapon);
-		if (!Melee) break;
 
-		Melee->BindMontage();
 	}
 	break;
 	case ETypeOfWeapon::Wand:

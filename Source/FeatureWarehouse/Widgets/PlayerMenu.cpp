@@ -44,6 +44,8 @@ void UPlayerMenu::SetUp()
 	// Set input mode to GameOnly.
 	PlayerController->SetInputMode(InputModeData);
 	PlayerController->SetShowMouseCursor(false);
+
+	SetRPGPanel();
 }
 
 void UPlayerMenu::UpdatePlayerHealth(float CurHealth, float MaxHealth)
@@ -79,12 +81,27 @@ void UPlayerMenu::SetStatBarSize()
 	}
 }
 
+void UPlayerMenu::ChangeWeaponImage(UTexture2D* Icon)
+{
+	switch (UIType)
+	{
+	case ETypeOfPlayerUI::ETP_RPGUI:
+		RPG_WeaponImage->SetBrushFromTexture(Icon);
+		break;
+	case ETypeOfPlayerUI::ETP_ShootingUI:
+		Shooting_WeaponImage->SetBrushFromTexture(Icon);
+		break;
+	}
+}
+
 void UPlayerMenu::SetRPGPanel()
 {
 	UISwitcher->SetActiveWidget(RPGGamePanel);
+	UIType = ETypeOfPlayerUI::ETP_RPGUI;
 }
 
 void UPlayerMenu::SetShootingPanel()
 {
 	UISwitcher->SetActiveWidget(ShootingGamePanel);
+	UIType = ETypeOfPlayerUI::ETP_ShootingUI;
 }

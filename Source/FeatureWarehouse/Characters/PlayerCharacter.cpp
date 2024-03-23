@@ -128,6 +128,8 @@ void APlayerCharacter::MoveForward(const FInputActionValue& Value)
 	float Movement = Value.Get<float>();
 	bool IsPressed = Value.Get<bool>();
 
+	if (ActionState != EActionState::EAS_Idle) return;
+
 	FVector Start = GetActorLocation() + FVector(0, 0, 50);
 
 	if (Controller != nullptr)
@@ -164,6 +166,8 @@ void APlayerCharacter::MoveForward(const FInputActionValue& Value)
 void APlayerCharacter::MoveRight(const FInputActionValue& Value)
 {
 	float Movement = Value.Get<float>();
+
+	if (ActionState != EActionState::EAS_Idle) return;
 
 	FVector Start = GetActorLocation() + FVector(0, 0, 50);
 	if (Controller != nullptr)
@@ -522,7 +526,7 @@ void APlayerCharacter::EquipFirstWeapon()
 			return;
 		}
 	}
-	
+
 	WeaponComponent->EquipMainWeapon();
 }
 
@@ -551,6 +555,8 @@ void APlayerCharacter::EquipSecondWeapon()
 			return;
 		}
 	}
+
+	UE_LOG(LogTemp, Warning, TEXT("PlayerCharacter :: Called EquipSecondWeapon."));
 
 	WeaponComponent->EquipSubWeapon();
 }
@@ -715,8 +721,6 @@ void APlayerCharacter::Aiming()
 	AGun* Gun = Cast<AGun>(EquipWeapon);
 	if (!Gun) return;
 
-	// Gun->DrawMuzzleLineTrace();
-
 	FVector HitLocation = DrawCameraLineTrace();
 	FVector HitDirection = (HitLocation - GetActorLocation());
 	FRotator GoalRotation = UKismetMathLibrary::MakeRotFromX(HitDirection.GetSafeNormal());
@@ -765,6 +769,7 @@ FVector APlayerCharacter::DrawCameraLineTrace()
 	}
 }
 
+// 삭제 고려
 void APlayerCharacter::UpdateHealth()
 {
 	UFW_GameInstance* GameInstance = Cast<UFW_GameInstance>(GetGameInstance());
@@ -774,28 +779,32 @@ void APlayerCharacter::UpdateHealth()
 	}
 }
 
-void APlayerCharacter::EquipEnded()
+void APlayerCharacter::OnEquipEnded()
 {
-	UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance();
+	// TO DO :
+	// 1. 액션 상태 기본으로 변경
+	// 2. PlayerMenu 업데이트
+	// 3. CurWeapon에 따라 애니메이션 변경할지 ? 고민해봐야할 듯
 
-	if (AnimInstance)
-	{
-		ActionState = EActionState::EAS_Idle;
-	}
+	ActionState = EActionState::EAS_Idle;
 
 	PlayerController->SwitchPlayerMenu();
 }
 
-void APlayerCharacter::UnequipEnded()
+void APlayerCharacter::OnUnequipEnded()
 {
-	UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance();
-
-	if (AnimInstance)
+	if (ActionState == EActionState::EAS_Swapping)
 	{
+		// 무기 교체를 하는 경우
 		ActionState = EActionState::EAS_Idle;
+		WeaponComponent->EquipOtherWeapon();
 	}
-
-	PlayerController->SwitchPlayerMenu();
+	else
+	{
+		// 무기 교체가 아닐 경우
+		ActionState = EActionState::EAS_Idle;
+		PlayerController->SwitchPlayerMenu();
+	}
 }
 
 #pragma region Movement_State
@@ -815,5 +824,4 @@ void APlayerCharacter::OnMovementModeChanged(EMovementMode PrevMovementMode, uin
 		MovementState = EMovementState::EMS_Idle;
 	}
 }
-
 #pragma endregion

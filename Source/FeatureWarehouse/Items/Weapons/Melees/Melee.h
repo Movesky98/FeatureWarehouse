@@ -22,7 +22,9 @@ class FEATUREWAREHOUSE_API AMelee : public AWeapon
 public:
 	AMelee();
 
-	virtual void BindMontage();
+	void BindMontage() override;
+
+	void UnbindMontage() override;
 
 	void JumpAttackLanding();
 
@@ -41,12 +43,6 @@ protected:
 
 	UFUNCTION()
 	virtual	void HoldMeleeWeapon();
-
-	UFUNCTION()
-	void EquipEnded();
-
-	UFUNCTION()
-	void UnequipEnded();
 
 private:
 	// Functions

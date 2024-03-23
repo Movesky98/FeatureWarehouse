@@ -77,10 +77,31 @@ void AMelee::BindMontage()
 	if (WielderAnim)
 	{
 		WielderAnim->OnMontageEnded.AddDynamic(this, &AMelee::OnAttackEnded);
+		WielderAnim->OnMontageEnded.AddDynamic(this, &AMelee::OnEquipEnded);
+		WielderAnim->OnMontageEnded.AddDynamic(this, &AMelee::OnUnequipEnded);
 		WielderAnim->OnNextAttackCheck.BindUFunction(this, FName("OnNextAttackChecked"));
 		WielderAnim->OnHoldMeleeWeapon.BindUFunction(this, FName("HoldMeleeWeapon"));
-		WielderAnim->OnUnequipEnd.BindUFunction(this, FName("UnequipEnded"));
-		WielderAnim->OnEquipEnd.BindUFunction(this, FName("EquipEnded"));
+
+		UE_LOG(LogTemp, Warning, TEXT("Weapon - %s :: BindMontage is called."), *UKismetSystemLibrary::GetDisplayName(this));
+	}
+}
+
+void AMelee::UnbindMontage()
+{
+	if (!GetWeaponOwner()) return;
+
+	AWeaponWielder* Wielder = Cast<AWeaponWielder>(GetWeaponOwner());
+	if (!Wielder) return;
+
+	UWielderAnimInstance* WielderAnim = Cast<UWielderAnimInstance>(Wielder->GetMesh()->GetAnimInstance());
+	if (WielderAnim)
+	{
+		WielderAnim->OnMontageEnded.Clear();
+		WielderAnim->OnNextAttackCheck.Unbind();
+		WielderAnim->OnHoldMeleeWeapon.Unbind();
+
+
+		UE_LOG(LogTemp, Warning, TEXT("Weapon - %s :: UnbindMontage is called."), *UKismetSystemLibrary::GetDisplayName(this));
 	}
 }
 
@@ -417,42 +438,4 @@ bool AMelee::IsAttackMontage(UAnimMontage* Montage)
 void AMelee::HoldMeleeWeapon()
 {
 
-}
-
-void AMelee::EquipEnded()
-{
-	AWeaponWielder* Wielder = Cast<AWeaponWielder>(GetWeaponOwner());
-	if (!IsValid(Wielder)) return;
-
-	bIsEquip = true;
-	Wielder->SetActionState(EActionState::EAS_Idle);
-
-	if (Wielder->IsA<APlayerCharacter>())
-	{
-		// Player일 경우
-	}
-	else
-	{
-		// Wielder일 경우
-		Wielder->EquipEnded();
-	}
-}
-
-void AMelee::UnequipEnded()
-{
-	AWeaponWielder* Wielder = Cast<AWeaponWielder>(GetWeaponOwner());
-	if (!IsValid(Wielder)) return;
-
-	bIsEquip = false;
-	Wielder->SetActionState(EActionState::EAS_Idle);
-
-	if (Wielder->IsA<APlayerCharacter>())
-	{
-		// Unequip이 끝났으므로, 무기 교체.
-		Wielder->GetWeaponComponent()->CurEquipState() == EEquipState::SubWeapon ? Wielder->GetWeaponComponent()->EquipMainWeapon() : Wielder->GetWeaponComponent()->EquipSubWeapon();
-	}
-	else
-	{
-		Wielder->UnequipEnded();
-	}
 }

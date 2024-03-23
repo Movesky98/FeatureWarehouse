@@ -15,7 +15,6 @@ void AHalberd::Equip()
 		if (OwnerAnim)
 		{
 			OwnerAnim->Montage_Play(EquipMontage);
-			bIsEquip = true;
 		}
 	}
 }
@@ -28,7 +27,6 @@ void AHalberd::Unequip()
 		if (OwnerAnim)
 		{
 			OwnerAnim->Montage_Play(UnequipMontage);
-			bIsEquip = false;
 		}
 	}
 }

@@ -41,9 +41,6 @@ public:
 	/* 무언가를 인식했는지 */
 	UFUNCTION(BlueprintCallable) bool IsRecognizedSomething();
 
-	/* AI가 Combat에 들어가기 시작했을 때 실행하는 함수 */
-	virtual void EngagingInCombat(AActor* AdversaryActor);
-
 	/* AI의 스피드를 설정하는 함수 */
 	UFUNCTION(BlueprintCallable) void SetMovementSpeed(float Speed);
 
@@ -75,6 +72,10 @@ protected:
 	void OnReceivePointDamageEvent(AActor* DamagedActor, float Damage, AController* InstigatedBy,
 		FVector HitLocation, UPrimitiveComponent* FHitComponent, FName BoneName,
 		FVector ShotFromDirection, const UDamageType* DamageType, AActor* DamageCauser) override;
+
+	void OnEquipEnded();
+
+	void OnUnequipEnded();
 
 	UFUNCTION()
 	void OnGetDamaged(bool IsRetreat);
@@ -128,12 +129,6 @@ protected:
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Component")
 	UStatBarComponent* StatBarComponent;
-
-	////////////////////////////////////////////////////////////////////    Montage    ////////////////////////////////////////////////////////////////////
-	
-	virtual void EquipEnded() override;
-	
-	virtual void UnequipEnded() override;
 
 	////////////////////////////////////////////////////////////////////    Weapon    ////////////////////////////////////////////////////////////////////
 
