@@ -39,27 +39,16 @@ void AWielderController::OnPossess(APawn* InPawn)
 
 	if (IsValid(Wielder))
 	{
-		switch (Wielder->GetWielderType())
+		if (BT_Wielder && BD_Wielder)
 		{
-		case ETypeOfWielder::ETW_Samurai:
-			if (BT_Wielder && BD_Wielder)
+			UBlackboardComponent* BlackboardComp = Blackboard.Get();
+
+			if (UseBlackboard(BD_Wielder, BlackboardComp))
 			{
-				UBlackboardComponent* BlackboardComp = Blackboard.Get();
+				ensure(RunBehaviorTree(BT_Wielder));
 
-				if (UseBlackboard(BD_Wielder, BlackboardComp))
-				{
-					ensure(RunBehaviorTree(BT_Wielder));
-
-					Blackboard = BlackboardComp;
-				}
+				Blackboard = BlackboardComp;
 			}
-			break;
-
-		case ETypeOfWielder::ETW_Halberdier:
-			break;
-
-		default:
-			break;
 		}
 	}
 
@@ -117,7 +106,7 @@ void AWielderController::OnTargetDetected(AActor* Actor, FAIStimulus Stimulus)
 	{
 		bIsIdentifiedPlayer = true;
 
-		// 이미 전투 중일 경우 나감
+		// 이미 전투 중일 경우 아무것도 하지 않음.
 		if (Wielder->GetCurState() == EStateOfEnemy::In_Battle && Wielder->GetSeeingPawn())	return;
 
 		// 플레이어가 이미 접근하였으며, AI가 플레이어를 인식한 경우

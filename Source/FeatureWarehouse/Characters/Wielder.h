@@ -14,7 +14,8 @@ enum class ETypeOfWielder : uint8
 {
 	ETW_NONE = 0 UMETA(DisplayName = "NONE"),
 	ETW_Samurai = 1 UMETA(DisplayName = "Samurai"),			// 사무라이
-	ETW_Halberdier = 2 UMETA(DisplayName = "Halberdier")	// 할버드 병
+	ETW_Halberdier = 2 UMETA(DisplayName = "Halberdier"),	// 할버드 병
+	ETW_Warrior = 3 UMETA(DisplayName = "Warrior")			// 워리어
 };
 
 /**

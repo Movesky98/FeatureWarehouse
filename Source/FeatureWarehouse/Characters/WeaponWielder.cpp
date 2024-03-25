@@ -5,6 +5,7 @@
 
 #include "Enums/ActionState.h"
 #include "Enums/MovementState.h"
+#include "Enums/Direction.h"
 #include "Weapon.h"
 
 #include "Components/StatComponent.h"
@@ -148,6 +149,14 @@ void AWeaponWielder::OnMovementModeChanged(EMovementMode PrevMovementMode, uint8
 
 void AWeaponWielder::Die()
 {
+	// 캐릭터만 죽여도 무기가 사라지는지 테스트
+	/*if (EquipWeapon)
+	{
+		EquipWeapon->Destroy();
+	}*/
+
+	Destroy();
+
 	GetCapsuleComponent()->SetCollisionProfileName(FName("Ragdoll"));
 	GetMesh()->SetCollisionProfileName(FName("Ragdoll"));
 	GetMesh()->SetSimulatePhysics(true);
@@ -162,6 +171,6 @@ bool AWeaponWielder::CheckTakeAction(EActionState SpecificAction)
 		return true;
 	}
 
-	// 특정 액션을 취하는데 일치할 경우 true 아니면 false.
+	// 특정 액션을 취하는데 액션 상태와 일치할 경우 true 아니면 false.
 	return  ActionState == SpecificAction ? true : false;
 }

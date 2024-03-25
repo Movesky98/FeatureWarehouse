@@ -59,10 +59,7 @@ void ASwordShield::Attach()
 
 void ASwordShield::Detach()
 {
-	if (GetWeaponOwner())
-	{
-		Shield->AttachToComponent(GetSkeletalMesh(), FAttachmentTransformRules::KeepRelativeTransform);
-	}
+	Shield->AttachToComponent(GetSkeletalMesh(), FAttachmentTransformRules::KeepRelativeTransform);
 }
 
 void ASwordShield::HoldMeleeWeapon()

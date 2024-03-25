@@ -130,7 +130,6 @@ void AWielder::OnRecognizeRangeBeginOverlap(class UPrimitiveComponent* SelfComp,
 		// 이미 컨트롤러가 플레이어를 식별하고 인식 범위에 들어왔을 경우.
 		if (IsValid(WielderController) && WielderController->IsIdentifiedPlayer())
 		{
-			EquipFirstWeapon();
 			WielderController->NotifyPerceiveSomething(OtherActor->GetActorLocation());
 		}
 	}
@@ -154,7 +153,6 @@ void AWielder::OnDetectionRangeBeginOverlap(class UPrimitiveComponent* SelfComp,
 
 		if (IsValid(WielderController) && WielderController->IsIdentifiedPlayer())
 		{
-			EquipFirstWeapon();
 			WielderController->NotifyEngageInBattle(OtherActor);
 			ShowStatBar();
 		}
@@ -177,8 +175,6 @@ void AWielder::OnAttackRangeBeginOverlap(class UPrimitiveComponent* SelfComp, cl
 
 		if (IsValid(WielderController) && WielderController->IsIdentifiedPlayer())
 		{
-			EquipFirstWeapon();
-			
 			BattleState = EBattleState::Attacking;
 			WielderController->NotifyBattleState(BattleState);
 			WielderController->NotifyEnemyInAttackRange(true);
@@ -277,14 +273,7 @@ void AWielder::RetreatFromEnemy()
 	}
 	else
 	{
-		// Change BattleState to Approaching or monitoring (모니터링 구현 필요).
-		if (!IsValid(CurWeapon()))
-		{
-			// 현재 무기를 들고있지 않다면 무기를 우선 장착함.
-			EquipFirstWeapon();
-		}
-
-		
+		// Change BattleState to Approaching or monitoring
 		bool IsApproach = FMath::RandBool();
 
 		if (IsApproach)
@@ -370,8 +359,13 @@ void AWielder::EquipFirstWeapon()
 {
 	if (bIsDead) return;
 
-	if (!WeaponComponent->GetMainWeapon() || ActionState == EActionState::EAS_Swapping)
-		return;
+	if (ActionState == EActionState::EAS_Swapping) return;
+	if (!WeaponComponent->GetMainWeapon() || EquipWeapon == WeaponComponent->GetMainWeapon()) return;
+
+	EActionState SpecificAction = EActionState::EAS_Equipping;
+
+	bool CanTakeAction = CheckTakeAction(SpecificAction);
+	if (!CanTakeAction) return;
 
 	if (WeaponComponent->CurEquipState() == EEquipState::SubWeapon)
 	{

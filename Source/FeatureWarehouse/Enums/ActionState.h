@@ -12,5 +12,6 @@ enum class EActionState : uint8
 	EAS_GetDamaged UMETA(DisplayName = "GetDamaged"),
 	EAS_Swapping UMETA(DisplayName = "Swapping"),
 	EAS_Equipping UMETA(DisplayName = "Equipping"),
-	EAS_Unequipping UMETA(DisplayName = "Unequipping")
+	EAS_Unequipping UMETA(DisplayName = "Unequipping"),
+	EAS_Dodging UMETA(DisplayName = "Dodging")
 };

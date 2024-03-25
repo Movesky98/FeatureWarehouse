@@ -23,6 +23,9 @@ void UStatBar::Init(class AWielder* NewOwner)
 	case ETypeOfWielder::ETW_Halberdier:
 		Name = FString("Halberdier");
 		break;
+	case ETypeOfWielder::ETW_Warrior:
+		Name = FString("Warrior");
+		break;
 	default:
 		Name = FString("NoName");
 		break;

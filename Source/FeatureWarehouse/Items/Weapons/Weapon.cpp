@@ -6,6 +6,7 @@
 #include "Enums/UseTypeOfWeapon.h"
 #include "Enums/TypeOfWeapon.h"
 #include "Enums/StateOfViews.h"
+#include "Enums/Direction.h"
 
 #include "Characters/WeaponWielder.h"
 #include "AnimInstance/WielderAnimInstance.h"
@@ -64,6 +65,16 @@ void AWeapon::UnbindMontage()
 	{
 		WielderAnim->OnMontageEnded.Clear();
 		UE_LOG(LogTemp, Warning, TEXT("Weapon - %s :: UnbindMontage is called."), *UKismetSystemLibrary::GetDisplayName(this));
+	}
+}
+
+void AWeapon::SaveDodgeMontages(TMap<EDirection, UAnimMontage*>& Montages)
+{
+	if (!DodgeMontages.IsEmpty())
+	{
+		Montages = DodgeMontages;
+
+		UE_LOG(LogTemp, Warning, TEXT("Send dodge montages to the weapon owner!"));
 	}
 }
 

@@ -8,6 +8,7 @@
 
 enum class EMovementState :uint8;
 enum class EActionState :uint8;
+enum class EDirection :uint8;
 
 class AWeapon;
 class UWeaponComponent;
@@ -90,6 +91,9 @@ protected:
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "State")
 	bool bIsDead;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Montage")
+	TMap<EDirection, UAnimMontage*> DodgeMontages;
 
 #pragma region GetterSetter
 public:

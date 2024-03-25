@@ -9,6 +9,8 @@
 enum class EUseTypeOfWeapon :uint8;
 enum class ETypeOfWeapon :uint8;
 enum class EStateOfViews :uint8;
+enum class EDirection :uint8;
+
 class UAnimMontage;
 
 /**
@@ -36,6 +38,8 @@ public:
 
 	UFUNCTION(BlueprintCallable)
 	virtual void Attack();
+
+	virtual void SaveDodgeMontages(TMap<EDirection, UAnimMontage*>& Montages);
 
 	virtual void Attack(EStateOfViews CurView, FVector HitLocation = FVector(0.0f));
 
@@ -89,6 +93,9 @@ protected:
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "State")
 	FName WeaponName;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Montage|Dodge")
+	TMap<EDirection, UAnimMontage*> DodgeMontages;
 
 private:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "State", meta = (AllowPrivateAccess = "true"))

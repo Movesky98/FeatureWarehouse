@@ -116,8 +116,6 @@ void UStatComponent::DecreaseHP(float Damage)
 	AWeaponWielder* WeaponWielder = Cast<AWeaponWielder>(GetOwner());
 	if (!IsValid(WeaponWielder)) return;
 	
-	WeaponWielder->SetActionState(EActionState::EAS_GetDamaged);
-
 	if (CurrentHP <= 0.0f)
 	{
 		WeaponWielder->SetIsDead(true);

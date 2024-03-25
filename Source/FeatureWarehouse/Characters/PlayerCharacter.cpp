@@ -19,6 +19,7 @@
 #include "Weapon.h"
 #include "Guns/Gun.h"
 
+#include "Enums/Direction.h"
 #include "Enums/TypeOfWeapon.h"
 #include "Enums/StateOfViews.h"
 #include "Enums/UseTypeOfWeapon.h"
@@ -77,6 +78,10 @@ void APlayerCharacter::BeginPlay()
 
 	PlayerController = Cast<AFW_PlayerController>(Controller);
 
+	UWielderAnimInstance* AnimInstance = Cast<UWielderAnimInstance>(GetMesh()->GetAnimInstance());
+	
+	AnimInstance->OnMontageEnded.AddDynamic(this, &APlayerCharacter::OnDodgeEnded);
+
 	SetTPP();
 }
 
@@ -119,6 +124,8 @@ void APlayerCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCom
 		EnhancedInputComponent->BindAction(AttackAction, ETriggerEvent::Triggered, this, &APlayerCharacter::AttackTriggered);
 
 		EnhancedInputComponent->BindAction(ZoomAction, ETriggerEvent::Triggered, this, &APlayerCharacter::Zoom);
+
+		EnhancedInputComponent->BindAction(DodgeAction, ETriggerEvent::Triggered, this, &APlayerCharacter::DodgePressed);
 	}
 }
 
@@ -383,6 +390,16 @@ void APlayerCharacter::SetMovementStateIdle()
 	}
 }
 
+void APlayerCharacter::DodgePressed(const FInputActionValue& Value)
+{
+	bool IsPressed = Value.Get<bool>();
+
+	if (!DodgeMontages.IsEmpty())
+	{
+		Dodge();
+	}
+}
+
 #pragma endregion
 
 #pragma region View
@@ -501,8 +518,8 @@ AActor* APlayerCharacter::FindInteractableActor(const FVector Start, const FVect
 
 void APlayerCharacter::EquipFirstWeapon()
 {
-	if (!WeaponComponent->GetMainWeapon() || ActionState == EActionState::EAS_Swapping)
-		return;
+	if (ActionState == EActionState::EAS_Swapping) return;
+	if (!WeaponComponent->GetMainWeapon() || EquipWeapon == WeaponComponent->GetMainWeapon()) return;
 
 	EActionState SpecificAction = EActionState::EAS_Equipping;
 
@@ -531,8 +548,8 @@ void APlayerCharacter::EquipFirstWeapon()
 
 void APlayerCharacter::EquipSecondWeapon()
 {
-	if (!WeaponComponent->GetSubWeapon() || ActionState == EActionState::EAS_Swapping)
-		return;
+	if (ActionState == EActionState::EAS_Swapping) return;
+	if (!WeaponComponent->GetSubWeapon() || EquipWeapon == WeaponComponent->GetSubWeapon()) return;
 
 	EActionState SpecificAction = EActionState::EAS_Equipping;
 
@@ -773,21 +790,96 @@ void APlayerCharacter::OnEquipEnded()
 	ActionState = EActionState::EAS_Idle;
 
 	PlayerController->SwitchPlayerMenu();
+
+	EquipWeapon->SaveDodgeMontages(DodgeMontages);
 }
 
 void APlayerCharacter::OnUnequipEnded()
 {
+	ActionState = EActionState::EAS_Idle;
+
+	// Unbind equip weapon's function calls.
+	EquipWeapon->UnbindMontage();
+
 	if (ActionState == EActionState::EAS_Swapping)
 	{
 		// 무기 교체를 하는 경우
-		ActionState = EActionState::EAS_Idle;
 		WeaponComponent->EquipOtherWeapon();
 	}
 	else
 	{
 		// 무기 교체가 아닐 경우
-		ActionState = EActionState::EAS_Idle;
 		PlayerController->SwitchPlayerMenu();
+	}
+
+	DodgeMontages.Empty();
+}
+
+void APlayerCharacter::Dodge()
+{
+	UWielderAnimInstance* WielderAnim = Cast<UWielderAnimInstance>(GetMesh()->GetAnimInstance());
+	ensureMsgf(WielderAnim, TEXT("PlayerCharacter :: There is no Wielder AnimInstance for SkeletalMesh."));
+
+	if (ActionState != EActionState::EAS_Dodging)
+	{
+		// Change ActionState to Dodging.
+		ActionState = EActionState::EAS_Dodging;
+	}
+	else
+	{
+		return;
+	}
+	float Direction = WielderAnim->GetDirection();
+	UAnimMontage* DodgeMontage = nullptr;
+
+	// 나누기 위한 기준 각도
+	float AngleDivider = 22.5f;
+	bool IsNegative = Direction < 0 ? true : false;
+
+	// 몫
+	int Quotient = (IsNegative ? -Direction / AngleDivider : Direction / AngleDivider);
+
+	switch (Quotient)
+	{
+	case 0:
+		// Direction is forward.
+		DodgeMontage = *DodgeMontages.Find(EDirection::ED_Forward);
+		break;
+	case 1:
+	case 2:
+		// Direction is Left Forward or Right Forward
+		DodgeMontage = IsNegative ? *DodgeMontages.Find(EDirection::ED_LeftForward) : 
+			*DodgeMontages.Find(EDirection::ED_RightForward);
+		break;
+	case 3:
+	case 4:
+		// Direction is Left or Right
+		DodgeMontage = IsNegative ? *DodgeMontages.Find(EDirection::ED_Left) :
+			*DodgeMontages.Find(EDirection::ED_Right);
+		break;
+	case 5:
+	case 6:
+		// Direction is Left Backward or Right Backward
+		DodgeMontage = IsNegative ? *DodgeMontages.Find(EDirection::ED_LeftBackward) :
+			*DodgeMontages.Find(EDirection::ED_RightBackward);
+		break;
+	case 7:
+	case 8:
+		// Direction is Left Forward or Right Forward
+		DodgeMontage = *DodgeMontages.Find(EDirection::ED_Backward);
+		break;
+	default:
+		break;
+	}
+
+	WielderAnim->Montage_Play(DodgeMontage);
+}
+
+void APlayerCharacter::OnDodgeEnded(UAnimMontage* Montage, bool bInterrupted)
+{
+	if (DodgeMontages.FindKey(Montage))
+	{
+		ActionState = EActionState::EAS_Idle;
 	}
 }
 

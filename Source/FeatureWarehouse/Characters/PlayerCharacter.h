@@ -45,6 +45,9 @@ protected:
 
 	void OnUnequipEnded() override;
 
+	UFUNCTION()
+	void OnDodgeEnded(UAnimMontage* Montage, bool bInterrupted);
+
 	UFUNCTION(BlueprintCallable)
 	AActor* FindInteractableActor(const FVector Start, const FVector End);
 
@@ -74,6 +77,8 @@ protected:
 	void Aiming();
 
 	void HeavyAttack() override;
+
+	void Dodge();
 
 	FVector DrawCameraLineTrace();
 	
@@ -133,6 +138,8 @@ protected:
 
 	void Zoom(const FInputActionValue& Value);
 
+	void DodgePressed(const FInputActionValue& Value);
+
 	void SetMovementStateIdle();
 
 private:
@@ -174,5 +181,8 @@ private:
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = InputAction, meta = (AllowPrivateAccess = "true"))
 	UInputAction* ZoomAction;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = InputAction, meta = (AllowPrivateAccess = "true"))
+	UInputAction* DodgeAction;
 #pragma endregion
 };

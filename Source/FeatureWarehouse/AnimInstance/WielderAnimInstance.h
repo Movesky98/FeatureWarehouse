@@ -60,4 +60,5 @@ protected:
 	class UCharacterMovementComponent* MovementComponent;
 public:
 	FORCEINLINE void SetEquipWeapon(bool IsEquip) { bIsEquip = IsEquip; }
+	FORCEINLINE float GetDirection() { return Direction; }
 };
