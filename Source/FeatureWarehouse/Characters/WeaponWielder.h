@@ -65,7 +65,7 @@ protected:
 	virtual void OnMovementModeChanged(EMovementMode PrevMovementMode, uint8 PreviousCustomMode) override;
 
 	/* 액션을 취할 수 있는지 체크하는 함수. */
-	bool CheckTakeAction(EActionState SpecificAction);
+	bool CheckTakeAction(EActionState SpecificAction, bool bCanTakeContinuously);
 
 	// Variables
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Component")

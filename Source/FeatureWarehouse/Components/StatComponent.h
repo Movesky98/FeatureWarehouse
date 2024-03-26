@@ -10,21 +10,31 @@ DECLARE_DELEGATE_OneParam(FOnGetDamagedDelegate, bool);
 
 class UParticleSystem;
 
+UENUM(BlueprintType)
+enum class EDamagableType :uint8
+{
+	EDT_INVINCIBLE UMETA(DisplayName = "INVINCIBLE"),		// 무적
+	EDT_VULNERABLE UMETA(DisplayName = "VULNERABLE"),		// 데미지를 받을 수 있는
+	EDT_EVADING UMETA(DisplayName = "EVADING")				// 회피 중인
+};
+
 UCLASS(Blueprintable, BlueprintType, ClassGroup = (Custom), meta = (BlueprintSpawnableComponent))
 class FEATUREWAREHOUSE_API UStatComponent : public UActorComponent
 {
 	GENERATED_BODY()
 
-public:	
+public:
 	// Sets default values for this component's properties
 	UStatComponent();
-	
+
 	UFUNCTION(BlueprintCallable)
 	void DecreaseHP(float Damage);
 
 	void ShowBloodEffect(FVector Location, FRotator Rotation);
 
 	void SetMontages(TMap<FString, UAnimMontage*> AnimMontages);
+
+	void SetDamagableType(EDamagableType Type);
 
 	FOnGetDamagedDelegate OnGetDamaged;
 
@@ -35,55 +45,58 @@ protected:
 	void PlayMontage(UAnimMontage* PlayMontage);
 
 	UFUNCTION()
-	void OnDeathEnded();
+		void OnDeathEnded();
 
 	/* 피격 애니메이션이 끝난 이후 실행되는 함수 */
 	UFUNCTION() void OnGetDamagedEnded(UAnimMontage* Montage, bool bInterrupted);
 
 private:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Stat", meta = (AllowPrivateAccess = "true"))
-	float MaxHP;			// 최대 체력
+		float MaxHP;			// 최대 체력
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Stat", meta = (AllowPrivateAccess = "true"))
-	float CurrentHP;		// 현재 체력
+		float CurrentHP;		// 현재 체력
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Stat", meta = (AllowPrivateAccess = "true"))
-	float MaxMP;			// 최대 마나
+		float MaxMP;			// 최대 마나
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Stat", meta = (AllowPrivateAccess = "true"))
-	float CurrentMP;		// 현제 마나
+		float CurrentMP;		// 현제 마나
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Stat", meta = (AllowPrivateAccess = "true"))
-	float CurrentStamina;	// 현재 스태미나
-	
+		float CurrentStamina;	// 현재 스태미나
+
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Stat", meta = (AllowPrivateAccess = "true"))
-	float MaxStamina;		// 최대 스태미나
+		float MaxStamina;		// 최대 스태미나
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Stat", meta = (AllowPrivateAccess = "true"))
-	float DamageAccumulation;	// 데미지 누적량 (한번에 들어오는 피해가 >= CurrentHP's 30% 일 경우, 회피)
+		float DamageAccumulation;	// 데미지 누적량 (한번에 들어오는 피해가 >= CurrentHP's 30% 일 경우, 회피)
 
 	FTimerHandle ResetDamageAccumulationTimer;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Stat", meta = (AllowPrivateAccess = "true"))
-	float StunGauge;		// 스턴 게이지
+		float StunGauge;		// 스턴 게이지
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Stat", meta = (AllowPrivateAccess = "true"))
-	float StunGaugeLimit;	// 최대 스턴게이지 (<= StunGage일 경우, 그로기 상태)
+		float StunGaugeLimit;	// 최대 스턴게이지 (<= StunGage일 경우, 그로기 상태)
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "State", meta = (AllowPrivateAccess = "true"))
-	bool bIsDamagable;		// 데미지를 받는 객체인지
+		bool bIsDamagable;		// 데미지를 받는 객체인지
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "State", meta = (AllowPrivateAccess = "true"))
+		EDamagableType DamagableType;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "State", meta = (AllowPrivateAccess = "true"))
-	UParticleSystem* BloodParticle;
+		UParticleSystem* BloodParticle;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Montage", meta = (AllowPrivateAccess = "true"))
-	class UAnimMontage* GetDamagedMontage;
+		class UAnimMontage* GetDamagedMontage;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Montage", meta = (AllowPrivateAccess = "true"))
-	class UAnimMontage* DeathMontage;
+		class UAnimMontage* DeathMontage;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Montage", meta = (AllowPrivateAccess = "true"))
-	class UAnimMontage* RetreatMontage;
+		class UAnimMontage* RetreatMontage;
 
 #pragma region GetterSetter
 public:
@@ -106,5 +119,8 @@ public:
 	FORCEINLINE void SetCurrentStamina(float NewCurrentStamina) { CurrentStamina = NewCurrentStamina; }
 
 	FORCEINLINE class UAnimMontage* GetBackstepMontage() { return RetreatMontage; }
+
+	FORCEINLINE EDamagableType GetDamagableType() { return DamagableType; }
+	
 #pragma endregion
 };

@@ -25,6 +25,7 @@ UStatComponent::UStatComponent()
 	}
 
 	StunGauge = 0.0f;
+	DamagableType = EDamagableType::EDT_VULNERABLE;
 }
 
 // Called when the game starts
@@ -111,7 +112,8 @@ void UStatComponent::SetMontages(TMap<FString, UAnimMontage*> AnimMontages)
 
 void UStatComponent::DecreaseHP(float Damage)
 {
-	if (!bIsDamagable) return;
+	// 데미지를 받을 수 있는 상태가 아니라면 HP를 깎지 않음.
+	if (DamagableType != EDamagableType::EDT_VULNERABLE) return;
 
 	AWeaponWielder* WeaponWielder = Cast<AWeaponWielder>(GetOwner());
 	if (!IsValid(WeaponWielder)) return;
@@ -154,4 +156,10 @@ void UStatComponent::PlayMontage(UAnimMontage* PlayMontage)
 		// 몽타주 재생 (피격, 죽음)
 		OwnerAnim->Montage_Play(PlayMontage);
 	}
+}
+
+void UStatComponent::SetDamagableType(EDamagableType Type)
+{
+	if(DamagableType != EDamagableType::EDT_INVINCIBLE)
+		DamagableType = Type;
 }

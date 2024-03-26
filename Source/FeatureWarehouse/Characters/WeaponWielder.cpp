@@ -81,7 +81,7 @@ void AWeaponWielder::OnReceivePointDamageEvent(AActor* DamagedActor, float Damag
 	*/
 	if (bIsDead) return;
 
-	APawn* ControlledPawn = InstigatedBy->GetPawn();
+	ActionState = EActionState::EAS_GetDamaged;
 
 	StatComponent->DecreaseHP(Damage);
 
@@ -162,7 +162,7 @@ void AWeaponWielder::Die()
 	GetMesh()->SetSimulatePhysics(true);
 }
 
-bool AWeaponWielder::CheckTakeAction(EActionState SpecificAction)
+bool AWeaponWielder::CheckTakeAction(EActionState SpecificAction, bool bCanTakeContinuously)
 {
 	// 특정 액션을 취하고 있지 않는 경우, 실행 가능.
 	if (ActionState == EActionState::EAS_Idle)
@@ -171,6 +171,15 @@ bool AWeaponWielder::CheckTakeAction(EActionState SpecificAction)
 		return true;
 	}
 
-	// 특정 액션을 취하는데 액션 상태와 일치할 경우 true 아니면 false.
-	return  ActionState == SpecificAction ? true : false;
+	// 연속으로 액션을 취할 수 있는지 여부
+	if (bCanTakeContinuously)
+	{
+		// 특정 액션을 취하는데 액션 상태와 일치할 경우 true 아니면 false.
+		return  ActionState == SpecificAction ? true : false;
+	}
+	else
+	{
+		// Idle 상태일 때만 액션을 취하도록 구현.
+		return false;
+	}
 }

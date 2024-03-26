@@ -207,6 +207,7 @@ void AWielder::OnReceivePointDamageEvent(AActor* DamagedActor, float Damage, ACo
 	// 3. Change CurState To Retreat
 	// 4. Change BattleState To Retreat
 	if (bIsDead) return;
+	ActionState = EActionState::EAS_GetDamaged;
 
 	StatComponent->DecreaseHP(Damage);
 
@@ -296,7 +297,7 @@ void AWielder::Attack()
 	if (bIsDead || !IsValid(EquipWeapon)) return;
 
 	EActionState SpecificAction = EActionState::EAS_Attacking;
-	bool CanTakeAction = CheckTakeAction(SpecificAction);
+	bool CanTakeAction = CheckTakeAction(SpecificAction, true);
 	if (CanTakeAction)
 	{
 		DrawDebugString(GetWorld(), FVector(0.0f, 0.0f, 150.0f), FString("Can Attack"), this, FColor::Green, 0.01f);
@@ -364,7 +365,7 @@ void AWielder::EquipFirstWeapon()
 
 	EActionState SpecificAction = EActionState::EAS_Equipping;
 
-	bool CanTakeAction = CheckTakeAction(SpecificAction);
+	bool CanTakeAction = CheckTakeAction(SpecificAction, false);
 	if (!CanTakeAction) return;
 
 	if (WeaponComponent->CurEquipState() == EEquipState::SubWeapon)

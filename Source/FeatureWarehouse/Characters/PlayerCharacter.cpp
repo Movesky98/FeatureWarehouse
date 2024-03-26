@@ -78,9 +78,6 @@ void APlayerCharacter::BeginPlay()
 
 	PlayerController = Cast<AFW_PlayerController>(Controller);
 
-	UWielderAnimInstance* AnimInstance = Cast<UWielderAnimInstance>(GetMesh()->GetAnimInstance());
-	
-	AnimInstance->OnMontageEnded.AddDynamic(this, &APlayerCharacter::OnDodgeEnded);
 
 	SetTPP();
 }
@@ -523,7 +520,7 @@ void APlayerCharacter::EquipFirstWeapon()
 
 	EActionState SpecificAction = EActionState::EAS_Equipping;
 
-	bool CanTakeAction = CheckTakeAction(SpecificAction);
+	bool CanTakeAction = CheckTakeAction(SpecificAction, false);
 	if (!CanTakeAction) return;
 
 	// 현재 들고 있는 무기가 두번째 무기인 경우
@@ -553,7 +550,7 @@ void APlayerCharacter::EquipSecondWeapon()
 
 	EActionState SpecificAction = EActionState::EAS_Equipping;
 
-	bool CanTakeAction = CheckTakeAction(SpecificAction);
+	bool CanTakeAction = CheckTakeAction(SpecificAction, false);
 	if (!CanTakeAction) return;
 
 	if (WeaponComponent->CurEquipState() == EEquipState::MainWeapon)
@@ -584,7 +581,7 @@ void APlayerCharacter::Attack()
 
 	EActionState SpecificAction = EActionState::EAS_Attacking;
 
-	bool CanTakeAction = CheckTakeAction(SpecificAction);
+	bool CanTakeAction = CheckTakeAction(SpecificAction, true);
 	if (!CanTakeAction) return;
 
 
@@ -606,7 +603,7 @@ void APlayerCharacter::HeavyAttack()
 
 	EActionState SpecificAction = EActionState::EAS_HeavyAttacking;
 
-	bool CanTakeAction = CheckTakeAction(SpecificAction);
+	bool CanTakeAction = CheckTakeAction(SpecificAction, true);
 	if (!CanTakeAction) return;
 
 	if (PlayerController->GetPerspective() == EStateOfViews::TDP)
@@ -796,18 +793,15 @@ void APlayerCharacter::OnEquipEnded()
 
 void APlayerCharacter::OnUnequipEnded()
 {
-	ActionState = EActionState::EAS_Idle;
-
-	// Unbind equip weapon's function calls.
-	EquipWeapon->UnbindMontage();
-
 	if (ActionState == EActionState::EAS_Swapping)
 	{
+		ActionState = EActionState::EAS_Idle;
 		// 무기 교체를 하는 경우
 		WeaponComponent->EquipOtherWeapon();
 	}
 	else
 	{
+		ActionState = EActionState::EAS_Idle;
 		// 무기 교체가 아닐 경우
 		PlayerController->SwitchPlayerMenu();
 	}
@@ -817,18 +811,17 @@ void APlayerCharacter::OnUnequipEnded()
 
 void APlayerCharacter::Dodge()
 {
-	UWielderAnimInstance* WielderAnim = Cast<UWielderAnimInstance>(GetMesh()->GetAnimInstance());
+	UWielderAnimInstance* WielderAnim = Cast<UWielderAnimInstance>(GetMesh()->GetAnimInstance());	
 	ensureMsgf(WielderAnim, TEXT("PlayerCharacter :: There is no Wielder AnimInstance for SkeletalMesh."));
 
-	if (ActionState != EActionState::EAS_Dodging)
-	{
-		// Change ActionState to Dodging.
-		ActionState = EActionState::EAS_Dodging;
-	}
-	else
-	{
-		return;
-	}
+	EActionState SpecificAction = EActionState::EAS_Dodging;
+	bool CanTakeAction = CheckTakeAction(SpecificAction, false);
+	if (!CanTakeAction) return;
+
+	// Change ActionState to Dodging.
+	ActionState = EActionState::EAS_Dodging;
+	StatComponent->SetDamagableType(EDamagableType::EDT_EVADING);
+
 	float Direction = WielderAnim->GetDirection();
 	UAnimMontage* DodgeMontage = nullptr;
 
@@ -872,15 +865,26 @@ void APlayerCharacter::Dodge()
 		break;
 	}
 
-	WielderAnim->Montage_Play(DodgeMontage);
+	bool bPlayedSuccessfullly = false;
+	const float MontageLength = WielderAnim->Montage_Play(DodgeMontage);
+
+	bPlayedSuccessfullly = (MontageLength > 0.f);
+
+	if (bPlayedSuccessfullly)
+	{
+		FOnMontageEnded DodgeEndDelegate;
+		DodgeEndDelegate.BindUObject(this, &APlayerCharacter::OnDodgeEnded);
+
+		WielderAnim->Montage_SetEndDelegate(DodgeEndDelegate, DodgeMontage);
+	}
 }
 
 void APlayerCharacter::OnDodgeEnded(UAnimMontage* Montage, bool bInterrupted)
 {
-	if (DodgeMontages.FindKey(Montage))
-	{
-		ActionState = EActionState::EAS_Idle;
-	}
+	ActionState = EActionState::EAS_Idle;
+	StatComponent->SetDamagableType(EDamagableType::EDT_VULNERABLE);
+
+	UE_LOG(LogTemp, Log, TEXT("Dodge Montage Ended !"));
 }
 
 #pragma region Movement_State
