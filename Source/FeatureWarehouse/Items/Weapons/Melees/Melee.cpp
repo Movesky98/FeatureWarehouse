@@ -347,7 +347,8 @@ void AMelee::DrawAttackLineTrace(const FVector& LineStart, const FVector& LineEn
 
 		UGameplayStatics::ApplyPointDamage(Hit.GetActor(), Damage, Hit.ImpactNormal, Hit, GetWeaponOwner()->GetController(), this, DamageType);
 
-		ShakePlayerCamera();
+		if(Hit.GetActor()->IsA<APlayerCharacter>())
+			ShakePlayerCamera();
 	}
 }
 

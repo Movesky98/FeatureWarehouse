@@ -203,7 +203,6 @@ void AWielder::OnAttackRangeBeginOverlap(class UPrimitiveComponent* SelfComp, cl
 		{
 			BattleState = EBattleState::Attacking;
 			WielderController->NotifyBattleState(BattleState);
-			UE_LOG(LogTemp, Warning, TEXT("%s :: Changing InAttackRange State is called in AttackRangeBeginOverlap."), *UKismetSystemLibrary::GetDisplayName(this));
 			WielderController->NotifyEnemyInAttackRange(true);
 			ShowStatBar();
 		}
@@ -222,7 +221,6 @@ void AWielder::OnAttackRangeEndOverlap(class UPrimitiveComponent* SelfComp, clas
 		// 현재 AI의 상태가 전투상태일 때.
 		if (IsValid(WielderController) && CurState == EStateOfEnemy::In_Battle)
 		{
-			UE_LOG(LogTemp, Warning, TEXT("%s :: Changing InAttackRange State is called in AttackRangeEndOverlap."), *UKismetSystemLibrary::GetDisplayName(this));
 			WielderController->NotifyEnemyInAttackRange(false);
 		}
 	}
@@ -231,13 +229,9 @@ void AWielder::OnAttackRangeEndOverlap(class UPrimitiveComponent* SelfComp, clas
 void AWielder::OnReceivePointDamageEvent(AActor* DamagedActor, float Damage, AController* InstigatedBy,
 	FVector HitLocation, UPrimitiveComponent* FHitComponent, FName BoneName,
 	FVector ShotFromDirection, const UDamageType* DamageType, AActor* DamageCauser)
-{
-	// TO DO
-	// 1. Decrease HP
-	// 2. Show Blood Effect
-	// 3. Change CurState To Retreat
-	// 4. Change BattleState To Retreat
+{	
 	if (bIsDead) return;
+
 	ActionState = EActionState::EAS_GetDamaged;
 
 	StatComponent->DecreaseHP(Damage);
@@ -255,11 +249,19 @@ void AWielder::OnReceivePointDamageEvent(AActor* DamagedActor, float Damage, ACo
 	if (IsValid(WielderController))
 	{
 		WielderController->DesignateEnemy(InstigatedBy->GetPawn());
+		WielderController->StopMovement();
+		WielderController->NotifyUnderAttack(true);
 	}
 }
 
 void AWielder::OnGetDamaged(bool IsRetreat)
 {
+	AWielderController* WielderController = Cast<AWielderController>(GetController());
+	if (IsValid(WielderController))
+	{
+		WielderController->NotifyUnderAttack(false);
+	}
+
 	// 회피가 필요한 상황이라면
 	if (IsRetreat)
 	{
@@ -325,15 +327,8 @@ void AWielder::Attack()
 
 	EActionState SpecificAction = EActionState::EAS_Attacking;
 	bool CanTakeAction = CheckTakeAction(SpecificAction, true);
-	if (CanTakeAction)
-	{
-		DrawDebugString(GetWorld(), FVector(0.0f, 0.0f, 150.0f), FString("Can Attack"), this, FColor::Green, 0.01f);
-	}
-	else
-	{
-		DrawDebugString(GetWorld(), FVector(0.0f, 0.0f, 150.0f), FString("Can't Attack"), this, FColor::Red, 0.01f);
-		return;
-	}
+
+	if (CanTakeAction) UE_LOG(LogTemp, Warning, TEXT("%s Attack is called"), *UKismetSystemLibrary::GetDisplayName(this));
 	
 	EquipWeapon->Attack();
 }
@@ -564,6 +559,8 @@ void AWielder::Die()
 	GetCapsuleComponent()->SetCollisionProfileName(FName("Ragdoll"));
 	GetMesh()->SetCollisionProfileName(FName("Ragdoll"));
 	GetMesh()->SetSimulatePhysics(true);
+
+	SetLifeSpan(3.0f);
 }
 
 void AWielder::ShowStatBar()

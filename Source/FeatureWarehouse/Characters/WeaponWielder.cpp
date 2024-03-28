@@ -44,6 +44,8 @@ AWeaponWielder::AWeaponWielder()
 	}
 
 	MovementState = EMovementState::EMS_Idle;
+
+	GetMesh()->SetGenerateOverlapEvents(true);
 }
 
 void AWeaponWielder::PostInitializeComponents()

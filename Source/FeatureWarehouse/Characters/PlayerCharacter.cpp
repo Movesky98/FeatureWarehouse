@@ -48,11 +48,13 @@ APlayerCharacter::APlayerCharacter()
 	Camera = CreateDefaultSubobject<UCameraComponent>(TEXT("Camera"));
 	Camera->SetupAttachment(SpringArm);
 
-	GetCapsuleComponent()->SetCollisionProfileName(FName("Player"));
+	GetCapsuleComponent()->SetCollisionProfileName(FName("Pawn"));
 	GetCharacterMovement()->MaxWalkSpeed = 300.0f;
 	GetCharacterMovement()->MaxWalkSpeedCrouched = 200.0f;
 	GetCharacterMovement()->bCanWalkOffLedgesWhenCrouching = true;
 	GetCharacterMovement()->NavAgentProps.bCanCrouch = true;
+
+	GetMesh()->SetCollisionProfileName(FName("Player"));
 
 	static ConstructorHelpers::FObjectFinder<USkeletalMesh> SKM_Manny(TEXT("/Game/Characters/Mannequins/Meshes/SKM_Manny"));
 	if (SKM_Manny.Succeeded())
@@ -569,8 +571,6 @@ void APlayerCharacter::EquipSecondWeapon()
 		}
 	}
 
-	UE_LOG(LogTemp, Warning, TEXT("PlayerCharacter :: Called EquipSecondWeapon."));
-
 	WeaponComponent->EquipSubWeapon();
 }
 
@@ -883,8 +883,6 @@ void APlayerCharacter::OnDodgeEnded(UAnimMontage* Montage, bool bInterrupted)
 {
 	ActionState = EActionState::EAS_Idle;
 	StatComponent->SetDamagableType(EDamagableType::EDT_VULNERABLE);
-
-	UE_LOG(LogTemp, Log, TEXT("Dodge Montage Ended !"));
 }
 
 #pragma region Movement_State

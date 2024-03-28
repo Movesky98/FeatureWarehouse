@@ -48,8 +48,6 @@ void AWeapon::BindMontage()
 	{
 		WielderAnim->OnMontageEnded.AddDynamic(this, &AWeapon::OnEquipEnded);
 		WielderAnim->OnMontageEnded.AddDynamic(this, &AWeapon::OnUnequipEnded);
-
-		UE_LOG(LogTemp, Warning, TEXT("Weapon - %s :: BindMontage is called."), *UKismetSystemLibrary::GetDisplayName(this));
 	}
 }
 
@@ -64,7 +62,6 @@ void AWeapon::UnbindMontage()
 	if (WielderAnim)
 	{
 		WielderAnim->OnMontageEnded.Clear();
-		UE_LOG(LogTemp, Warning, TEXT("Weapon - %s :: UnbindMontage is called."), *UKismetSystemLibrary::GetDisplayName(this));
 	}
 }
 
@@ -73,8 +70,6 @@ void AWeapon::SaveDodgeMontages(TMap<EDirection, UAnimMontage*>& Montages)
 	if (!DodgeMontages.IsEmpty())
 	{
 		Montages = DodgeMontages;
-
-		UE_LOG(LogTemp, Warning, TEXT("Send dodge montages to the weapon owner!"));
 	}
 }
 

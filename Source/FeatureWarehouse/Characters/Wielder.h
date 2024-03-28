@@ -31,7 +31,7 @@ public:
 	void CheckEquipWeapon();
 
 	/* 현재 타겟으로 지정된 액터를 가져오는 함수 */
-	UFUNCTION() AActor* GetSeeingPawn();
+	UFUNCTION(BlueprintCallable) AActor* GetSeeingPawn();
 
 	/* 타겟을 지정하는 함수 */
 	UFUNCTION() void DesignateEnemy(AActor* Enemy);

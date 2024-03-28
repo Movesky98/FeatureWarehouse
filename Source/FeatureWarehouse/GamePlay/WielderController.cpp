@@ -98,8 +98,6 @@ void AWielderController::BeginPlay()
 
 void AWielderController::OnTargetDetected(AActor* Actor, FAIStimulus Stimulus)
 {
-	UE_LOG(LogTemp, Warning, TEXT("%s is Detected Target (%s)"), *UKismetSystemLibrary::GetDisplayName(GetPawn()), *UKismetSystemLibrary::GetDisplayName(Actor));
-
 	if (GetSeeingPawn() != nullptr) return;
 	
 	AWielder* Wielder = Cast<AWielder>(GetPawn());
@@ -292,8 +290,6 @@ void AWielderController::NotifyMonitoring()
 
 void AWielderController::NotifyEnemyInAttackRange(bool IsInRange)
 {
-	UE_LOG(LogTemp, Warning, TEXT("%s Change Behavior Tree's AttackRange State."), *UKismetSystemLibrary::GetDisplayName(GetPawn()));
-
 	Blackboard->SetValueAsBool(FName("IsInAttackRange"), IsInRange);
 }
 
@@ -311,11 +307,15 @@ void AWielderController::NotifyGoToHomePos()
 	}
 }
 
+void AWielderController::NotifyUnderAttack(bool IsUnderAttack)
+{
+	Blackboard->SetValueAsBool(FName("IsUnderAttack"), IsUnderAttack);
+}
+
 void AWielderController::NotifyDead()
 {
 	Blackboard->SetValueAsBool(FName("IsDead"), true);
 }
-
 
 AActor* AWielderController::GetSeeingPawn()
 {

@@ -19,6 +19,8 @@ class FEATUREWAREHOUSE_API AWielderController : public AAIController
 public:
 	AWielderController();
 
+	void NotifyUnderAttack(bool IsUnderAttack);
+
 	/* 무언가를 인지했을 때 Behavior Tree에 알리는 함수. */
 	void NotifyPerceiveSomething(FVector Location);
 
@@ -56,7 +58,7 @@ public:
 	void DesignateEnemy(AActor* Enemy);
 
 	/* HomePos로 돌아가는 함수 */
-	void NotifyGoToHomePos();
+	UFUNCTION(BlueprintCallable) void NotifyGoToHomePos();
 
 	/* 공격받았을 때, 거리를 벌려야 함을 Behavior Tree에 알리는 함수. */
 	void NotifyRetreat();
