@@ -22,6 +22,9 @@ public:
 	/* 무언가를 인지했을 때 Behavior Tree에 알리는 함수. */
 	void NotifyPerceiveSomething(FVector Location);
 
+	/* Patrol할 때 실행되는 함수 */
+	void NotifyPatrol();
+
 	/* Range 관련 키를 초기화하는 함수 */
 	void ClearRangeKey();
 
@@ -41,7 +44,7 @@ public:
 	AActor* GetSeeingPawn();
 
 	/* 플레이어를 식별했는지 */
-	bool IsIdentifiedPlayer() { return bIsIdentifiedPlayer; }
+	bool IsIdentifiedEnemy() { return bIsIdentifiedEnemy; }
 
 	/* MovePos를 블랙보드에 저장하는 함수 */
 	void SetMovePosToBlackboard(FVector MovePos);
@@ -105,7 +108,7 @@ private:
 	class UAISenseConfig_Sight* Sight;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Perception", meta = (AllowPrivateAccess = "true"))
-	bool bIsIdentifiedPlayer;
+	bool bIsIdentifiedEnemy;
 
 	const FName BlackboardEnemyKey = FName("EnemyActor");
 	const FName BlackboardHomePosKey = FName("HomePos");

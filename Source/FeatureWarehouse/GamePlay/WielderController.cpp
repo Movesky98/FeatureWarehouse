@@ -13,6 +13,7 @@
 
 #include "Perception/AIPerceptionComponent.h"
 #include "Perception/AISenseConfig_Sight.h"
+#include "Kismet/KismetSystemLibrary.h"
 
 AWielderController::AWielderController()
 {
@@ -97,20 +98,22 @@ void AWielderController::BeginPlay()
 
 void AWielderController::OnTargetDetected(AActor* Actor, FAIStimulus Stimulus)
 {
-	if (!Actor->ActorHasTag(FName("Player"))) return;
+	UE_LOG(LogTemp, Warning, TEXT("%s is Detected Target (%s)"), *UKismetSystemLibrary::GetDisplayName(GetPawn()), *UKismetSystemLibrary::GetDisplayName(Actor));
+
+	if (GetSeeingPawn() != nullptr) return;
 	
 	AWielder* Wielder = Cast<AWielder>(GetPawn());
 	if (!IsValid(Wielder)) return;
 
 	if (Stimulus.WasSuccessfullySensed())
 	{
-		bIsIdentifiedPlayer = true;
+		bIsIdentifiedEnemy = true;
 
 		// 이미 전투 중일 경우 아무것도 하지 않음.
-		if (Wielder->GetCurState() == EStateOfEnemy::In_Battle && Wielder->GetSeeingPawn())	return;
+		if (Wielder->GetCurState() == EStateOfEnemy::In_Battle) return;
 
-		// 플레이어가 이미 접근하였으며, AI가 플레이어를 인식한 경우
-		if (Wielder->IsPlayerApproached())
+		// 적이 이미 접근하였으며, AI가 적을 인식한 경우
+		if (Wielder->IsEnemyApproached())
 		{
 			Wielder->CheckEquipWeapon();
 			Wielder->ShowStatBar();
@@ -131,7 +134,7 @@ void AWielderController::OnTargetDetected(AActor* Actor, FAIStimulus Stimulus)
 	else
 	{
 		// 플레이어가 인식되었다가 시야에서 벗어난 경우.
-		bIsIdentifiedPlayer = false;
+		bIsIdentifiedEnemy = false;
 
 		// 시야에서 벗어난 경우 처리를 해줘야할 듯.
 		if (!Wielder->IsRecognizedSomething())
@@ -152,7 +155,7 @@ void AWielderController::NotifyPerceiveSomething(FVector Location)
 		Blackboard->SetValueAsEnum(FName("CurState"), (uint8)Wielder->GetCurState());
 		Blackboard->SetValueAsBool(FName("IsRecognizedSomething"), true);
 		SetMovePosToBlackboard(Location);
-		Blackboard->SetValueAsBool(FName("IsPatrol"), false);
+		Blackboard->SetValueAsBool(FName("IsDetection"), true);
 	}
 }
 
@@ -179,7 +182,7 @@ void AWielderController::NotifyApproachToEnemy(AActor* Enemy)
 void AWielderController::ClearRangeKey()
 {
 	Blackboard->SetValueAsBool(FName("IsRecognizedSomething"), false);
-	Blackboard->SetValueAsBool(FName("IsPlayerApproached"), false);
+	Blackboard->SetValueAsBool(FName("IsEnemyApproached"), false);
 	Blackboard->SetValueAsBool(FName("IsInAttackRange"), false);
 }
 
@@ -214,6 +217,19 @@ void AWielderController::NotifyEngageInBattle(AActor* Enemy)
 
 		// 일정 거리 이상이면 모니터링, 아니면 접근.
 		Wielder->GetDistanceTo(Enemy) > 600.0f ? Wielder->Monitoring() : NotifyApproaching();
+	}
+}
+
+void AWielderController::NotifyPatrol()
+{
+	AWielder* Wielder = Cast<AWielder>(GetPawn());
+	if (IsValid(Wielder))
+	{
+		Wielder->SetCurState(EStateOfEnemy::Patrol);
+		Wielder->SetMovementSpeed(Wielder->WalkSpeed);
+
+		Blackboard->SetValueAsEnum(FName("CurState"), (uint8)Wielder->GetCurState());
+		Blackboard->SetValueAsBool(FName("IsDetection"), false);
 	}
 }
 
@@ -276,6 +292,8 @@ void AWielderController::NotifyMonitoring()
 
 void AWielderController::NotifyEnemyInAttackRange(bool IsInRange)
 {
+	UE_LOG(LogTemp, Warning, TEXT("%s Change Behavior Tree's AttackRange State."), *UKismetSystemLibrary::GetDisplayName(GetPawn()));
+
 	Blackboard->SetValueAsBool(FName("IsInAttackRange"), IsInRange);
 }
 

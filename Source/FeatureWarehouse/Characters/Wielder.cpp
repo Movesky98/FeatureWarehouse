@@ -29,17 +29,17 @@ AWielder::AWielder()
 {
 	RecognizeRangeComponent = CreateDefaultSubobject<USphereComponent>(TEXT("RecognizeRange"));
 	RecognizeRangeComponent->SetupAttachment(RootComponent);
-	RecognizeRangeComponent->SetCollisionProfileName(FName("PlayerTrigger"));
+	RecognizeRangeComponent->SetCollisionProfileName(FName("Trigger"));
 	RecognizeRangeComponent->ShapeColor = FColor::Purple;
 
 	DetectionRangeComponent = CreateDefaultSubobject<USphereComponent>(TEXT("DetectionRange"));
 	DetectionRangeComponent->SetupAttachment(RootComponent);
-	DetectionRangeComponent->SetCollisionProfileName(FName("PlayerTrigger"));
+	DetectionRangeComponent->SetCollisionProfileName(FName("Trigger"));
 	DetectionRangeComponent->ShapeColor = FColor::Green;
 
 	AttackRangeComponent = CreateDefaultSubobject<USphereComponent>(TEXT("AttackRange"));
 	AttackRangeComponent->SetupAttachment(RootComponent);
-	AttackRangeComponent->SetCollisionProfileName(FName("PlayerTrigger"));
+	AttackRangeComponent->SetCollisionProfileName(FName("Trigger"));
 
 	StatBarComponent = CreateDefaultSubobject<UStatBarComponent>(TEXT("StatBarComponent"));
 	StatBarComponent->SetupAttachment(RootComponent);
@@ -71,6 +71,17 @@ void AWielder::PostInitializeComponents()
 
 	StatBarComponent->Init();
 	StatBarComponent->HideUI();
+
+	TeamId = FGenericTeamId((uint8)Faction);
+
+	if (bStartWithPatrol)
+	{
+		// Set Patrol.
+		AWielderController* WielderController = Cast<AWielderController>(GetController());
+		ensureMsgf(WielderController, TEXT("%s's Controller is not wielder controller class !!"), *UKismetSystemLibrary::GetDisplayName(this));
+
+		WielderController->NotifyPatrol();
+	}
 }
 
 void AWielder::BeginPlay()
@@ -121,14 +132,17 @@ void AWielder::DesignateEnemy(AActor* Enemy)
 
 void AWielder::OnRecognizeRangeBeginOverlap(class UPrimitiveComponent* SelfComp, class AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
-	if (OtherActor->ActorHasTag(FName("Player")))
+	if (OtherActor)
 	{
+		// [타게팅하고 있는 액터 != 콜리전에 접근한 액터]면 아무것도 하지 않음.
+		if (GetSeeingPawn() && GetSeeingPawn() != OtherActor) return;
+
 		bIsRecognizedSomething = true;
 
 		AWielderController* WielderController = Cast<AWielderController>(GetController());
 
 		// 이미 컨트롤러가 플레이어를 식별하고 인식 범위에 들어왔을 경우.
-		if (IsValid(WielderController) && WielderController->IsIdentifiedPlayer())
+		if (IsValid(WielderController) && WielderController->IsIdentifiedEnemy())
 		{
 			WielderController->NotifyPerceiveSomething(OtherActor->GetActorLocation());
 		}
@@ -137,21 +151,27 @@ void AWielder::OnRecognizeRangeBeginOverlap(class UPrimitiveComponent* SelfComp,
 
 void AWielder::OnRecognizeRangeEndOverlap(class UPrimitiveComponent* SelfComp, class AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex)
 {
-	if (OtherActor->ActorHasTag(FName("Player")))
+	if (OtherActor)
 	{
+		// [타게팅하고 있는 액터 != 콜리전에 접근한 액터]면 아무것도 하지 않음.
+		if (GetSeeingPawn() && GetSeeingPawn() != OtherActor) return;
+
 		bIsRecognizedSomething = false;
 	}
 }
 
 void AWielder::OnDetectionRangeBeginOverlap(class UPrimitiveComponent* SelfComp, class AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
-	if (OtherActor->ActorHasTag(FName("Player")))
+	if (OtherActor)
 	{
-		bIsPlayerApproached = true;
+		// [타게팅하고 있는 액터 != 콜리전에 접근한 액터]면 아무것도 하지 않음.
+		if (GetSeeingPawn() && GetSeeingPawn() != OtherActor) return;
+		
+		bIsEnemyApproached = true;
 
 		AWielderController* WielderController = Cast<AWielderController>(GetController());
 
-		if (IsValid(WielderController) && WielderController->IsIdentifiedPlayer())
+		if (IsValid(WielderController) && WielderController->IsIdentifiedEnemy())
 		{
 			WielderController->NotifyEngageInBattle(OtherActor);
 			ShowStatBar();
@@ -161,22 +181,29 @@ void AWielder::OnDetectionRangeBeginOverlap(class UPrimitiveComponent* SelfComp,
 
 void AWielder::OnDetectionRangeEndOverlap(class UPrimitiveComponent* SelfComp, class AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex)
 {
-	if (OtherActor->ActorHasTag(FName("Player")))
+	if (OtherActor)
 	{
-		bIsPlayerApproached = false;
+		// [타게팅하고 있는 액터 != 콜리전에 접근한 액터]면 아무것도 하지 않음.
+		if (GetSeeingPawn() && GetSeeingPawn() != OtherActor) return;
+
+		bIsEnemyApproached = false;
 	}
 }
 
 void AWielder::OnAttackRangeBeginOverlap(class UPrimitiveComponent* SelfComp, class AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
-	if (OtherActor->ActorHasTag(FName("Player")))
+	if (OtherActor)
 	{
+		// [타게팅하고 있는 액터 != 콜리전에 접근한 액터]면 아무것도 하지 않음.
+		if (GetSeeingPawn() && GetSeeingPawn() != OtherActor) return;
+
 		AWielderController* WielderController = Cast<AWielderController>(GetController());
 
-		if (IsValid(WielderController) && WielderController->IsIdentifiedPlayer())
+		if (IsValid(WielderController) && WielderController->IsIdentifiedEnemy())
 		{
 			BattleState = EBattleState::Attacking;
 			WielderController->NotifyBattleState(BattleState);
+			UE_LOG(LogTemp, Warning, TEXT("%s :: Changing InAttackRange State is called in AttackRangeBeginOverlap."), *UKismetSystemLibrary::GetDisplayName(this));
 			WielderController->NotifyEnemyInAttackRange(true);
 			ShowStatBar();
 		}
@@ -185,13 +212,17 @@ void AWielder::OnAttackRangeBeginOverlap(class UPrimitiveComponent* SelfComp, cl
 
 void AWielder::OnAttackRangeEndOverlap(class UPrimitiveComponent* SelfComp, class AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex)
 {
-	if (OtherActor->ActorHasTag(FName("Player")))
+	if (OtherActor)
 	{
+		// [타게팅하고 있는 액터 != 콜리전에 접근한 액터]면 아무것도 하지 않음.
+		if (GetSeeingPawn() && GetSeeingPawn() != OtherActor) return;
+
 		AWielderController* WielderController = Cast<AWielderController>(GetController());
 
 		// 현재 AI의 상태가 전투상태일 때.
 		if (IsValid(WielderController) && CurState == EStateOfEnemy::In_Battle)
 		{
+			UE_LOG(LogTemp, Warning, TEXT("%s :: Changing InAttackRange State is called in AttackRangeEndOverlap."), *UKismetSystemLibrary::GetDisplayName(this));
 			WielderController->NotifyEnemyInAttackRange(false);
 		}
 	}
@@ -237,12 +268,8 @@ void AWielder::OnGetDamaged(bool IsRetreat)
 	}
 
 	// 전투상황이 아니라면 바로 회피
-	if (CurState == EStateOfEnemy::In_Battle)
-	{
-		GEngine->AddOnScreenDebugMessage(-1, 3.0f, FColor::Green, FString("This Wielder is In_Battle State."));
-		return;
-	}
-	
+	if (CurState == EStateOfEnemy::In_Battle) return;
+
 	ChangeToRetreatMode();
 }
 
@@ -307,8 +334,6 @@ void AWielder::Attack()
 		DrawDebugString(GetWorld(), FVector(0.0f, 0.0f, 150.0f), FString("Can't Attack"), this, FColor::Red, 0.01f);
 		return;
 	}
-
-	// if (!CanTakeAction) return;
 	
 	EquipWeapon->Attack();
 }
@@ -392,9 +417,9 @@ void AWielder::Unequip()
 	WeaponComponent->Unequip();
 }
 
-bool AWielder::IsPlayerApproached()
+bool AWielder::IsEnemyApproached()
 {
-	return bIsPlayerApproached;
+	return bIsEnemyApproached;
 }
 
 bool AWielder::IsRecognizedSomething()

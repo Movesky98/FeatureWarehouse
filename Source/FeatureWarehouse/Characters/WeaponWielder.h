@@ -4,11 +4,13 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Character.h"
+#include "GenericTeamAgentInterface.h"
 #include "WeaponWielder.generated.h"
 
 enum class EMovementState :uint8;
 enum class EActionState :uint8;
 enum class EDirection :uint8;
+enum class EFactionType :uint8;
 
 class AWeapon;
 class UWeaponComponent;
@@ -21,7 +23,7 @@ class UStatBarComponent;
 * 기존에 구현했던 플레이어만 사용하던 WeaponComponent를 AI도 함께 사용하고자 하여 PlayerCharacter로부터 분리하였음.
 */
 UCLASS()
-class FEATUREWAREHOUSE_API AWeaponWielder : public ACharacter
+class FEATUREWAREHOUSE_API AWeaponWielder : public ACharacter, public IGenericTeamAgentInterface
 {
 	GENERATED_BODY()
 
@@ -95,6 +97,12 @@ protected:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Montage")
 	TMap<EDirection, UAnimMontage*> DodgeMontages;
 
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Team")
+	EFactionType Faction;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Team")
+	FGenericTeamId TeamId;
+
 #pragma region GetterSetter
 public:
 	// Equip Weapon
@@ -113,5 +121,8 @@ public:
 
 	FORCEINLINE bool IsDead() { return bIsDead; }
 	FORCEINLINE void SetIsDead(bool IsDead) { bIsDead = IsDead; }
+
+	FGenericTeamId GetGenericTeamId() const override;
+	FORCEINLINE EFactionType GetFaction() { return Faction; }
 #pragma endregion
 };

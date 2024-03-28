@@ -6,6 +6,7 @@
 #include "Enums/ActionState.h"
 #include "Enums/MovementState.h"
 #include "Enums/Direction.h"
+#include "Enums/FactionType.h"
 #include "Weapon.h"
 
 #include "Components/StatComponent.h"
@@ -50,6 +51,8 @@ void AWeaponWielder::PostInitializeComponents()
 	Super::PostInitializeComponents();
 
 	this->OnTakePointDamage.AddDynamic(this, &AWeaponWielder::OnReceivePointDamageEvent);
+
+	TeamId = FGenericTeamId((uint8)Faction);
 }
 
 void AWeaponWielder::BeginPlay()
@@ -182,4 +185,9 @@ bool AWeaponWielder::CheckTakeAction(EActionState SpecificAction, bool bCanTakeC
 		// Idle 상태일 때만 액션을 취하도록 구현.
 		return false;
 	}
+}
+
+FGenericTeamId AWeaponWielder::GetGenericTeamId() const
+{
+	return TeamId;
 }

@@ -37,7 +37,7 @@ public:
 	UFUNCTION() void DesignateEnemy(AActor* Enemy);
 
 	/* 플레이어가 AI에게 접근했는지 */
-	UFUNCTION(BlueprintCallable) bool IsPlayerApproached();
+	UFUNCTION(BlueprintCallable) bool IsEnemyApproached();
 
 	/* 무언가를 인식했는지 */
 	UFUNCTION(BlueprintCallable) bool IsRecognizedSomething();
@@ -180,7 +180,11 @@ protected:
 	bool bIsRecognizedSomething;	// 무언가를 인식했는지
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Range")
-	bool bIsPlayerApproached;		// 플레이어가 접근했는지
+	bool bIsEnemyApproached;		// 플레이어가 접근했는지
+
+	// Initial Settings
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Initial Setting")
+	bool bStartWithPatrol;
 
 	// Components
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Range")
