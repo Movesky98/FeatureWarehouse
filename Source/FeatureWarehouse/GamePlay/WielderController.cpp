@@ -49,6 +49,9 @@ void AWielderController::OnPossess(APawn* InPawn)
 				ensure(RunBehaviorTree(BT_Wielder));
 
 				Blackboard = BlackboardComp;
+
+				// Set Home Position
+				Blackboard->SetValueAsVector(BlackboardHomePosKey, GetPawn()->GetActorLocation());
 			}
 		}
 	}
@@ -92,8 +95,6 @@ void AWielderController::BeginPlay()
 {
 	Super::BeginPlay();
 
-	// Set Home Position
-	Blackboard->SetValueAsVector(BlackboardHomePosKey, GetPawn()->GetActorLocation());
 }
 
 void AWielderController::OnTargetDetected(AActor* Actor, FAIStimulus Stimulus)
