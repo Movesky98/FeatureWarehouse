@@ -9,6 +9,9 @@
 enum class EStateOfEnemy :uint8;
 enum class EBattleState :uint8;
 
+class UStatBarComponent;
+class ULockOnComponent;
+
 UENUM(BlueprintType)
 enum class ETypeOfWielder : uint8
 {
@@ -59,6 +62,8 @@ public:
 
 	UFUNCTION(BlueprintCallable)
 	void HideStatBar();
+
+	void SetVisibleLockOnImage(bool IsVisisble);
 
 protected:
 	virtual void BeginPlay() override;
@@ -130,6 +135,9 @@ protected:
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Component")
 	UStatBarComponent* StatBarComponent;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Component")
+	ULockOnComponent* LockOnComponent;
 
 	////////////////////////////////////////////////////////////////////    Weapon    ////////////////////////////////////////////////////////////////////
 

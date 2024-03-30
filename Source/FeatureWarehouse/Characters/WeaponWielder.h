@@ -15,7 +15,6 @@ enum class EFactionType :uint8;
 class AWeapon;
 class UWeaponComponent;
 class UStatComponent;
-class UStatBarComponent;
 
 /* 
 * WeaponComponent를 사용할 수 있는 캐릭터 클래스

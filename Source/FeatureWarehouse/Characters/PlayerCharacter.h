@@ -81,7 +81,33 @@ protected:
 	void Dodge();
 
 	FVector DrawCameraLineTrace();
-	
+
+#pragma region LockOn
+	UFUNCTION()
+	void LockTarget();
+
+	void TryLockTarget();
+
+	void FindNearbyLockTarget(float DeltaYaw = 0.0f, float DeltaPitch = 0.0f);
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "LockOn")
+	bool bIsTargetLocked;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "LockOn")
+	AActor* LockOnTarget;
+
+	FTimerHandle LockOnTimer;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "LockOn")
+	float LockChangeElapsedTime;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "LockOn")
+	float LockChangeDuration;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "LockOn")
+	bool bIsLockChanged;
+
+#pragma endregion
 private:
 	// Variables
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = Camera, meta = (AllowPrivateAccess = "true"))
@@ -140,6 +166,8 @@ protected:
 
 	void DodgePressed(const FInputActionValue& Value);
 
+	void LockOn(const FInputActionValue& Value);
+
 	void SetMovementStateIdle();
 
 private:
@@ -184,5 +212,8 @@ private:
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = InputAction, meta = (AllowPrivateAccess = "true"))
 	UInputAction* DodgeAction;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = InputAction, meta = (AllowPrivateAccess = "true"))
+	UInputAction* LockOnAction;
 #pragma endregion
 };

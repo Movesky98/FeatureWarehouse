@@ -3,6 +3,7 @@
 #include "PlayerCharacter.h"
 #include "GamePlay/FW_PlayerController.h"
 #include "Widgets/PlayerMenu.h"
+#include "Characters/Wielder.h"
 
 #include "Camera/CameraComponent.h"
 #include "Components/CapsuleComponent.h"
@@ -71,6 +72,9 @@ APlayerCharacter::APlayerCharacter()
 	MovementState = EMovementState::EMS_Idle;
 
 	Tags.Add(FName("Player"));
+
+	LockChangeElapsedTime = 0.0f;
+	LockChangeDuration = 1.0f;
 }
 
 // Called when the game starts or when spawned
@@ -79,7 +83,6 @@ void APlayerCharacter::BeginPlay()
 	Super::BeginPlay();
 
 	PlayerController = Cast<AFW_PlayerController>(Controller);
-
 
 	SetTPP();
 }
@@ -125,6 +128,8 @@ void APlayerCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCom
 		EnhancedInputComponent->BindAction(ZoomAction, ETriggerEvent::Triggered, this, &APlayerCharacter::Zoom);
 
 		EnhancedInputComponent->BindAction(DodgeAction, ETriggerEvent::Triggered, this, &APlayerCharacter::DodgePressed);
+
+		EnhancedInputComponent->BindAction(LockOnAction, ETriggerEvent::Triggered, this, &APlayerCharacter::LockOn);
 	}
 }
 
@@ -206,7 +211,14 @@ void APlayerCharacter::Turn(const FInputActionValue& Value)
 	
 	if (PlayerController != nullptr && PlayerController->GetPerspective() != EStateOfViews::TDP)
 	{
-		AddControllerYawInput(Movement);
+		if (bIsTargetLocked)
+		{
+			FindNearbyLockTarget(Movement);
+		}
+		else
+		{
+			AddControllerYawInput(Movement);
+		}
 	}
 }
 
@@ -216,7 +228,14 @@ void APlayerCharacter::LookUp(const FInputActionValue& Value)
 
 	if (PlayerController != nullptr && PlayerController->GetPerspective() != EStateOfViews::TDP)
 	{
-		AddControllerPitchInput(Movement);
+		if (bIsTargetLocked)
+		{
+			FindNearbyLockTarget(0.0f, Movement);
+		}
+		else
+		{
+			AddControllerPitchInput(Movement);	
+		}
 	}
 }
 
@@ -393,9 +412,21 @@ void APlayerCharacter::DodgePressed(const FInputActionValue& Value)
 {
 	bool IsPressed = Value.Get<bool>();
 
-	if (!DodgeMontages.IsEmpty())
+	if (IsPressed && !DodgeMontages.IsEmpty())
 	{
 		Dodge();
+	}
+}
+
+void APlayerCharacter::LockOn(const FInputActionValue& Value)
+{
+	bool IsPressed = Value.Get<bool>();
+
+	UE_LOG(LogTemp, Warning, TEXT("PlayerCharacter's Lock On functio is called"));
+
+	if (IsPressed)
+	{
+		TryLockTarget();
 	}
 }
 
@@ -883,6 +914,170 @@ void APlayerCharacter::OnDodgeEnded(UAnimMontage* Montage, bool bInterrupted)
 {
 	ActionState = EActionState::EAS_Idle;
 	StatComponent->SetDamagableType(EDamagableType::EDT_VULNERABLE);
+}
+
+void APlayerCharacter::TryLockTarget()
+{
+	if (bIsTargetLocked)
+	{ 
+		GetWorldTimerManager().ClearTimer(LockOnTimer);
+
+		AWielder* Wielder = Cast<AWielder>(LockOnTarget);
+		if (Wielder)
+		{
+			Wielder->SetVisibleLockOnImage(false);
+		}
+
+		bIsTargetLocked = false;
+		LockOnTarget = nullptr;
+		LockChangeElapsedTime = 0.0f;
+		bIsLockChanged = false;
+		return; 
+	}
+
+	FVector Start = GetActorLocation();
+	FVector End = GetActorLocation() + UKismetMathLibrary::GetForwardVector(GetActorRotation()) * 1500.0f;
+
+	TArray<TEnumAsByte<EObjectTypeQuery>> ObjectTypes;
+	TEnumAsByte<EObjectTypeQuery> Enemy = UEngineTypes::ConvertToObjectType(ECollisionChannel::ECC_GameTraceChannel4);
+	ObjectTypes.Add(Enemy);
+
+	TArray<AActor*> IgnoreActors;
+	TArray<FHitResult> Hits;
+
+	bool IsHit = UKismetSystemLibrary::SphereTraceMultiForObjects(
+		GetWorld(),
+		Start,
+		End,
+		200.0f,
+		ObjectTypes,
+		false,
+		IgnoreActors,
+		EDrawDebugTrace::ForDuration,
+		Hits,
+		true
+	);
+
+	if (IsHit)
+	{
+		int Index = 1;
+
+		for (FHitResult& Hit : Hits)
+		{
+			if (Hit.GetActor())
+			{
+				LockOnTarget = Hit.GetActor();
+				bIsTargetLocked = true;
+
+				AWielder* Wielder = Cast<AWielder>(LockOnTarget);
+				if (Wielder)
+				{
+					Wielder->SetVisibleLockOnImage(true);
+				}
+
+				// Set Timer Lock Target
+				GetWorldTimerManager().SetTimer(LockOnTimer, this, &APlayerCharacter::LockTarget, 0.001f, true);
+				return;
+			}
+		}
+	}
+}
+
+void APlayerCharacter::LockTarget()
+{
+	if (bIsTargetLocked && IsValid(LockOnTarget))
+	{
+		FVector Start = GetActorLocation();
+		FVector End = LockOnTarget->GetActorLocation();
+
+		FRotator LookAtRotation = UKismetMathLibrary::FindLookAtRotation(Start, End);
+		LookAtRotation.Pitch -= 20.0f;
+		GetController()->SetControlRotation(LookAtRotation);
+
+		if (bIsLockChanged)
+		{
+			LockChangeElapsedTime += 0.001f;
+			if (LockChangeDuration < LockChangeElapsedTime)
+			{
+				LockChangeElapsedTime = 0.0f;
+				bIsLockChanged = false;
+			}
+		}
+
+		return;
+	}
+
+	if (!IsValid(LockOnTarget))
+	{
+		bIsTargetLocked = false;
+		LockOnTarget = nullptr;
+		LockChangeElapsedTime = 0.0f;
+		bIsLockChanged = false;
+
+		GetWorldTimerManager().ClearTimer(LockOnTimer);
+	}
+}
+
+void APlayerCharacter::FindNearbyLockTarget(float DeltaYaw, float DeltaPitch)
+{
+	if (bIsLockChanged) return;
+
+	FVector Start = GetActorLocation();
+	FRotator NewRotation = GetActorRotation() + FRotator(DeltaPitch * 7.0f, DeltaYaw * 7.0f, 0.0f);
+
+	GEngine->AddOnScreenDebugMessage(-1, 3.0f, FColor::Green, FString("Delta Yaw : ") + FString::SanitizeFloat(DeltaYaw));
+
+	FVector End = GetActorLocation() + UKismetMathLibrary::GetForwardVector(NewRotation) * 1500.0f;
+
+	TArray<TEnumAsByte<EObjectTypeQuery>> ObjectTypes;
+	TEnumAsByte<EObjectTypeQuery> Enemy = UEngineTypes::ConvertToObjectType(ECollisionChannel::ECC_GameTraceChannel4);
+	ObjectTypes.Add(Enemy);
+
+	TArray<AActor*> IgnoreActors;
+	IgnoreActors.Add(LockOnTarget);
+	TArray<FHitResult> Hits;
+
+	bool IsHit = UKismetSystemLibrary::SphereTraceMultiForObjects(
+		GetWorld(),
+		Start,
+		End,
+		200.0f,
+		ObjectTypes,
+		false,
+		IgnoreActors,
+		EDrawDebugTrace::None,
+		Hits,
+		true
+	);
+
+	if (IsHit)
+	{
+		int Index = 1;
+
+		for (FHitResult& Hit : Hits)
+		{
+			if (Hit.GetActor())
+			{
+				AWielder* Wielder = Cast<AWielder>(LockOnTarget);
+				if (Wielder)
+				{
+					Wielder->SetVisibleLockOnImage(false);
+				}
+
+				LockOnTarget = Hit.GetActor();
+
+				Wielder = Cast<AWielder>(LockOnTarget);
+				if (Wielder)
+				{
+					Wielder->SetVisibleLockOnImage(true);
+				}
+
+				bIsLockChanged = true;
+				DrawDebugString(GetWorld(), FVector(0.0f, 0.0f, 150.0f), FString("Lock On!"), LockOnTarget, FColor::Red, 1.0f);
+				return;
+			}
+		}
+	}
 }
 
 #pragma region Movement_State

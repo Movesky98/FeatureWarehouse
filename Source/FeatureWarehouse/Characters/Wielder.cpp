@@ -8,6 +8,7 @@
 #include "Components/WeaponComponent.h"
 #include "Components/StatComponent.h"
 #include "Components/StatBarComponent.h"
+#include "Components/LockOnComponent.h"
 
 #include "Enums/TypeOfWeapon.h"
 #include "Enums/ActionState.h"
@@ -44,6 +45,9 @@ AWielder::AWielder()
 	StatBarComponent = CreateDefaultSubobject<UStatBarComponent>(TEXT("StatBarComponent"));
 	StatBarComponent->SetupAttachment(RootComponent);
 
+	LockOnComponent = CreateDefaultSubobject<ULockOnComponent>(TEXT("LockOnComponent"));
+	LockOnComponent->SetupAttachment(RootComponent);
+
 	GetMesh()->SetCollisionProfileName(FName("Enemy"));
 
 	AIControllerClass = AWielderController::StaticClass();
@@ -71,6 +75,8 @@ void AWielder::PostInitializeComponents()
 
 	StatBarComponent->Init();
 	StatBarComponent->HideUI();
+
+	LockOnComponent->Init();
 
 	TeamId = FGenericTeamId((uint8)Faction);
 
@@ -231,6 +237,9 @@ void AWielder::OnReceivePointDamageEvent(AActor* DamagedActor, float Damage, ACo
 	FVector ShotFromDirection, const UDamageType* DamageType, AActor* DamageCauser)
 {	
 	if (bIsDead) return;
+
+	AWeaponWielder* WeaponWielder = Cast<AWeaponWielder>(InstigatedBy->GetPawn());
+	if (WeaponWielder && WeaponWielder->GetGenericTeamId() == TeamId) return;
 
 	ActionState = EActionState::EAS_GetDamaged;
 
@@ -577,4 +586,9 @@ void AWielder::HideStatBar()
 	{
 		StatBarComponent->HideUI();
 	}
+}
+
+void AWielder::SetVisibleLockOnImage(bool IsVisisble)
+{
+	IsVisisble ? LockOnComponent->ShowUI() : LockOnComponent->HideUI();
 }
