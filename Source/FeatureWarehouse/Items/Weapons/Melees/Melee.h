@@ -4,10 +4,15 @@
 
 #include "CoreMinimal.h"
 #include "Weapon.h"
+#include "Structs/MeleeAttackInfo.h"
+#include "Structs/MeleeMontageInfo.h"
 #include "Melee.generated.h"
 
 enum class EStateOfViews :uint8;
 enum class ETypeOfMelee :uint8;
+
+struct FMeleeMontageInfo;
+struct FMeleeAttackInfo;
 
 class UDataTable;
 
@@ -32,6 +37,8 @@ protected:
 	virtual void PostInitializeComponents() override;
 
 	virtual void BeginPlay() override;
+
+	void SaveDodgeMontages(TMap<EDirection, UAnimMontage*>& Montages) override;
 
 	void Attack() override;
 
@@ -93,39 +100,11 @@ private:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "State", meta = (AllowPrivateAccess = "true"))
 	ETypeOfMelee MeleeType;
 
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Montage", meta = (AllowPrivateAccess = "true"))
-	TArray<class UAnimMontage*> AttackMontages;
-
-	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Montage", meta = (AllowPrivateAccess = "true"))
-	class UAnimMontage* AttackMontage;
-
-	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Montage", meta = (AllowPrivateAccess = "true"))
-	class UAnimMontage* SprintAttackMontage;
-
-	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Montage", meta = (AllowPrivateAccess = "true"))
-	class UAnimMontage* JumpAttackMontage;
-
-	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Montage", meta = (AllowPrivateAccess = "true"))
-	class UAnimMontage* JumpAttackLandMontage;
-
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Montage", meta = (AllowPrivateAccess = "true"))
-	class UAnimMontage* HeavyAttackMontage;
-
 	UPROPERTY()
-	UDataTable* MeleeTable;
+	UDataTable* MeleeInfoTable;
 
-
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Damage", meta = (AllowPrivateAccess = "true"))
-	TArray<float> LightAttackDamage;
-	
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Damage", meta = (AllowPrivateAccess = "true"))
-	TArray<float> HeavyAttackDamage;
-
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Damage", meta = (AllowPrivateAccess = "true"))
-	float JumpAttackDamage;
-	
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Damage", meta = (AllowPrivateAccess = "true"))
-	float SprintAttackDamage;
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Montage", meta = (AllowPrivateAccess = "true"))
+	TArray<UAnimMontage*> AttackMontages;
 
 public:
 	FORCEINLINE ETypeOfMelee GetMeleeType() { return MeleeType; }

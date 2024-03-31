@@ -953,7 +953,7 @@ void APlayerCharacter::TryLockTarget()
 		ObjectTypes,
 		false,
 		IgnoreActors,
-		EDrawDebugTrace::ForDuration,
+		EDrawDebugTrace::None,
 		Hits,
 		true
 	);
@@ -1024,8 +1024,6 @@ void APlayerCharacter::FindNearbyLockTarget(float DeltaYaw, float DeltaPitch)
 
 	FVector Start = GetActorLocation();
 	FRotator NewRotation = GetActorRotation() + FRotator(DeltaPitch * 7.0f, DeltaYaw * 7.0f, 0.0f);
-
-	GEngine->AddOnScreenDebugMessage(-1, 3.0f, FColor::Green, FString("Delta Yaw : ") + FString::SanitizeFloat(DeltaYaw));
 
 	FVector End = GetActorLocation() + UKismetMathLibrary::GetForwardVector(NewRotation) * 1500.0f;
 

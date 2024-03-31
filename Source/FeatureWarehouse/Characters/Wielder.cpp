@@ -160,7 +160,16 @@ void AWielder::OnRecognizeRangeEndOverlap(class UPrimitiveComponent* SelfComp, c
 	if (OtherActor)
 	{
 		// [타게팅하고 있는 액터 != 콜리전에 접근한 액터]면 아무것도 하지 않음.
-		if (GetSeeingPawn() && GetSeeingPawn() != OtherActor) return;
+		if (GetSeeingPawn() && GetSeeingPawn() != OtherActor)
+		{
+			AWeaponWielder* WeaponWielder = Cast<AWeaponWielder>(OtherActor);
+			if (WeaponWielder)
+			{
+				RemoveDetectedWielder(WeaponWielder);
+			}
+
+			return;
+		}
 
 		bIsRecognizedSomething = false;
 	}
@@ -205,12 +214,16 @@ void AWielder::OnAttackRangeBeginOverlap(class UPrimitiveComponent* SelfComp, cl
 
 		AWielderController* WielderController = Cast<AWielderController>(GetController());
 
-		if (IsValid(WielderController) && WielderController->IsIdentifiedEnemy())
+		if (CurState != EStateOfEnemy::In_Battle)
+		{
+			ShowStatBar();
+		}
+
+		if (GetSeeingPawn() == OtherActor)
 		{
 			BattleState = EBattleState::Attacking;
 			WielderController->NotifyBattleState(BattleState);
 			WielderController->NotifyEnemyInAttackRange(true);
-			ShowStatBar();
 		}
 	}
 }
@@ -230,6 +243,29 @@ void AWielder::OnAttackRangeEndOverlap(class UPrimitiveComponent* SelfComp, clas
 			WielderController->NotifyEnemyInAttackRange(false);
 		}
 	}
+}
+
+void AWielder::AddDetectedWielder(AWeaponWielder* DetectedWielder)
+{
+	if (DetectedWielder)
+	{
+		if (CheckEnemyWielder(DetectedWielder))
+			DetectedWielders.AddUnique(DetectedWielder);
+	}
+}
+
+void AWielder::RemoveDetectedWielder(AWeaponWielder* DetectedWielder)
+{
+	if (DetectedWielder)
+	{
+		if (DetectedWielders.Find(DetectedWielder))
+			DetectedWielders.Remove(DetectedWielder);
+	}
+}
+
+bool AWielder::CheckEnemyWielder(AWeaponWielder* DetectedWielder)
+{
+	return Faction != DetectedWielder->GetFaction() ? true : false;
 }
 
 void AWielder::OnReceivePointDamageEvent(AActor* DamagedActor, float Damage, AController* InstigatedBy,
@@ -337,8 +373,6 @@ void AWielder::Attack()
 	EActionState SpecificAction = EActionState::EAS_Attacking;
 	bool CanTakeAction = CheckTakeAction(SpecificAction, true);
 
-	if (CanTakeAction) UE_LOG(LogTemp, Warning, TEXT("%s Attack is called"), *UKismetSystemLibrary::GetDisplayName(this));
-	
 	EquipWeapon->Attack();
 }
 
@@ -481,9 +515,6 @@ FVector AWielder::CirclingAroundTheEnemy()
 	{
 		MoveLocation = GetActorLocation() + GoalDirection * 100.0f;
 
-		DrawDebugLine(GetWorld(), GetActorLocation(), MoveLocation, FColor::Green, true, -1, 0, 3);
-		DrawDebugSolidBox(GetWorld(), MoveLocation, FVector(5.0f), FColor::Green);
-
 		UWorld* World = GetWorld();
 		if (!ensure(World != nullptr)) return GetActorLocation();
 
@@ -497,7 +528,7 @@ FVector AWielder::CirclingAroundTheEnemy()
 			ETraceTypeQuery::TraceTypeQuery1,
 			false,
 			IgnoreActors,
-			EDrawDebugTrace::ForDuration,
+			EDrawDebugTrace::None,
 			Hit,
 			true
 		);
@@ -530,7 +561,7 @@ FVector AWielder::CirclingAroundTheEnemy()
 			ETraceTypeQuery::TraceTypeQuery1,
 			false,
 			IgnoreActors,
-			EDrawDebugTrace::ForDuration,
+			EDrawDebugTrace::None,
 			Hit,
 			true
 		);
@@ -564,7 +595,13 @@ void AWielder::Die()
 	AWielderController* WielderController = Cast<AWielderController>(GetController());
 	if (!IsValid(WielderController)) return;
 
+	UWielderAnimInstance* Anim = Cast<UWielderAnimInstance>(GetMesh()->GetAnimInstance());
+	if (!IsValid(Anim)) return;
+
 	WielderController->NotifyDead();
+	Anim->SetIsDead(true);
+	StatBarComponent->HideUI();
+
 	GetCapsuleComponent()->SetCollisionProfileName(FName("Ragdoll"));
 	GetMesh()->SetCollisionProfileName(FName("Ragdoll"));
 	GetMesh()->SetSimulatePhysics(true);

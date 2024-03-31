@@ -81,6 +81,9 @@ public:
 	/* 적이 공격 범위 내에 있음을 BehaviorTree에 알리는 함수. */
 	void NotifyEnemyInAttackRange(bool IsInRange);
 
+	UFUNCTION(BlueprintCallable)
+	void FindNewTarget();
+
 	////////////////////////////////////////////////////////////////////    Battle - Monitoring    ////////////////////////////////////////////////////////////////////
 	
 	/* In-Battle 상태일 때, Behavior Tree에 Monitor 상태에 들어감을 알리는 함수 */

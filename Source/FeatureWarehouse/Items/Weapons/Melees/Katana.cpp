@@ -19,7 +19,7 @@ AKatana::AKatana()
 // Ä«Å¸³ª¸¦ ²¨³¾ ¶§ ¾²ÀÌ´Â ÇÔ¼ö.
 void AKatana::Equip()
 {
-	if (GetWeaponOwner() && IsValid(EquipMontage))
+	if (GetWeaponOwner() && IsValid(MontageInfo.m_EquipMontage))
 	{
 		UAnimInstance* AnimInstance = GetWeaponOwner()->GetMesh()->GetAnimInstance();
 		if (IsValid(AnimInstance))
@@ -27,7 +27,7 @@ void AKatana::Equip()
 			// ¿Þ¼Õ¿¡ Ä®Áý, Ä®³¯À» º¸¿©Áà¾ßÇÔ.
 			GetSkeletalMesh()->AttachToComponent(GetWeaponOwner()->GetMesh(), FAttachmentTransformRules::KeepRelativeTransform, Blade_LeftHandSocketName);
 			Scabbard->AttachToComponent(GetWeaponOwner()->GetMesh(), FAttachmentTransformRules::KeepRelativeTransform, Scabbard_LeftHandSocketName);
-			AnimInstance->Montage_Play(EquipMontage);
+			AnimInstance->Montage_Play(MontageInfo.m_EquipMontage);
 		}
 	}
 }
@@ -39,7 +39,7 @@ void AKatana::HoldMeleeWeapon()
 	UAnimInstance* AnimInstance = GetWeaponOwner()->GetMesh()->GetAnimInstance();
 	if (IsValid(AnimInstance))
 	{
-		if (AnimInstance->Montage_IsPlaying(EquipMontage))
+		if (AnimInstance->Montage_IsPlaying(MontageInfo.m_EquipMontage))
 		{
 			// ¸ö ¿ÞÂÊ¿¡ Ä®Áý, ¿À¸¥ ¼Õ¿¡ Ä®³¯.
 			GetSkeletalMesh()->AttachToComponent(GetWeaponOwner()->GetMesh(), FAttachmentTransformRules::KeepRelativeTransform, Blade_RightHandSocketName);
@@ -56,7 +56,7 @@ void AKatana::HoldMeleeWeapon()
 
 void AKatana::Unequip()
 {
-	if (GetWeaponOwner() && IsValid(UnequipMontage))
+	if (GetWeaponOwner() && IsValid(MontageInfo.m_UnequipMontage))
 	{
 		UAnimInstance* AnimInstance = GetWeaponOwner()->GetMesh()->GetAnimInstance();
 		if (IsValid(AnimInstance))
@@ -64,7 +64,7 @@ void AKatana::Unequip()
 			// ¿Þ¼Õ¿¡ Ä®Áý, ¿À¸¥¼Õ¿¡ Ä«Å¸³ª¸¦ º¸¿©Áà¾ßÇÔ.
 			GetSkeletalMesh()->AttachToComponent(GetWeaponOwner()->GetMesh(), FAttachmentTransformRules::KeepRelativeTransform, Blade_RightHandSocketName);
 			Scabbard->AttachToComponent(GetWeaponOwner()->GetMesh(), FAttachmentTransformRules::KeepRelativeTransform, Scabbard_LeftHandSocketName);
-			AnimInstance->Montage_Play(UnequipMontage);
+			AnimInstance->Montage_Play(MontageInfo.m_UnequipMontage);
 		}
 	}
 }

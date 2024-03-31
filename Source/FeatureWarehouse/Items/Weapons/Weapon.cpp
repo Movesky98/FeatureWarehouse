@@ -30,10 +30,6 @@ void AWeapon::PostInitializeComponents()
 {
 	Super::PostInitializeComponents();
 
-	if (IsValid(EquipMontage) && IsValid(UnequipMontage))
-	{
-		bHasEquipMontage = true;
-	}
 }
 
 void AWeapon::BindMontage()
@@ -67,15 +63,12 @@ void AWeapon::UnbindMontage()
 
 void AWeapon::SaveDodgeMontages(TMap<EDirection, UAnimMontage*>& Montages)
 {
-	if (!DodgeMontages.IsEmpty())
-	{
-		Montages = DodgeMontages;
-	}
+
 }
 
 void AWeapon::OnEquipEnded(class UAnimMontage* Montage, bool bInterrupted)
 {
-	if (Montage == EquipMontage)
+	if (Montage == MontageInfo.m_EquipMontage)
 	{
 		bIsEquip = true;
 
@@ -90,7 +83,7 @@ void AWeapon::OnEquipEnded(class UAnimMontage* Montage, bool bInterrupted)
 
 void AWeapon::OnUnequipEnded(class UAnimMontage* Montage, bool bInterrupted)
 {
-	if (Montage == UnequipMontage)
+	if (Montage == MontageInfo.m_UnequipMontage)
 	{
 		bIsEquip = false;
 		UnbindMontage();
@@ -111,10 +104,10 @@ void AWeapon::Interact(AActor* InteractActor)
 	if (!IsValid(InteractOwner)) return;
 	TMap<FString, UAnimMontage*> DeliverMontages;
 
-	DeliverMontages.Emplace(FString("DeathMontage"), DeathMontage);
-	DeliverMontages.Emplace(FString("GetDamagedMontage"), GetDamagedMontage);
-	DeliverMontages.Emplace(FString("KnockdownMontage"), KnockdownMontage);
-	DeliverMontages.Emplace(FString("RetreatMontage"), RetreatMontage);
+	DeliverMontages.Emplace(FString("DeathMontage"), MontageInfo.m_DeathMontage);
+	DeliverMontages.Emplace(FString("GetDamagedMontage"), MontageInfo.m_HitMontage);
+	DeliverMontages.Emplace(FString("KnockdownMontage"), nullptr);
+	DeliverMontages.Emplace(FString("RetreatMontage"), MontageInfo.m_RetreatMontage);
 
 	InteractOwner->GetWeaponComponent()->SaveAcquiredWeaponInfo(this);
 	InteractOwner->GetStatComponent()->SetMontages(DeliverMontages);
@@ -182,25 +175,25 @@ void AWeapon::Detach()
 
 void AWeapon::Equip()
 {
-	if (!IsValid(EquipMontage)) return;
+	if (!IsValid(MontageInfo.m_EquipMontage)) return;
 	if (!IsValid(WeaponOwner)) return;
 
 	UAnimInstance* AnimInstance = WeaponOwner->GetMesh()->GetAnimInstance();
 	if (AnimInstance)
 	{
-		AnimInstance->Montage_Play(EquipMontage);
+		AnimInstance->Montage_Play(MontageInfo.m_EquipMontage);
 	}
 }
 
 void AWeapon::Unequip()
 {
-	if (!IsValid(UnequipMontage)) return;
+	if (!IsValid(MontageInfo.m_UnequipMontage)) return;
 	if (!IsValid(WeaponOwner)) return;
 
 	UAnimInstance* AnimInstance = WeaponOwner->GetMesh()->GetAnimInstance();
 	if (AnimInstance)
 	{
-		AnimInstance->Montage_Play(UnequipMontage);
+		AnimInstance->Montage_Play(MontageInfo.m_UnequipMontage);
 	}
 }
 

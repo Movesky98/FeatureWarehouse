@@ -9,7 +9,11 @@
 
 #include "Components/WeaponComponent.h"
 #include "Components/StatComponent.h"
-#include "Structs/MeleeDamage.h"
+
+#include "Structs/MeleeInfo.h"
+#include "Structs/MeleeAttackInfo.h"
+#include "Structs/MeleeMontageInfo.h"
+
 #include "Enums/MovementState.h"
 #include "Enums/ActionState.h"
 
@@ -24,12 +28,12 @@
 AMelee::AMelee()
 {
 	InterpolateDistance = 20.0f;
-
-	static ConstructorHelpers::FObjectFinder<UDataTable> DT_MeleeDamage(TEXT("/Game/Project/Data/DT_MeleeDamage"));
-	if (DT_MeleeDamage.Succeeded())
+	
+	static ConstructorHelpers::FObjectFinder<UDataTable> DT_MeleeInfo(TEXT("/Game/Project/Data/DT_MeleeInfo"));
+	if (DT_MeleeInfo.Succeeded())
 	{
-		UE_LOG(LogTemp, Warning, TEXT("Load DataTable Succeeded."));
-		MeleeTable = DT_MeleeDamage.Object;
+		UE_LOG(LogTemp, Warning, TEXT("Melee || Load MeleeInfo DataTable Succeeded."));
+		MeleeInfoTable = DT_MeleeInfo.Object;
 	}
 
 	bIsEquip = false;
@@ -39,30 +43,41 @@ void AMelee::PostInitializeComponents()
 {
 	Super::PostInitializeComponents();
 
-	FMeleeDamage* Data = MeleeTable->FindRow<FMeleeDamage>(WeaponName, FString("MeleeDamage Table"));
-
-	if (Data)
+	FMeleeInfo* MeleeInfoData = MeleeInfoTable->FindRow<FMeleeInfo>(WeaponName, FString("MeleeInfo Table"));
+	if (MeleeInfoData)
 	{
-		MeleeType = Data->D_MeleeType;
-		LightAttackDamage.Append(Data->D_LightAttackDamage);
-		HeavyAttackDamage.Append(Data->D_HeavyAttackDamage);
-		JumpAttackDamage = Data->D_JumpAttack;
-		SprintAttackDamage = Data->D_SprintAttack;
+		UE_LOG(LogTemp, Warning, TEXT("Melee || Set up MeleeInfo Data from DataTable."));
+		LightAttackInfo.Append(MeleeInfoData->m_LightAttackInfo);
+		HeavyAttackInfo.Append(MeleeInfoData->m_HeavyAttackInfo);
+		JumpAttackInfo = MeleeInfoData->m_JumpAttackInfo;
+		SprintAttackInfo = MeleeInfoData->m_SprintAttackInfo;
+		MontageInfo = MeleeInfoData->m_MontageInfo;
+		
+		bHasEquipMontage = true;
+
+		AttackMontages.Add(MontageInfo.m_HeavyAttackMontage);
+		AttackMontages.Add(MontageInfo.m_JumpAttackMontage);
+		AttackMontages.Add(MontageInfo.m_LightAttackMontage);
+		AttackMontages.Add(MontageInfo.m_SprintAttackMontage);
 	}
+
+	FVector Start = GetSkeletalMesh()->GetSocketLocation(FName("BladeBottom"));
+	FVector End = GetSkeletalMesh()->GetSocketLocation(FName("BladeTop"));
+	BladeLength = (Start - End).Length();
 }
 
 void AMelee::BeginPlay()
 {
 	Super::BeginPlay();
 
-	FVector Start = GetSkeletalMesh()->GetSocketLocation(FName("BladeBottom"));
-	FVector End = GetSkeletalMesh()->GetSocketLocation(FName("BladeTop"));
-	BladeLength = (Start - End).Length();
+}
 
-	AttackMontages.Add(JumpAttackMontage);
-	AttackMontages.Add(AttackMontage);
-	AttackMontages.Add(SprintAttackMontage);
-	AttackMontages.Add(HeavyAttackMontage);
+void AMelee::SaveDodgeMontages(TMap<EDirection, UAnimMontage*>& Montages)
+{
+	if (!MontageInfo.m_DodgeMontages.IsEmpty())
+	{
+		Montages = MontageInfo.m_DodgeMontages;
+	}
 }
 
 // 무기를 장착했을 때, WeaponComponent에서 실행되는 함수.
@@ -208,12 +223,12 @@ void AMelee::OnAttackEnded(class UAnimMontage* Montage, bool bInterrupted)
 	if (!IsValid(Wielder)) return;
 
 	// 기본 공격 몽타주일 때
-	if (Montage == AttackMontage)
+	if (Montage == MontageInfo.m_LightAttackMontage)
 	{
 		UAnimInstance* p_AnimInstance = GetWeaponOwner()->GetMesh()->GetAnimInstance();
 		if (!IsValid(p_AnimInstance)) return;
 
-		bool IsPlaying = p_AnimInstance->Montage_IsPlaying(AttackMontage);
+		bool IsPlaying = p_AnimInstance->Montage_IsPlaying(MontageInfo.m_LightAttackMontage);
 
 		if (!IsPlaying)
 		{
@@ -228,12 +243,12 @@ void AMelee::OnAttackEnded(class UAnimMontage* Montage, bool bInterrupted)
 	}
 
 	// 강 공격 몽타주일 때
-	if (Montage == HeavyAttackMontage)
+	if (Montage == MontageInfo.m_HeavyAttackMontage)
 	{
 		UAnimInstance* p_AnimInstance = GetWeaponOwner()->GetMesh()->GetAnimInstance();
 		if (!IsValid(p_AnimInstance)) return;
 
-		bool IsPlaying = p_AnimInstance->Montage_IsPlaying(HeavyAttackMontage);
+		bool IsPlaying = p_AnimInstance->Montage_IsPlaying(MontageInfo.m_HeavyAttackMontage);
 
 		if (!IsPlaying)
 		{
@@ -328,12 +343,9 @@ void AMelee::DrawAttackLineTrace(const FVector& LineStart, const FVector& LineEn
 			ETraceTypeQuery::TraceTypeQuery4,
 			false,
 			IgnoreActor,
-			EDrawDebugTrace::ForDuration,
+			EDrawDebugTrace::None,
 			Hit,
-			true,
-			FLinearColor::Red,
-			FLinearColor::Green,
-			1.0f
+			true
 		);
 
 
@@ -364,12 +376,12 @@ UAnimMontage* AMelee::FindAppropriateAttackAnimationWithDamage(float& Change_Dam
 		switch (Wielder->CurMovementState())
 		{
 		case EMovementState::EMS_Jumping:
-			ReturnMontage = JumpAttackMontage;
-			Change_Damage = JumpAttackDamage;
+			ReturnMontage = MontageInfo.m_JumpAttackMontage;
+			Change_Damage = JumpAttackInfo.m_Damage;
 			break;
 		case EMovementState::EMS_Running:
-			ReturnMontage = SprintAttackMontage;
-			Change_Damage = SprintAttackDamage;
+			ReturnMontage = MontageInfo.m_SprintAttackMontage;
+			Change_Damage = SprintAttackInfo.m_Damage;
 			break;
 		case EMovementState::EMS_Crouching:
 
@@ -378,14 +390,14 @@ UAnimMontage* AMelee::FindAppropriateAttackAnimationWithDamage(float& Change_Dam
 			// Idle, Walking 상태일 때 약공, 강공 선택.
 			if (Wielder->CurActionState() == EActionState::EAS_HeavyAttacking)
 			{
-				ReturnMontage = HeavyAttackMontage;
-				Change_Damage = HeavyAttackDamage[Index];
+				ReturnMontage = MontageInfo.m_HeavyAttackMontage;
+				Change_Damage = HeavyAttackInfo[Index].m_Damage;
 
 			}
 			else
 			{
-				ReturnMontage = AttackMontage;
-				Change_Damage = LightAttackDamage[Index];
+				ReturnMontage = MontageInfo.m_LightAttackMontage;
+				Change_Damage = LightAttackInfo[Index].m_Damage;
 			}
 			break;
 		}
@@ -402,8 +414,8 @@ void AMelee::JumpAttackLanding()
 	UWielderAnimInstance* WielderAnim = Cast<UWielderAnimInstance>(Wielder->GetMesh()->GetAnimInstance());
 	if (IsValid(WielderAnim))
 	{
-		WielderAnim->Montage_Stop(1.0f, JumpAttackMontage);
-		WielderAnim->Montage_Play(JumpAttackLandMontage);
+		WielderAnim->Montage_Stop(1.0f, MontageInfo.m_JumpAttackMontage);
+		WielderAnim->Montage_Play(MontageInfo.m_JumpAttackLand);
 	}
 }
 

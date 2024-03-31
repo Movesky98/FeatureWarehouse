@@ -9,24 +9,24 @@
 
 void AHalberd::Equip()
 {
-	if (GetWeaponOwner() && IsValid(EquipMontage))
+	if (GetWeaponOwner() && IsValid(MontageInfo.m_EquipMontage))
 	{
 		UAnimInstance* OwnerAnim = GetWeaponOwner()->GetMesh()->GetAnimInstance();
 		if (OwnerAnim)
 		{
-			OwnerAnim->Montage_Play(EquipMontage);
+			OwnerAnim->Montage_Play(MontageInfo.m_EquipMontage);
 		}
 	}
 }
 
 void AHalberd::Unequip()
 {
-	if (GetWeaponOwner() && IsValid(UnequipMontage))
+	if (GetWeaponOwner() && IsValid(MontageInfo.m_UnequipMontage))
 	{
 		UAnimInstance* OwnerAnim = GetWeaponOwner()->GetMesh()->GetAnimInstance();
 		if (OwnerAnim)
 		{
-			OwnerAnim->Montage_Play(UnequipMontage);
+			OwnerAnim->Montage_Play(MontageInfo.m_UnequipMontage);
 		}
 	}
 }
@@ -46,7 +46,7 @@ void AHalberd::HoldMeleeWeapon()
 	UAnimInstance* AnimInstance = GetWeaponOwner()->GetMesh()->GetAnimInstance();
 	if (IsValid(AnimInstance))
 	{
-		if (AnimInstance->Montage_IsPlaying(EquipMontage))
+		if (AnimInstance->Montage_IsPlaying(MontageInfo.m_EquipMontage))
 		{
 			AttachToComponent(GetWeaponOwner()->GetMesh(), FAttachmentTransformRules::KeepRelativeTransform, EquipSocketName);
 		}

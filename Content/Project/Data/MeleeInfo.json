@@ -1,0 +1,224 @@
+[
+	{
+		"Name": "Katana",
+		"D_MeleeType": "Katana",
+		"m_LightAttackInfo": [
+			{
+				"m_Damage": 33,
+				"m_StaminaCost": 10,
+				"m_Sound": "None"
+			},
+			{
+				"m_Damage": 38,
+				"m_StaminaCost": 13,
+				"m_Sound": "None"
+			},
+			{
+				"m_Damage": 46,
+				"m_StaminaCost": 16,
+				"m_Sound": "None"
+			},
+			{
+				"m_Damage": 52,
+				"m_StaminaCost": 20,
+				"m_Sound": "None"
+			}
+		],
+		"m_HeavyAttackInfo": [
+			{
+				"m_Damage": 55,
+				"m_StaminaCost": 20,
+				"m_Sound": "None"
+			},
+			{
+				"m_Damage": 63,
+				"m_StaminaCost": 25,
+				"m_Sound": "None"
+			}
+		],
+		"m_SprintAttackInfo":
+		{
+			"m_Damage": 46,
+			"m_StaminaCost": 17,
+			"m_Sound": "None"
+		},
+		"m_JumpAttackInfo":
+		{
+			"m_Damage": 48,
+			"m_StaminaCost": 18,
+			"m_Sound": "None"
+		},
+		"m_MontageInfo":
+		{
+			"m_LightAttackMontage": "/Script/Engine.AnimMontage'/Game/Project/Animations/Player/Sword/Katana/Katana_AttackMontage.Katana_AttackMontage'",
+			"m_HeavyAttackMontage": "/Script/Engine.AnimMontage'/Game/Project/Animations/Player/Sword/Katana/Katana_HeavyAttckMontage.Katana_HeavyAttckMontage'",
+			"m_JumpAttackMontage": "/Script/Engine.AnimMontage'/Game/Project/Animations/Player/Sword/Katana/Katana_JumpAttackMontage.Katana_JumpAttackMontage'",
+			"m_JumpAttackLand": "/Script/Engine.AnimMontage'/Game/Project/Animations/Player/Sword/Katana/Katana_JumpAttackEnd.Katana_JumpAttackEnd'",
+			"m_SprintAttackMontage": "/Script/Engine.AnimMontage'/Game/Project/Animations/Player/Sword/Katana/Katana_SprintAttackMontage.Katana_SprintAttackMontage'",
+			"m_EquipMontage": "/Script/Engine.AnimMontage'/Game/Project/Animations/Player/Sword/Katana/Katana_EquipMontage.Katana_EquipMontage'",
+			"m_UnequipMontage": "/Script/Engine.AnimMontage'/Game/Project/Animations/Player/Sword/Katana/Katana_UnequipMontage.Katana_UnequipMontage'",
+			"m_HitMontage": "/Script/Engine.AnimMontage'/Game/Project/Animations/Player/Sword/Katana/Katana_HitMontage.Katana_HitMontage'",
+			"m_DeathMontage": "/Script/Engine.AnimMontage'/Game/Project/Animations/Player/Sword/Katana/Katana_DeathMontage.Katana_DeathMontage'",
+			"m_RetreatMontage": "/Script/Engine.AnimMontage'/Game/Project/Animations/Player/Sword/Katana/Katana_RetreatingMontage.Katana_RetreatingMontage'",
+			"m_DodgeMontages":
+			{
+				"ED_Left": "/Script/Engine.AnimMontage'/Game/Project/Animations/Player/Sword/Katana/Evade/Katana_Left_EvadeMontage.Katana_Left_EvadeMontage'",
+				"ED_LeftBackward": "/Script/Engine.AnimMontage'/Game/Project/Animations/Player/Sword/Katana/Evade/Katana_Backward_L_EvadeMontage.Katana_Backward_L_EvadeMontage'",
+				"ED_Backward": "/Script/Engine.AnimMontage'/Game/Project/Animations/Player/Sword/Katana/Evade/Katana_Backward_EvadeMontage.Katana_Backward_EvadeMontage'",
+				"ED_RightBackward": "/Script/Engine.AnimMontage'/Game/Project/Animations/Player/Sword/Katana/Evade/Katana_Forward_R_EvadeMontage.Katana_Forward_R_EvadeMontage'",
+				"ED_Right": "/Script/Engine.AnimMontage'/Game/Project/Animations/Player/Sword/Katana/Evade/Katana_Forward_R_EvadeMontage.Katana_Forward_R_EvadeMontage'",
+				"ED_RightForward": "/Script/Engine.AnimMontage'/Game/Project/Animations/Player/Sword/Katana/Evade/Katana_Forward_L_EvadeMontage.Katana_Forward_L_EvadeMontage'",
+				"ED_LeftForward": "/Script/Engine.AnimMontage'/Game/Project/Animations/Player/Sword/Katana/Evade/Katana_Forward_L_EvadeMontage.Katana_Forward_L_EvadeMontage'",
+				"ED_Forward": "/Script/Engine.AnimMontage'/Game/Project/Animations/Player/Sword/Katana/Evade/Katana_Forward_EvadeMontage.Katana_Forward_EvadeMontage'"
+			}
+		}
+	},
+	{
+		"Name": "Halberd",
+		"D_MeleeType": "Halberd",
+		"m_LightAttackInfo": [
+			{
+				"m_Damage": 45,
+				"m_StaminaCost": 15,
+				"m_Sound": "None"
+			},
+			{
+				"m_Damage": 51,
+				"m_StaminaCost": 18,
+				"m_Sound": "None"
+			},
+			{
+				"m_Damage": 56,
+				"m_StaminaCost": 22,
+				"m_Sound": "None"
+			},
+			{
+				"m_Damage": 64,
+				"m_StaminaCost": 25,
+				"m_Sound": "None"
+			}
+		],
+		"m_HeavyAttackInfo": [
+			{
+				"m_Damage": 71,
+				"m_StaminaCost": 30,
+				"m_Sound": "None"
+			},
+			{
+				"m_Damage": 82,
+				"m_StaminaCost": 35,
+				"m_Sound": "None"
+			}
+		],
+		"m_SprintAttackInfo":
+		{
+			"m_Damage": 61,
+			"m_StaminaCost": 22,
+			"m_Sound": "None"
+		},
+		"m_JumpAttackInfo":
+		{
+			"m_Damage": 63,
+			"m_StaminaCost": 23,
+			"m_Sound": "None"
+		},
+		"m_MontageInfo":
+		{
+			"m_LightAttackMontage": "/Script/Engine.AnimMontage'/Game/Project/Animations/Player/Sword/Halberd/Halberd_AttackMontage.Halberd_AttackMontage'",
+			"m_HeavyAttackMontage": "/Script/Engine.AnimMontage'/Game/Project/Animations/Player/Sword/Halberd/Halberd_HeavyAttackMontage.Halberd_HeavyAttackMontage'",
+			"m_JumpAttackMontage": "/Script/Engine.AnimMontage'/Game/Project/Animations/Player/Sword/Halberd/Halberd_JumpAttack.Halberd_JumpAttack'",
+			"m_JumpAttackLand": "/Script/Engine.AnimMontage'/Game/Project/Animations/Player/Sword/Halberd/Halberd_JumpAttackLand.Halberd_JumpAttackLand'",
+			"m_SprintAttackMontage": "/Script/Engine.AnimMontage'/Game/Project/Animations/Player/Sword/Halberd/Halberd_SprintAttackMontage.Halberd_SprintAttackMontage'",
+			"m_EquipMontage": "/Script/Engine.AnimMontage'/Game/Project/Animations/Player/Sword/Halberd/Halberd_EquipMontage.Halberd_EquipMontage'",
+			"m_UnequipMontage": "/Script/Engine.AnimMontage'/Game/Project/Animations/Player/Sword/Halberd/Halberd_UnequipMontage.Halberd_UnequipMontage'",
+			"m_HitMontage": "/Script/Engine.AnimMontage'/Game/Project/Animations/Player/Sword/Halberd/Halberd_HitMontage.Halberd_HitMontage'",
+			"m_DeathMontage": "/Script/Engine.AnimMontage'/Game/Project/Animations/Player/Sword/Halberd/Halberd_DeathMontage.Halberd_DeathMontage'",
+			"m_RetreatMontage": "/Script/Engine.AnimMontage'/Game/Project/Animations/Player/Sword/Halberd/Halberd_RetreatingMontage.Halberd_RetreatingMontage'",
+			"m_DodgeMontages":
+			{
+				"ED_Left": "/Script/Engine.AnimMontage'/Game/Project/Animations/Player/Sword/Halberd/Evade/Halberd_Left_EvadeMontage.Halberd_Left_EvadeMontage'",
+				"ED_LeftBackward": "/Script/Engine.AnimMontage'/Game/Project/Animations/Player/Sword/Halberd/Evade/Halberd_Backward_L_EvadeMontage.Halberd_Backward_L_EvadeMontage'",
+				"ED_Backward": "/Script/Engine.AnimMontage'/Game/Project/Animations/Player/Sword/Halberd/Evade/Halberd_Backward_EvadeMontage.Halberd_Backward_EvadeMontage'",
+				"ED_RightBackward": "/Script/Engine.AnimMontage'/Game/Project/Animations/Player/Sword/Halberd/Evade/Halberd_Backward_R_EvadeMontage.Halberd_Backward_R_EvadeMontage'",
+				"ED_Right": "/Script/Engine.AnimMontage'/Game/Project/Animations/Player/Sword/Halberd/Evade/Halberd_Right_EvadeMontage.Halberd_Right_EvadeMontage'",
+				"ED_RightForward": "/Script/Engine.AnimMontage'/Game/Project/Animations/Player/Sword/Halberd/Evade/Halberd_Forward_R_EvadeMontage.Halberd_Forward_R_EvadeMontage'",
+				"ED_LeftForward": "/Script/Engine.AnimMontage'/Game/Project/Animations/Player/Sword/Halberd/Evade/Halberd_Forward_L_EvadeMontage.Halberd_Forward_L_EvadeMontage'",
+				"ED_Forward": "/Script/Engine.AnimMontage'/Game/Project/Animations/Player/Sword/Halberd/Evade/Halberd_Forward_EvadeMontage.Halberd_Forward_EvadeMontage'"
+			}
+		}
+	},
+	{
+		"Name": "SwordShield",
+		"D_MeleeType": "SwordAndShield",
+		"m_LightAttackInfo": [
+			{
+				"m_Damage": 35,
+				"m_StaminaCost": 17,
+				"m_Sound": "None"
+			},
+			{
+				"m_Damage": 42,
+				"m_StaminaCost": 20,
+				"m_Sound": "None"
+			},
+			{
+				"m_Damage": 50,
+				"m_StaminaCost": 23,
+				"m_Sound": "None"
+			},
+			{
+				"m_Damage": 55,
+				"m_StaminaCost": 27,
+				"m_Sound": "None"
+			}
+		],
+		"m_HeavyAttackInfo": [
+			{
+				"m_Damage": 60,
+				"m_StaminaCost": 30,
+				"m_Sound": "None"
+			},
+			{
+				"m_Damage": 67,
+				"m_StaminaCost": 32,
+				"m_Sound": "None"
+			}
+		],
+		"m_SprintAttackInfo":
+		{
+			"m_Damage": 53,
+			"m_StaminaCost": 21,
+			"m_Sound": "None"
+		},
+		"m_JumpAttackInfo":
+		{
+			"m_Damage": 53,
+			"m_StaminaCost": 21,
+			"m_Sound": "None"
+		},
+		"m_MontageInfo":
+		{
+			"m_LightAttackMontage": "/Script/Engine.AnimMontage'/Game/Project/Animations/Player/Sword/SwordShield/SwordShield_AttackMontage.SwordShield_AttackMontage'",
+			"m_HeavyAttackMontage": "/Script/Engine.AnimMontage'/Game/Project/Animations/Player/Sword/SwordShield/SwordShield_HeavyAttack.SwordShield_HeavyAttack'",
+			"m_JumpAttackMontage": "/Script/Engine.AnimMontage'/Game/Project/Animations/Player/Sword/SwordShield/SwordShield_JumpAttack.SwordShield_JumpAttack'",
+			"m_JumpAttackLand": "/Script/Engine.AnimMontage'/Game/Project/Animations/Player/Sword/SwordShield/SwordShield_JumpAttackEnd.SwordShield_JumpAttackEnd'",
+			"m_SprintAttackMontage": "/Script/Engine.AnimMontage'/Game/Project/Animations/Player/Sword/SwordShield/SwordShield_SprintAttack.SwordShield_SprintAttack'",
+			"m_EquipMontage": "/Script/Engine.AnimMontage'/Game/Project/Animations/Player/Sword/SwordShield/SwordShield_EquipMontage.SwordShield_EquipMontage'",
+			"m_UnequipMontage": "/Script/Engine.AnimMontage'/Game/Project/Animations/Player/Sword/SwordShield/SwordShield_UnequipMontage.SwordShield_UnequipMontage'",
+			"m_HitMontage": "/Script/Engine.AnimMontage'/Game/Project/Animations/Player/Sword/SwordShield/SwordShield_HitMontage.SwordShield_HitMontage'",
+			"m_DeathMontage": "/Script/Engine.AnimMontage'/Game/Project/Animations/Player/Sword/SwordShield/SwordShield_DeathMontage.SwordShield_DeathMontage'",
+			"m_RetreatMontage": "/Script/Engine.AnimMontage'/Game/Project/Animations/Player/Sword/SwordShield/SwordShield_RetreatingMontage.SwordShield_RetreatingMontage'",
+			"m_DodgeMontages":
+			{
+				"ED_Left": "/Script/Engine.AnimMontage'/Game/Project/Animations/Player/Sword/SwordShield/Evade/SwordShield_Left_EvadeMontage.SwordShield_Left_EvadeMontage'",
+				"ED_LeftBackward": "/Script/Engine.AnimMontage'/Game/Project/Animations/Player/Sword/SwordShield/Evade/SwordShield_Backward_L_EvadeMontage.SwordShield_Backward_L_EvadeMontage'",
+				"ED_Backward": "/Script/Engine.AnimMontage'/Game/Project/Animations/Player/Sword/SwordShield/Evade/SwordShield_Backward_EvadeMontage.SwordShield_Backward_EvadeMontage'",
+				"ED_RightBackward": "/Script/Engine.AnimMontage'/Game/Project/Animations/Player/Sword/SwordShield/Evade/SwordShield_Backward_R_EvadeMontage.SwordShield_Backward_R_EvadeMontage'",
+				"ED_Right": "/Script/Engine.AnimMontage'/Game/Project/Animations/Player/Sword/SwordShield/Evade/SwordShield_Right_EvadeMontage.SwordShield_Right_EvadeMontage'",
+				"ED_RightForward": "/Script/Engine.AnimMontage'/Game/Project/Animations/Player/Sword/SwordShield/Evade/SwordShield_Forward_R_EvadeMontage.SwordShield_Forward_R_EvadeMontage'",
+				"ED_LeftForward": "/Script/Engine.AnimMontage'/Game/Project/Animations/Player/Sword/SwordShield/Evade/SwordShield_Forward_L_EvadeMontage.SwordShield_Forward_L_EvadeMontage'",
+				"ED_Forward": "/Script/Engine.AnimMontage'/Game/Project/Animations/Player/Sword/SwordShield/Evade/SwordShield_Forward_EvadeMontage.SwordShield_Forward_EvadeMontage'"
+			}
+		}
+	}
+]

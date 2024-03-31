@@ -8,7 +8,6 @@
 
 DECLARE_DELEGATE(FOnHoldMeleeWeaponDelegate);
 DECLARE_DELEGATE(FOnNextAttackCheckDelegate);
-DECLARE_DELEGATE(FOnDeathEndDelegate);
 
 /**
  * 
@@ -22,15 +21,10 @@ public:
 
 	FOnHoldMeleeWeaponDelegate OnHoldMeleeWeapon;
 
-	FOnDeathEndDelegate OnDeathEnd;
-
 protected:
 	virtual void NativeInitializeAnimation() override;
 
 	virtual void NativeUpdateAnimation(float DeltaSeconds) override;
-
-	UFUNCTION()
-	void AnimNotify_DeathEnd();
 
 	UFUNCTION()
 	void AnimNotify_NextAttackCheck();
@@ -56,9 +50,14 @@ protected:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "State")
 	bool bIsEquip;
 
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "State")
+	bool bIsDead;
+
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Component")
 	class UCharacterMovementComponent* MovementComponent;
 public:
 	FORCEINLINE void SetEquipWeapon(bool IsEquip) { bIsEquip = IsEquip; }
 	FORCEINLINE float GetDirection() { return Direction; }
+
+	FORCEINLINE void SetIsDead(bool IsDead) { bIsDead = IsDead; }
 };

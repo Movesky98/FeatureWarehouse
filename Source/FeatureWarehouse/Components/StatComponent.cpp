@@ -38,15 +38,13 @@ void UStatComponent::BeginPlay()
 	if (!IsValid(WeaponWielder)) return;
 
 	UWielderAnimInstance* AnimInstance = Cast<UWielderAnimInstance>(WeaponWielder->GetMesh()->GetAnimInstance());
-
 	if (AnimInstance)
 	{
 		AnimInstance->OnMontageEnded.AddDynamic(this, &UStatComponent::OnGetDamagedEnded);
-		AnimInstance->OnDeathEnd.BindUFunction(this, FName("OnDeathEnded"));
 	}
 }
 
-void UStatComponent::OnDeathEnded()
+void UStatComponent::OnDeathEnded(UAnimMontage* Montage, bool bInterrupted)
 {
 	AWeaponWielder* WeaponWielder = Cast<AWeaponWielder>(GetOwner());
 
@@ -120,8 +118,9 @@ void UStatComponent::DecreaseHP(float Damage)
 	
 	if (CurrentHP <= 0.0f)
 	{
+		UE_LOG(LogTemp, Warning, TEXT("Set %s's dead state."), *UKismetSystemLibrary::GetDisplayName(WeaponWielder));
 		WeaponWielder->SetIsDead(true);
-		IsValid(DeathMontage) ? PlayMontage(DeathMontage) : WeaponWielder->Die();
+		IsValid(DeathMontage) ? PlayDeathMontage() : WeaponWielder->Die();
 		return;
 	}
 
@@ -133,12 +132,48 @@ void UStatComponent::DecreaseHP(float Damage)
 	DamageAccumulation += Damage;
 }
 
+bool UStatComponent::DecreaseStamina(float Amount)
+{
+	if (CurrentStamina - Amount <= 0.f)
+	{
+		return false;
+	}
+
+	CurrentStamina -= Amount;
+
+	return true;
+}
+
 void UStatComponent::ShowBloodEffect(FVector Location, FRotator Rotation)
 {
 	UWorld* World = GetWorld();
 	if (World)
 	{
 		UGameplayStatics::SpawnEmitterAtLocation(World, BloodParticle, Location, Rotation, true);
+	}
+}
+
+void UStatComponent::PlayDeathMontage()
+{
+	AWeaponWielder* WeaponWielder = Cast<AWeaponWielder>(GetOwner());
+	if (!WeaponWielder) return;
+
+	UAnimInstance* OwnerAnim = WeaponWielder->GetMesh()->GetAnimInstance();
+	if (OwnerAnim)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("Play %s's DeathMontage."), *UKismetSystemLibrary::GetDisplayName(WeaponWielder));
+		bool bPlayedSuccessfully = false;
+		const float MontageLength = OwnerAnim->Montage_Play(DeathMontage);
+
+		bPlayedSuccessfully = MontageLength > 0.f;
+
+		if (bPlayedSuccessfully)
+		{
+			UE_LOG(LogTemp, Warning, TEXT("Bind the function when %s's DeathMontage is ended."), *UKismetSystemLibrary::GetDisplayName(WeaponWielder));
+			FOnMontageEnded EndDelegate;
+			EndDelegate.BindUObject(this, &UStatComponent::OnDeathEnded);
+			OwnerAnim->Montage_SetEndDelegate(EndDelegate, DeathMontage);
+		}
 	}
 }
 

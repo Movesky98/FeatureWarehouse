@@ -4,6 +4,8 @@
 
 #include "CoreMinimal.h"
 #include "Items/Item.h"
+#include "Structs/MeleeAttackInfo.h"
+#include "Structs/MeleeMontageInfo.h"
 #include "Weapon.generated.h"
 
 enum class EUseTypeOfWeapon :uint8;
@@ -70,23 +72,20 @@ protected:
 	UFUNCTION(BlueprintImplementableEvent)
 	void StopShake();
 
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Montage")
-	UAnimMontage* EquipMontage;
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Montage|Info", meta = (AllowPrivateAccess = "true"))
+	FMeleeMontageInfo MontageInfo;
 
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Montage")
-	UAnimMontage* UnequipMontage;
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Attack|Info", meta = (AllowPrivateAccess = "true"))
+	TArray<FMeleeAttackInfo> LightAttackInfo;
 
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Montage|Hit")
-	UAnimMontage* GetDamagedMontage;
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Attack|Info", meta = (AllowPrivateAccess = "true"))
+	TArray<FMeleeAttackInfo> HeavyAttackInfo;
 
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Montage|Death")
-	UAnimMontage* DeathMontage;
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Attack|Info", meta = (AllowPrivateAccess = "true"))
+	FMeleeAttackInfo JumpAttackInfo;
 
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Montage|Dodge")
-	UAnimMontage* RetreatMontage;
-
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Montage|Knockdown")
-	UAnimMontage* KnockdownMontage;
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Attack|Info", meta = (AllowPrivateAccess = "true"))
+	FMeleeAttackInfo SprintAttackInfo;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "State")
 	bool bIsEquip;
@@ -94,8 +93,8 @@ protected:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "State")
 	FName WeaponName;
 
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Montage|Dodge")
-	TMap<EDirection, UAnimMontage*> DodgeMontages;
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "State")
+	bool bHasEquipMontage;
 
 private:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "State", meta = (AllowPrivateAccess = "true"))
@@ -109,9 +108,6 @@ private:
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "State", meta = (AllowPrivateAccess = "true"))
 	bool bHasAttachmentInfo;
-
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "State", meta = (AllowPrivateAccess = "true"))
-	bool bHasEquipMontage;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Attack", meta = (AllowPrivateAccess = "true"))
 	bool bIsAttacking;

@@ -65,6 +65,12 @@ public:
 
 	void SetVisibleLockOnImage(bool IsVisisble);
 
+	void AddDetectedWielder(AWeaponWielder* DetectedWielder);
+
+	void RemoveDetectedWielder(AWeaponWielder* DetectedWielder);
+
+	bool CheckEnemyWielder(AWeaponWielder* DetectedWielder);
+
 protected:
 	virtual void BeginPlay() override;
 
@@ -190,6 +196,9 @@ protected:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Range")
 	bool bIsEnemyApproached;		// 플레이어가 접근했는지
 
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Range")
+	TArray<AWeaponWielder*> DetectedWielders;	// 감지된 Wielder들
+
 	// Initial Settings
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Initial Setting")
 	bool bStartWithPatrol;
@@ -214,4 +223,7 @@ public:
 
 	FORCEINLINE ETypeOfWielder GetWielderType() { return WielderType; }
 	FORCEINLINE float GetRecognizeRange() { return RecognizeRange; }
+	FORCEINLINE float GetAttackRange() { return AttackRange; }
+
+	FORCEINLINE TArray<AWeaponWielder*> GetDetectedWielders() { return DetectedWielders; }
 };

@@ -2,6 +2,7 @@
 
 
 #include "WeaponWielder.h"
+#include "AnimInstance/WielderAnimInstance.h"
 
 #include "Enums/ActionState.h"
 #include "Enums/MovementState.h"
@@ -160,11 +161,17 @@ void AWeaponWielder::Die()
 		EquipWeapon->Destroy();
 	}*/
 
-	Destroy();
+	UWielderAnimInstance* Anim = Cast<UWielderAnimInstance>(GetMesh()->GetAnimInstance());
+	if (Anim)
+	{
+		Anim->SetIsDead(true);
+	}
 
 	GetCapsuleComponent()->SetCollisionProfileName(FName("Ragdoll"));
 	GetMesh()->SetCollisionProfileName(FName("Ragdoll"));
 	GetMesh()->SetSimulatePhysics(true);
+
+	SetLifeSpan(3.0f);
 }
 
 bool AWeaponWielder::CheckTakeAction(EActionState SpecificAction, bool bCanTakeContinuously)

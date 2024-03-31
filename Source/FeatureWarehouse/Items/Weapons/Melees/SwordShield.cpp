@@ -69,7 +69,7 @@ void ASwordShield::HoldMeleeWeapon()
 	UAnimInstance* AnimInstance = GetWeaponOwner()->GetMesh()->GetAnimInstance();
 	if (IsValid(AnimInstance))
 	{
-		if (AnimInstance->Montage_IsPlaying(EquipMontage))
+		if (AnimInstance->Montage_IsPlaying(MontageInfo.m_EquipMontage))
 		{
 			// ¹«±â ÀåÂø
 			GetSkeletalMesh()->AttachToComponent(GetWeaponOwner()->GetMesh(), FAttachmentTransformRules::KeepRelativeTransform, Name_SwordEquip);
@@ -154,12 +154,9 @@ void ASwordShield::DrawAttackTrace(const FVector& LineStart, const FVector& Line
 			ETraceTypeQuery::TraceTypeQuery4,
 			false,
 			IgnoreActor,
-			EDrawDebugTrace::ForDuration,
+			EDrawDebugTrace::None,
 			Hit,
-			true,
-			FLinearColor::Red,
-			FLinearColor::Green,
-			1.0f
+			true
 		);
 	}
 	else
@@ -172,12 +169,9 @@ void ASwordShield::DrawAttackTrace(const FVector& LineStart, const FVector& Line
 			ETraceTypeQuery::TraceTypeQuery4,
 			false,
 			IgnoreActor,
-			EDrawDebugTrace::ForDuration,
+			EDrawDebugTrace::None,
 			Hit,
-			true,
-			FLinearColor::Red,
-			FLinearColor::Green,
-			1.0f
+			true
 		);
 	}
 

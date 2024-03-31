@@ -98,9 +98,7 @@ void AWielderController::BeginPlay()
 }
 
 void AWielderController::OnTargetDetected(AActor* Actor, FAIStimulus Stimulus)
-{
-	if (GetSeeingPawn() != nullptr) return;
-	
+{	
 	AWielder* Wielder = Cast<AWielder>(GetPawn());
 	if (!IsValid(Wielder)) return;
 
@@ -108,8 +106,16 @@ void AWielderController::OnTargetDetected(AActor* Actor, FAIStimulus Stimulus)
 	{
 		bIsIdentifiedEnemy = true;
 
-		// 이미 전투 중일 경우 아무것도 하지 않음.
-		if (Wielder->GetCurState() == EStateOfEnemy::In_Battle) return;
+		// 감지된 Wielder를 저장
+		AWeaponWielder* WeaponWielder = Cast<AWeaponWielder>(Actor);
+		if (WeaponWielder)
+		{
+			Wielder->AddDetectedWielder(WeaponWielder);
+			UE_LOG(LogTemp, Warning, TEXT("%s Add Detected Wielder %s"), *UKismetSystemLibrary::GetDisplayName(Wielder), *UKismetSystemLibrary::GetDisplayName(WeaponWielder));
+		}
+
+		// 현재 바라보고 있는 폰이 있으면 아무것도 하지않음.
+		if (GetSeeingPawn()) return;
 
 		// 적이 이미 접근하였으며, AI가 적을 인식한 경우
 		if (Wielder->IsEnemyApproached())
@@ -134,6 +140,14 @@ void AWielderController::OnTargetDetected(AActor* Actor, FAIStimulus Stimulus)
 	{
 		// 플레이어가 인식되었다가 시야에서 벗어난 경우.
 		bIsIdentifiedEnemy = false;
+
+		// 현재 바라보고 있는 폰이 아니면 아무것도 안함.
+		if (GetSeeingPawn() != Actor) return;
+
+		if (Wielder->GetDetectedWielders().Num() > 0)
+		{
+			FindNewTarget();
+		}
 
 		// 시야에서 벗어난 경우 처리를 해줘야할 듯.
 		if (!Wielder->IsRecognizedSomething())
@@ -311,6 +325,29 @@ void AWielderController::NotifyGoToHomePos()
 void AWielderController::NotifyUnderAttack(bool IsUnderAttack)
 {
 	Blackboard->SetValueAsBool(FName("IsUnderAttack"), IsUnderAttack);
+}
+
+void AWielderController::FindNewTarget()
+{
+	AWielder* Wielder = Cast<AWielder>(GetPawn());
+	if (!IsValid(Wielder)) return;
+
+	TArray<AWeaponWielder*> DetectedWielders;
+	DetectedWielders = Wielder->GetDetectedWielders();
+
+	for (auto DetectedWielder : DetectedWielders)
+	{
+		if (IsValid(DetectedWielder))
+		{
+			UE_LOG(LogTemp, Warning, TEXT("%s Set New Target"), *UKismetSystemLibrary::GetDisplayName(Wielder));
+
+			Wielder->GetDistanceTo(DetectedWielder) <= Wielder->GetAttackRange() ? NotifyEnemyInAttackRange(true) : NotifyEnemyInAttackRange(false);
+			DesignateEnemy(DetectedWielder);
+			return;
+		}
+	}
+
+	NotifyGoToHomePos();
 }
 
 void AWielderController::NotifyDead()
