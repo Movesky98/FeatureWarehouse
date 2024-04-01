@@ -132,16 +132,99 @@ void UStatComponent::DecreaseHP(float Damage)
 	DamageAccumulation += Damage;
 }
 
-bool UStatComponent::DecreaseStamina(float Amount)
+void UStatComponent::DecreaseStamina(float Amount)
 {
-	if (CurrentStamina - Amount <= 0.f)
+	UE_LOG(LogTemp, Warning, TEXT("Decrase Stamina!"));
+	if (CurrentStamina - Amount < 0.0f)
 	{
-		return false;
+		CurrentStamina = 0.0f;
+		bIsExhaustedStamina = true;
+
+		AWeaponWielder* WielderOwner = Cast<AWeaponWielder>(GetOwner());
+		if(WielderOwner) WielderOwner->SetActionState(EActionState::EAS_Exhausting);
+
+		if (bIsStartRecoveryStaminaWaitTimer) StopRecoveryStamina();
+
+		StartRecoveryStamina(RecoveryStaminaWaitTime);
+
+		if (OnExhaustedStamina.IsBound())
+		{
+			OnExhaustedStamina.Execute();
+		}
 	}
 
 	CurrentStamina -= Amount;
 
-	return true;
+	if (bIsStartRecoveryStamina)
+	{
+		// 스태미나 회복 중, 스태미나를 깎을 일이 생긴 경우 회복 종료
+		StopRecoveryStamina();
+
+		// 시간 계산을 시작하기 위해 값 변경.
+		bIsStartRecoveryStaminaWaitTimer = false;
+		bIsStartRecoveryStamina = false;
+	}
+
+	// 시간 계산 시작 체크
+	if (!bIsStartRecoveryStaminaWaitTimer && !bIsStartRecoveryStamina)
+	{
+		bIsStartRecoveryStaminaWaitTimer = true;
+		GetWorld()->GetTimerManager().SetTimer(RecoveryStaminaTimer, this, &UStatComponent::CalculateStaminaWaitTime, 1.0f, true);
+	}
+	else
+	{
+		// 시작했으면 스태미나 소모할 때 마다 대기 시간 초기화
+		StaminaElapsedTime = 0.0f;
+	}
+}
+
+void UStatComponent::StartRecoveryStamina(float WaitTime)
+{
+	GetWorld()->GetTimerManager().SetTimer(RecoveryStaminaTimer, this, &UStatComponent::RecoveryStamina, 0.01f, true, WaitTime);
+}
+
+void UStatComponent::StopRecoveryStamina()
+{
+	GetWorld()->GetTimerManager().ClearTimer(RecoveryStaminaTimer);
+}
+
+void UStatComponent::CalculateStaminaWaitTime()
+{
+	StaminaElapsedTime += 1.0f;
+
+	// 충분한 시간이 된다면
+	if (RecoveryStaminaWaitTime <= StaminaElapsedTime)
+	{
+		GetWorld()->GetTimerManager().ClearTimer(RecoveryStaminaTimer);
+		bIsStartRecoveryStamina = true;
+		StartRecoveryStamina();
+	}
+}
+
+void UStatComponent::RecoveryStamina()
+{
+	CurrentStamina += MaxStamina * 0.01f;
+
+	// 지친 상태인지 체크
+	if (bIsExhaustedStamina)
+	{
+		if (CurrentStamina > MaxStamina * 0.5f)
+		{
+			// Stamina가 반을 넘었다면, 지친 상태를 해제하고 다음 액션을 취할 수 있도록 Idle로 바꿔줌.
+			bIsExhaustedStamina = false;
+
+			AWeaponWielder* WielderOwner = Cast<AWeaponWielder>(GetOwner());
+			if(WielderOwner) WielderOwner->SetActionState(EActionState::EAS_Idle);
+		}
+	}
+
+	if (CurrentStamina >= MaxStamina)
+	{
+		CurrentStamina = MaxStamina;
+		bIsStartRecoveryStaminaWaitTimer = false;
+		bIsStartRecoveryStamina = false;
+		StopRecoveryStamina();
+	}
 }
 
 void UStatComponent::ShowBloodEffect(FVector Location, FRotator Rotation)

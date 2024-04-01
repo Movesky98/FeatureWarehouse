@@ -47,3 +47,27 @@ void UWielderAnimInstance::AnimNotify_HoldMeleeWeapon()
 		OnHoldMeleeWeapon.Execute();
 	}
 }
+
+void UWielderAnimInstance::AnimNotify_PlaySlashSound()
+{
+	if (OnPlaySlashSound.IsBound())
+	{
+		OnPlaySlashSound.Execute();
+	}
+}
+
+void UWielderAnimInstance::AnimNotify_PlayEquipSound()
+{
+	if (OnPlayEquipSound.IsBound())
+	{
+		OnPlayEquipSound.Execute();
+	}
+}
+
+void UWielderAnimInstance::AnimNotify_PlayUnequipSound()
+{
+	if (OnPlayUnequipSound.IsBound())
+	{
+		OnPlayUnequipSound.Execute();
+	}
+}

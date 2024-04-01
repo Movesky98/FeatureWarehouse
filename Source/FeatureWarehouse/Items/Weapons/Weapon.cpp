@@ -11,11 +11,11 @@
 #include "Characters/WeaponWielder.h"
 #include "AnimInstance/WielderAnimInstance.h"
 
+#include "Components/SphereComponent.h"
 #include "Components/WeaponComponent.h"
 #include "Components/StatComponent.h"
 #include "Components/ItemDescriptionComponent.h"
 
-#include "Components/SphereComponent.h"
 #include "Kismet/GameplayStatics.h"
 #include "Kismet/KismetSystemLibrary.h"
 #include "Camera/PlayerCameraManager.h"
@@ -200,4 +200,28 @@ void AWeapon::Unequip()
 UTexture2D* AWeapon::GetWeaponImage() 
 { 
 	return ItemDescriptionComponent->GetIcon(); 
+}
+
+void AWeapon::InvokeExpandStamina(float Amount) 
+{
+	if (OnExpandStamina.IsBound())
+	{
+		OnExpandStamina.Execute(Amount);
+	}
+}
+
+void AWeapon::PlayEquipSound()
+{
+	if (EquipSound)
+	{
+		UGameplayStatics::PlaySoundAtLocation(GetWorld(), EquipSound, GetActorLocation(), 0.5f);
+	}
+}
+
+void AWeapon::PlayUnequipSound()
+{
+	if (UnequipSound)
+	{
+		UGameplayStatics::PlaySoundAtLocation(GetWorld(), UnequipSound, GetActorLocation(), 0.5f);
+	}
 }

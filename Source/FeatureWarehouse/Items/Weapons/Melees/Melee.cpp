@@ -96,8 +96,19 @@ void AMelee::BindMontage()
 		WielderAnim->OnMontageEnded.AddDynamic(this, &AMelee::OnUnequipEnded);
 		WielderAnim->OnNextAttackCheck.BindUFunction(this, FName("OnNextAttackChecked"));
 		WielderAnim->OnHoldMeleeWeapon.BindUFunction(this, FName("HoldMeleeWeapon"));
+		WielderAnim->OnPlaySlashSound.BindUObject(this, &AMelee::PlaySlashSound);
+		WielderAnim->OnPlayEquipSound.BindUObject(this, &AMelee::PlayEquipSound);
+		WielderAnim->OnPlayUnequipSound.BindUObject(this, &AMelee::PlayUnequipSound);
 
 		UE_LOG(LogTemp, Warning, TEXT("Weapon - %s :: BindMontage is called."), *UKismetSystemLibrary::GetDisplayName(this));
+	}
+}
+
+void AMelee::PlaySlashSound()
+{
+	if (!bIsHitSomething)
+	{
+		UGameplayStatics::PlaySoundAtLocation(GetWorld(), SlashSound, GetActorLocation(), 0.4f);
 	}
 }
 
@@ -114,7 +125,9 @@ void AMelee::UnbindMontage()
 		WielderAnim->OnMontageEnded.Clear();
 		WielderAnim->OnNextAttackCheck.Unbind();
 		WielderAnim->OnHoldMeleeWeapon.Unbind();
-
+		WielderAnim->OnPlaySlashSound.Unbind();
+		WielderAnim->OnPlayEquipSound.Unbind();
+		WielderAnim->OnPlayUnequipSound.Unbind();
 
 		UE_LOG(LogTemp, Warning, TEXT("Weapon - %s :: UnbindMontage is called."), *UKismetSystemLibrary::GetDisplayName(this));
 	}
@@ -124,6 +137,8 @@ void AMelee::Attack()
 {
 	if (!bIsEquip || !CanAttack())
 		return;
+
+	bIsHitSomething = false;
 
 	if (CanCombo)
 	{
@@ -138,13 +153,14 @@ void AMelee::Attack()
 
 		if (WielderAnim)
 		{
-			UAnimMontage* PlayMontage = FindAppropriateAttackAnimationWithDamage(Damage, MontageIndex);
+			UAnimMontage* PlayMontage = FindAppropriateAttackAnimationWithParam(Damage, MontageIndex, StaminaCost, SlashSound);
 			FName SectionName = PlayMontage->GetSectionName(MontageIndex);
 			Wielder->PlayMontage(PlayMontage);
 			WielderAnim->Montage_JumpToSection(SectionName, PlayMontage);
-
+			
 			MontageIndex++;
 			CanCombo = false;
+			InvokeExpandStamina(StaminaCost);
 		}
 	}
 	else
@@ -156,10 +172,11 @@ void AMelee::Attack()
 
 		if (Wielder)
 		{
-			UAnimMontage* PlayMontage = FindAppropriateAttackAnimationWithDamage(Damage, MontageIndex);
+			UAnimMontage* PlayMontage = FindAppropriateAttackAnimationWithParam(Damage, MontageIndex, StaminaCost, SlashSound);
 			Wielder->PlayMontage(PlayMontage);
 
 			MontageIndex++;
+			InvokeExpandStamina(StaminaCost);
 		}
 	}
 }
@@ -168,6 +185,8 @@ void AMelee::Attack(EStateOfViews CurView, FVector HitLocation)
 {
 	if (!bIsEquip || !CanAttack())
 		return;
+
+	bIsHitSomething = false;
 
 	if (CanCombo)
 	{
@@ -182,13 +201,15 @@ void AMelee::Attack(EStateOfViews CurView, FVector HitLocation)
 
 		if (WielderAnim)
 		{
-			UAnimMontage* PlayMontage = FindAppropriateAttackAnimationWithDamage(Damage, MontageIndex);
+			UAnimMontage* PlayMontage = FindAppropriateAttackAnimationWithParam(Damage, MontageIndex, StaminaCost, SlashSound);
 			FName SectionName = PlayMontage->GetSectionName(MontageIndex);
 			Wielder->PlayMontage(PlayMontage);
 			WielderAnim->Montage_JumpToSection(SectionName, PlayMontage);
 
 			MontageIndex++;
 			CanCombo = false;
+
+			InvokeExpandStamina(StaminaCost);
 		}
 	}
 	else
@@ -200,10 +221,11 @@ void AMelee::Attack(EStateOfViews CurView, FVector HitLocation)
 		
 		if (Wielder)
 		{
-			UAnimMontage* PlayMontage = FindAppropriateAttackAnimationWithDamage(Damage, MontageIndex);
+			UAnimMontage* PlayMontage = FindAppropriateAttackAnimationWithParam(Damage, MontageIndex, StaminaCost, SlashSound);
 			Wielder->PlayMontage(PlayMontage);
 
 			MontageIndex++;
+			InvokeExpandStamina(StaminaCost);
 		}
 	}
 }
@@ -234,6 +256,7 @@ void AMelee::OnAttackEnded(class UAnimMontage* Montage, bool bInterrupted)
 		{
 			MontageIndex = 0;
 			CanCombo = false;
+			bIsHitSomething = false;
 			SetIsAttacking(false);
 
 			Wielder->CurActionState() == EActionState::EAS_Attacking ? Wielder->SetActionState(EActionState::EAS_Idle) : nullptr;
@@ -254,6 +277,7 @@ void AMelee::OnAttackEnded(class UAnimMontage* Montage, bool bInterrupted)
 		{
 			MontageIndex = 0;
 			CanCombo = false;
+			bIsHitSomething = false;
 			SetIsAttacking(false);
 			Wielder->CurActionState() == EActionState::EAS_HeavyAttacking ? Wielder->SetActionState(EActionState::EAS_Idle) : nullptr;
 		}
@@ -264,6 +288,7 @@ void AMelee::OnAttackEnded(class UAnimMontage* Montage, bool bInterrupted)
 	// 콤보가 존재하지 않는다면 상태 초기화 (SprintAttack, JumpAttack)
 	MontageIndex = 0;
 	CanCombo = false;
+	bIsHitSomething = false;
 	SetIsAttacking(false);
 	Wielder->SetActionState(EActionState::EAS_Idle);
 }
@@ -351,11 +376,18 @@ void AMelee::DrawAttackLineTrace(const FVector& LineStart, const FVector& LineEn
 
 	if (IsHit)
 	{
+		bIsHitSomething = true;
+		
 		APawn* HitPawn = Cast<APawn>(Hit.GetActor());
 		if (!IsValid(HitPawn)) return;
 
 		IgnoreActor.Add(Hit.GetActor());
 		TSubclassOf<UDamageType> DamageType;
+
+
+		if (HitSound)
+			UGameplayStatics::PlaySoundAtLocation(GetWorld(), HitSound, Hit.ImpactPoint);
+		
 
 		UGameplayStatics::ApplyPointDamage(Hit.GetActor(), Damage, Hit.ImpactNormal, Hit, GetWeaponOwner()->GetController(), this, DamageType);
 
@@ -364,7 +396,7 @@ void AMelee::DrawAttackLineTrace(const FVector& LineStart, const FVector& LineEn
 	}
 }
 
-UAnimMontage* AMelee::FindAppropriateAttackAnimationWithDamage(float& Change_Damage, int Index)
+UAnimMontage* AMelee::FindAppropriateAttackAnimationWithParam(float& Change_Damage, int Index, float& Stamina, class USoundCue*& Sound)
 {
 	AWeaponWielder* Wielder = Cast<AWeaponWielder>(GetWeaponOwner());
 	if (!IsValid(Wielder)) return nullptr;
@@ -378,10 +410,14 @@ UAnimMontage* AMelee::FindAppropriateAttackAnimationWithDamage(float& Change_Dam
 		case EMovementState::EMS_Jumping:
 			ReturnMontage = MontageInfo.m_JumpAttackMontage;
 			Change_Damage = JumpAttackInfo.m_Damage;
+			Stamina = JumpAttackInfo.m_StaminaCost;
+			Sound = JumpAttackInfo.m_Sound;
 			break;
 		case EMovementState::EMS_Running:
 			ReturnMontage = MontageInfo.m_SprintAttackMontage;
 			Change_Damage = SprintAttackInfo.m_Damage;
+			Stamina = SprintAttackInfo.m_StaminaCost;
+			Sound = SprintAttackInfo.m_Sound;
 			break;
 		case EMovementState::EMS_Crouching:
 
@@ -392,12 +428,15 @@ UAnimMontage* AMelee::FindAppropriateAttackAnimationWithDamage(float& Change_Dam
 			{
 				ReturnMontage = MontageInfo.m_HeavyAttackMontage;
 				Change_Damage = HeavyAttackInfo[Index].m_Damage;
-
+				Stamina = HeavyAttackInfo[Index].m_StaminaCost;
+				Sound = HeavyAttackInfo[Index].m_Sound;
 			}
 			else
 			{
 				ReturnMontage = MontageInfo.m_LightAttackMontage;
 				Change_Damage = LightAttackInfo[Index].m_Damage;
+				Stamina = LightAttackInfo[Index].m_StaminaCost;
+				Sound = LightAttackInfo[Index].m_Sound;
 			}
 			break;
 		}

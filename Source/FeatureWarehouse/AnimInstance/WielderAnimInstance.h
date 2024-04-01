@@ -8,6 +8,9 @@
 
 DECLARE_DELEGATE(FOnHoldMeleeWeaponDelegate);
 DECLARE_DELEGATE(FOnNextAttackCheckDelegate);
+DECLARE_DELEGATE(FOnPlaySlashSoundDelegate);
+DECLARE_DELEGATE(FOnPlayEquipSoundDelegate);
+DECLARE_DELEGATE(FOnPlayUnequipSoundDelegate);
 
 /**
  * 
@@ -21,6 +24,12 @@ public:
 
 	FOnHoldMeleeWeaponDelegate OnHoldMeleeWeapon;
 
+	FOnPlaySlashSoundDelegate OnPlaySlashSound;
+
+	FOnPlayEquipSoundDelegate OnPlayEquipSound;
+
+	FOnPlayUnequipSoundDelegate OnPlayUnequipSound;
+
 protected:
 	virtual void NativeInitializeAnimation() override;
 
@@ -31,6 +40,16 @@ protected:
 
 	UFUNCTION()
 	void AnimNotify_HoldMeleeWeapon();
+
+	UFUNCTION()
+	void AnimNotify_PlaySlashSound();
+
+	UFUNCTION()
+	void AnimNotify_PlayEquipSound();
+
+	UFUNCTION()
+	void AnimNotify_PlayUnequipSound();
+
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "State")
 	float Speed;

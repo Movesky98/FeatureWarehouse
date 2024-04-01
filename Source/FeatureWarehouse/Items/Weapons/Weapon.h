@@ -8,6 +8,8 @@
 #include "Structs/MeleeMontageInfo.h"
 #include "Weapon.generated.h"
 
+DECLARE_DELEGATE_OneParam(FOnExpandStaminaDelegate, float);
+
 enum class EUseTypeOfWeapon :uint8;
 enum class ETypeOfWeapon :uint8;
 enum class EStateOfViews :uint8;
@@ -25,6 +27,8 @@ class FEATUREWAREHOUSE_API AWeapon : public AItem
 	
 public:
 	AWeapon();
+
+	FOnExpandStaminaDelegate OnExpandStamina;
 
 	void Interact(AActor* InteractActor) override;
 
@@ -62,6 +66,12 @@ protected:
 	UFUNCTION()
 	void OnUnequipEnded(class UAnimMontage* Montage, bool bInterrupted);
 
+	void PlayEquipSound();
+
+	void PlayUnequipSound();
+
+	void InvokeExpandStamina(float Amount);
+
 	virtual bool CanAttack();
 
 	virtual void PostInitializeComponents() override;
@@ -96,6 +106,11 @@ protected:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "State")
 	bool bHasEquipMontage;
 
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Montage|Sound", meta = (AllowPrivateAccess = "true"))
+	class USoundCue* EquipSound;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Montage|Sound", meta = (AllowPrivateAccess = "true"))
+	class USoundCue* UnequipSound;
 private:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "State", meta = (AllowPrivateAccess = "true"))
 	ACharacter* WeaponOwner;

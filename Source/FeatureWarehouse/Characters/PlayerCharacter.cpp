@@ -75,6 +75,17 @@ APlayerCharacter::APlayerCharacter()
 
 	LockChangeElapsedTime = 0.0f;
 	LockChangeDuration = 1.0f;
+
+	DodgeStaminaCost = 30.0f;
+}
+
+void APlayerCharacter::PostInitializeComponents()
+{
+	Super::PostInitializeComponents();
+
+	StatComponent->OnExhaustedStamina.BindUObject(this, &APlayerCharacter::StopRunning);
+
+	TeamId = FGenericTeamId((uint8)Faction);
 }
 
 // Called when the game starts or when spawned
@@ -138,8 +149,6 @@ void APlayerCharacter::MoveForward(const FInputActionValue& Value)
 	float Movement = Value.Get<float>();
 	bool IsPressed = Value.Get<bool>();
 
-	if (ActionState != EActionState::EAS_Idle) return;
-
 	FVector Start = GetActorLocation() + FVector(0, 0, 50);
 
 	if (Controller != nullptr)
@@ -176,8 +185,6 @@ void APlayerCharacter::MoveForward(const FInputActionValue& Value)
 void APlayerCharacter::MoveRight(const FInputActionValue& Value)
 {
 	float Movement = Value.Get<float>();
-
-	if (ActionState != EActionState::EAS_Idle) return;
 
 	FVector Start = GetActorLocation() + FVector(0, 0, 50);
 	if (Controller != nullptr)
@@ -287,21 +294,11 @@ void APlayerCharacter::Run(const FInputActionValue& Value)
 
 	if (IsPressed)
 	{
-		GetCharacterMovement()->MaxWalkSpeed = 600.0f;
-
-		if (MovementState == EMovementState::EMS_Idle || MovementState == EMovementState::EMS_Walking)
-		{
-			MovementState = EMovementState::EMS_Running;
-		}
+		StartRunning();
 	} 
 	else
 	{
-		GetCharacterMovement()->MaxWalkSpeed = 300.0f;
-
-		if (MovementState == EMovementState::EMS_Running)
-		{
-			MovementState = EMovementState::EMS_Walking;
-		}
+		StopRunning();
 	}
 }
 
@@ -813,6 +810,39 @@ FVector APlayerCharacter::DrawCameraLineTrace()
 	}
 }
 
+void APlayerCharacter::StartRunning()
+{
+	GetCharacterMovement()->MaxWalkSpeed = 600.0f;
+
+	if (MovementState == EMovementState::EMS_Idle || MovementState == EMovementState::EMS_Walking)
+	{
+		MovementState = EMovementState::EMS_Running;
+	}
+
+	FTimerDelegate RunningTimerDel;
+
+	RunningTimerDel.BindUObject(this, &APlayerCharacter::DecreaseStamina, 10.0f);
+
+	GetWorldTimerManager().SetTimer(RunningTimer, RunningTimerDel, 0.5f, true);
+}
+
+void APlayerCharacter::StopRunning()
+{
+	GetCharacterMovement()->MaxWalkSpeed = 300.0f;
+
+	if (MovementState == EMovementState::EMS_Running)
+	{
+		MovementState = EMovementState::EMS_Walking;
+	}
+
+	GetWorldTimerManager().ClearTimer(RunningTimer);
+}
+
+void APlayerCharacter::DecreaseStamina(float Stamina)
+{
+	StatComponent->DecreaseStamina(Stamina);
+}
+
 void APlayerCharacter::OnEquipEnded()
 {
 	ActionState = EActionState::EAS_Idle;
@@ -820,6 +850,7 @@ void APlayerCharacter::OnEquipEnded()
 	PlayerController->SwitchPlayerMenu();
 
 	EquipWeapon->SaveDodgeMontages(DodgeMontages);
+	EquipWeapon->OnExpandStamina.BindUObject(this, &APlayerCharacter::DecreaseStamina);
 }
 
 void APlayerCharacter::OnUnequipEnded()
@@ -838,6 +869,7 @@ void APlayerCharacter::OnUnequipEnded()
 	}
 
 	DodgeMontages.Empty();
+	EquipWeapon->OnExpandStamina.Unbind();
 }
 
 void APlayerCharacter::Dodge()
@@ -898,6 +930,7 @@ void APlayerCharacter::Dodge()
 
 	bool bPlayedSuccessfullly = false;
 	const float MontageLength = WielderAnim->Montage_Play(DodgeMontage);
+	DecreaseStamina(DodgeStaminaCost);
 
 	bPlayedSuccessfullly = (MontageLength > 0.f);
 

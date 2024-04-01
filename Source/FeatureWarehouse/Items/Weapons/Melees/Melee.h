@@ -46,10 +46,13 @@ protected:
 
 	virtual bool CanAttack() override;
 
-	virtual class UAnimMontage* FindAppropriateAttackAnimationWithDamage(float& Damage, int Index);
+	virtual class UAnimMontage* FindAppropriateAttackAnimationWithParam(float& Change_Damage, int Index, float& Stamina, class USoundCue*& Sound);
 
 	UFUNCTION()
 	virtual	void HoldMeleeWeapon();
+
+	UFUNCTION() 
+	void PlaySlashSound();
 
 	UFUNCTION(BlueprintCallable)
 	void StartAttackTrace();
@@ -81,8 +84,21 @@ protected:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Montage")
 	TArray<AActor*> IgnoreActor;
 	
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Damage")
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Attack")
 	float Damage;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Attack")
+	float StaminaCost;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Attack")
+	class USoundCue* SlashSound;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Attack")
+	class USoundCue* HitSound;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Attack")
+	bool bIsHitSomething;
+
 private:
 	// Functions
 	UFUNCTION()

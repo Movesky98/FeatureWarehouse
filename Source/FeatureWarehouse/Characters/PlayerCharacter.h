@@ -37,13 +37,25 @@ protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
 
+	virtual void PostInitializeComponents() override;
+
 	virtual void Tick(float DeltaSeconds) override;
 
 	virtual void OnMovementModeChanged(EMovementMode PrevMovementMode, uint8 PreviousCustomMode) override;
 
+	UFUNCTION()
+	void DecreaseStamina(float Stamina);
+
 	void OnEquipEnded() override;
 
 	void OnUnequipEnded() override;
+
+	void StartRunning();
+
+	UFUNCTION()
+	void StopRunning();
+
+	FTimerHandle RunningTimer;
 
 	UFUNCTION()
 	void OnDodgeEnded(UAnimMontage* Montage, bool bInterrupted);
@@ -79,6 +91,9 @@ protected:
 	void HeavyAttack() override;
 
 	void Dodge();
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Dodge")
+	float DodgeStaminaCost;
 
 	FVector DrawCameraLineTrace();
 

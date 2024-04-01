@@ -7,6 +7,7 @@
 #include "StatComponent.generated.h"
 
 DECLARE_DELEGATE_OneParam(FOnGetDamagedDelegate, bool);
+DECLARE_DELEGATE(FOnExhaustedStaminaDelegate);
 
 class UParticleSystem;
 
@@ -30,9 +31,13 @@ public:
 	UFUNCTION(BlueprintCallable)
 	void DecreaseHP(float Damage);
 
-	bool DecreaseStamina(float Amount);
+	void DecreaseStamina(float Amount);
 
 	void ShowBloodEffect(FVector Location, FRotator Rotation);
+
+	void StartRecoveryStamina(float WaitTime = 0);
+
+	void StopRecoveryStamina();
 
 	void SetMontages(TMap<FString, UAnimMontage*> AnimMontages);
 
@@ -40,9 +45,35 @@ public:
 
 	FOnGetDamagedDelegate OnGetDamaged;
 
+	FOnExhaustedStaminaDelegate OnExhaustedStamina;
+
 protected:
 	// Called when the game starts
 	virtual void BeginPlay() override;
+
+	UFUNCTION()
+	void RecoveryStamina();
+
+	UFUNCTION()
+	void CalculateStaminaWaitTime();
+
+	/** 스태미나 경과 시간 */
+	float StaminaElapsedTime = 0.0f;
+
+	/** Stamina 회복이 시작되는데 걸리는 시간 */
+	float RecoveryStaminaWaitTime = 5.0f;
+
+	/** Stamina 회복 시작을 위한 시간 계산이 시작되었는지. */
+	bool bIsStartRecoveryStaminaWaitTimer;
+
+	/** 회복 스태미나 타이머 */
+	FTimerHandle RecoveryStaminaTimer;
+
+	/** 스태미나가 고갈되었는지 */
+	bool bIsExhaustedStamina;
+
+	/** 스태미나 회복이 시작되었는지 */
+	bool bIsStartRecoveryStamina;
 
 	void PlayMontage(UAnimMontage* PlayMontage);
 
