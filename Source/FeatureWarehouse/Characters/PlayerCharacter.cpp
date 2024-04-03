@@ -209,6 +209,11 @@ void APlayerCharacter::MoveRight(const FInputActionValue& Value)
 		}
 
 		AddMovementInput(RightVector, Movement);
+
+		if (MovementState == EMovementState::EMS_Idle)
+		{
+			MovementState = EMovementState::EMS_Walking;
+		}
 	}
 }
 
