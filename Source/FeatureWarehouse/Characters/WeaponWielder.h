@@ -7,6 +7,8 @@
 #include "GenericTeamAgentInterface.h"
 #include "WeaponWielder.generated.h"
 
+DECLARE_DELEGATE_OneParam(FOnKilledDelegate, bool);
+
 enum class EMovementState :uint8;
 enum class EActionState :uint8;
 enum class EDirection :uint8;
@@ -16,10 +18,10 @@ class AWeapon;
 class UWeaponComponent;
 class UStatComponent;
 
-/* 
-* WeaponComponent¸¦ »ç¿ëÇÒ ¼ö ÀÖ´Â Ä³¸¯ÅÍ Å¬·¡½º
-* 
-* ±âÁ¸¿¡ ±¸ÇöÇß´ø ÇÃ·¹ÀÌ¾î¸¸ »ç¿ëÇÏ´ø WeaponComponent¸¦ AIµµ ÇÔ²² »ç¿ëÇÏ°íÀÚ ÇÏ¿© PlayerCharacter·ÎºÎÅÍ ºĞ¸®ÇÏ¿´À½.
+/*
+* WeaponComponentë¥¼ ì‚¬ìš©í•  ìˆ˜ ìˆëŠ” ìºë¦­í„° í´ë˜ìŠ¤
+*
+* ê¸°ì¡´ì— êµ¬í˜„í–ˆë˜ í”Œë ˆì´ì–´ë§Œ ì‚¬ìš©í•˜ë˜ WeaponComponentë¥¼ AIë„ í•¨ê»˜ ì‚¬ìš©í•˜ê³ ì í•˜ì—¬ PlayerCharacterë¡œë¶€í„° ë¶„ë¦¬í•˜ì˜€ìŒ.
 */
 UCLASS()
 class FEATUREWAREHOUSE_API AWeaponWielder : public ACharacter, public IGenericTeamAgentInterface
@@ -28,6 +30,8 @@ class FEATUREWAREHOUSE_API AWeaponWielder : public ACharacter, public IGenericTe
 
 public:
 	AWeaponWielder();
+
+	FOnKilledDelegate OnKilled;
 
 	void PlayMontage(UAnimMontage* Montage);
 
@@ -65,8 +69,10 @@ protected:
 
 	virtual void OnMovementModeChanged(EMovementMode PrevMovementMode, uint8 PreviousCustomMode) override;
 
-	/* ¾×¼ÇÀ» ÃëÇÒ ¼ö ÀÖ´ÂÁö Ã¼Å©ÇÏ´Â ÇÔ¼ö. */
+	/* ì•¡ì…˜ì„ ì·¨í•  ìˆ˜ ìˆëŠ”ì§€ ì²´í¬í•˜ëŠ” í•¨ìˆ˜. */
 	bool CheckTakeAction(EActionState SpecificAction, bool bCanTakeContinuously);
+
+	void NotifyToGameMode();
 
 	// Variables
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Component")

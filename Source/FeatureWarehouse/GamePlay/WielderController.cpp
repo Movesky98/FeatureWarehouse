@@ -106,7 +106,7 @@ void AWielderController::OnTargetDetected(AActor* Actor, FAIStimulus Stimulus)
 	{
 		bIsIdentifiedEnemy = true;
 
-		// °¨ÁöµÈ Wielder¸¦ ÀúÀå
+		// ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ Wielderï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
 		AWeaponWielder* WeaponWielder = Cast<AWeaponWielder>(Actor);
 		if (WeaponWielder)
 		{
@@ -114,10 +114,10 @@ void AWielderController::OnTargetDetected(AActor* Actor, FAIStimulus Stimulus)
 			UE_LOG(LogTemp, Warning, TEXT("%s Add Detected Wielder %s"), *UKismetSystemLibrary::GetDisplayName(Wielder), *UKismetSystemLibrary::GetDisplayName(WeaponWielder));
 		}
 
-		// ÇöÀç ¹Ù¶óº¸°í ÀÖ´Â ÆùÀÌ ÀÖÀ¸¸é ¾Æ¹«°Íµµ ÇÏÁö¾ÊÀ½.
+		// ï¿½ï¿½ï¿½ï¿½ ï¿½Ù¶óº¸°ï¿½ ï¿½Ö´ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½Æ¹ï¿½ï¿½Íµï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½.
 		if (GetSeeingPawn()) return;
 
-		// ÀûÀÌ ÀÌ¹Ì Á¢±ÙÇÏ¿´À¸¸ç, AI°¡ ÀûÀ» ÀÎ½ÄÇÑ °æ¿ì
+		// ï¿½ï¿½ï¿½ï¿½ ï¿½Ì¹ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½Ï¿ï¿½ï¿½ï¿½ï¿½ï¿½, AIï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½Î½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½
 		if (Wielder->IsEnemyApproached())
 		{
 			Wielder->CheckEquipWeapon();
@@ -126,10 +126,10 @@ void AWielderController::OnTargetDetected(AActor* Actor, FAIStimulus Stimulus)
 			return;
 		}
 
-		// AI°¡ ¹«¾ð°¡ Á¢±ÙÇÑ °ÍÀ» ÀÎ½ÄÇßÀ¸³ª, ¾ÆÁ÷ °Å¸®°¡ ÀÖ´Â °æ¿ì
+		// AIï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½Î½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½, ï¿½ï¿½ï¿½ï¿½ ï¿½Å¸ï¿½ï¿½ï¿½ ï¿½Ö´ï¿½ ï¿½ï¿½ï¿½
 		if (Wielder->IsRecognizedSomething())
 		{
-			// ¹«¾ð°¡°¡ À§Ä¡ÇÑ Àå¼Ò·Î Á¤Âû
+			// ï¿½ï¿½ï¿½ð°¡°ï¿½ ï¿½ï¿½Ä¡ï¿½ï¿½ ï¿½ï¿½Ò·ï¿½ ï¿½ï¿½ï¿½ï¿½
 			Wielder->CheckEquipWeapon();
 			Wielder->ShowStatBar();
 			NotifyPerceiveSomething(Actor->GetActorLocation());
@@ -138,10 +138,10 @@ void AWielderController::OnTargetDetected(AActor* Actor, FAIStimulus Stimulus)
 	}
 	else
 	{
-		// ÇÃ·¹ÀÌ¾î°¡ ÀÎ½ÄµÇ¾ú´Ù°¡ ½Ã¾ß¿¡¼­ ¹þ¾î³­ °æ¿ì.
+		// ï¿½Ã·ï¿½ï¿½Ì¾î°¡ ï¿½Î½ÄµÇ¾ï¿½ï¿½Ù°ï¿½ ï¿½Ã¾ß¿ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½î³­ ï¿½ï¿½ï¿½.
 		bIsIdentifiedEnemy = false;
 
-		// ÇöÀç ¹Ù¶óº¸°í ÀÖ´Â ÆùÀÌ ¾Æ´Ï¸é ¾Æ¹«°Íµµ ¾ÈÇÔ.
+		// ï¿½ï¿½ï¿½ï¿½ ï¿½Ù¶óº¸°ï¿½ ï¿½Ö´ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½Æ´Ï¸ï¿½ ï¿½Æ¹ï¿½ï¿½Íµï¿½ ï¿½ï¿½ï¿½ï¿½.
 		if (GetSeeingPawn() != Actor) return;
 
 		if (Wielder->GetDetectedWielders().Num() > 0)
@@ -149,7 +149,7 @@ void AWielderController::OnTargetDetected(AActor* Actor, FAIStimulus Stimulus)
 			FindNewTarget();
 		}
 
-		// ½Ã¾ß¿¡¼­ ¹þ¾î³­ °æ¿ì Ã³¸®¸¦ ÇØÁà¾ßÇÒ µí.
+		// ï¿½Ã¾ß¿ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½î³­ ï¿½ï¿½ï¿½ Ã³ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½.
 		if (!Wielder->IsRecognizedSomething())
 		{
 			NotifyGoToHomePos();
@@ -206,7 +206,7 @@ void AWielderController::NotifyRetreat()
 	{
 		Wielder->SetBattleState(EBattleState::Retreating);
 
-		// In_Battle »óÅÂ·Î µé¾î°¨.
+		// In_Battle ï¿½ï¿½ï¿½Â·ï¿½ ï¿½ï¿½î°¨.
 		if (Wielder->GetCurState() != EStateOfEnemy::In_Battle)
 		{
 			Wielder->SetCurState(EStateOfEnemy::In_Battle);
@@ -228,7 +228,7 @@ void AWielderController::NotifyEngageInBattle(AActor* Enemy)
 		Blackboard->SetValueAsEnum(FName("CurState"), (uint8)Wielder->GetCurState());
 		DesignateEnemy(Enemy);
 
-		// ÀÏÁ¤ °Å¸® ÀÌ»óÀÌ¸é ¸ð´ÏÅÍ¸µ, ¾Æ´Ï¸é Á¢±Ù.
+		// ï¿½ï¿½ï¿½ï¿½ ï¿½Å¸ï¿½ ï¿½Ì»ï¿½ï¿½Ì¸ï¿½ ï¿½ï¿½ï¿½ï¿½Í¸ï¿½, ï¿½Æ´Ï¸ï¿½ ï¿½ï¿½ï¿½ï¿½.
 		Wielder->GetDistanceTo(Enemy) > 600.0f ? Wielder->Monitoring() : NotifyApproaching();
 	}
 }

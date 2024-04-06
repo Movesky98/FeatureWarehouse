@@ -33,7 +33,7 @@ void UMenu::TearDown()
 
 	FInputModeGameOnly InputModeData;
 
-	// GameOnly¸ðµå·Î InputMode º¯°æ
+	// GameOnlyï¿½ï¿½ï¿½ï¿½ InputMode ï¿½ï¿½ï¿½ï¿½
 	PlayerController->SetInputMode(InputModeData);
 	PlayerController->SetShowMouseCursor(false);
 }

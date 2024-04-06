@@ -42,6 +42,8 @@ public:
 
 	void Swap();
 
+	void RemoveOwnerWeapon();
+
 protected:
 	// Called when the game starts
 	virtual void BeginPlay() override;

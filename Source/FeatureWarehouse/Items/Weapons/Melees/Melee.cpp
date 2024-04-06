@@ -72,6 +72,13 @@ void AMelee::BeginPlay()
 
 }
 
+void AMelee::EndPlay(const EEndPlayReason::Type EndPlayReason)
+{
+	Super::EndPlay(EndPlayReason);
+
+	UnbindMontage();
+}
+
 void AMelee::SaveDodgeMontages(TMap<EDirection, UAnimMontage*>& Montages)
 {
 	if (!MontageInfo.m_DodgeMontages.IsEmpty())
@@ -80,7 +87,6 @@ void AMelee::SaveDodgeMontages(TMap<EDirection, UAnimMontage*>& Montages)
 	}
 }
 
-// ¹«±â¸¦ ÀåÂøÇßÀ» ¶§, WeaponComponent¿¡¼­ ½ÇÇàµÇ´Â ÇÔ¼ö.
 void AMelee::BindMontage()
 {
 	if (!GetWeaponOwner()) return;
@@ -244,7 +250,7 @@ void AMelee::OnAttackEnded(class UAnimMontage* Montage, bool bInterrupted)
 	AWeaponWielder* Wielder = Cast<AWeaponWielder>(GetWeaponOwner());
 	if (!IsValid(Wielder)) return;
 
-	// ±âº» °ø°Ý ¸ùÅ¸ÁÖÀÏ ¶§
+	// ê¸°ë³¸ ê³µê²© ëª½íƒ€ì£¼ì¼ ë•Œ
 	if (Montage == MontageInfo.m_LightAttackMontage)
 	{
 		UAnimInstance* p_AnimInstance = GetWeaponOwner()->GetMesh()->GetAnimInstance();
@@ -265,7 +271,7 @@ void AMelee::OnAttackEnded(class UAnimMontage* Montage, bool bInterrupted)
 		return;
 	}
 
-	// °­ °ø°Ý ¸ùÅ¸ÁÖÀÏ ¶§
+	// ê°• ê³µê²© ëª½íƒ€ì£¼ì¼ ë•Œ
 	if (Montage == MontageInfo.m_HeavyAttackMontage)
 	{
 		UAnimInstance* p_AnimInstance = GetWeaponOwner()->GetMesh()->GetAnimInstance();
@@ -285,7 +291,7 @@ void AMelee::OnAttackEnded(class UAnimMontage* Montage, bool bInterrupted)
 		return;
 	}
 
-	// ÄÞº¸°¡ Á¸ÀçÇÏÁö ¾Ê´Â´Ù¸é »óÅÂ ÃÊ±âÈ­ (SprintAttack, JumpAttack)
+	// ì½¤ë³´ê°€ ì¡´ìž¬í•˜ì§€ ì•ŠëŠ”ë‹¤ë©´ ìƒíƒœ ì´ˆê¸°í™” (SprintAttack, JumpAttack)
 	MontageIndex = 0;
 	CanCombo = false;
 	bIsHitSomething = false;
@@ -423,7 +429,7 @@ UAnimMontage* AMelee::FindAppropriateAttackAnimationWithParam(float& Change_Dama
 
 			break;
 		default:
-			// Idle, Walking »óÅÂÀÏ ¶§ ¾à°ø, °­°ø ¼±ÅÃ.
+			// Idle, Walking ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ ï¿½ï¿½ï¿½, ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½.
 			if (Wielder->CurActionState() == EActionState::EAS_HeavyAttacking)
 			{
 				ReturnMontage = MontageInfo.m_HeavyAttackMontage;

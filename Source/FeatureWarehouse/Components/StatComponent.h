@@ -14,9 +14,9 @@ class UParticleSystem;
 UENUM(BlueprintType)
 enum class EDamagableType :uint8
 {
-	EDT_INVINCIBLE UMETA(DisplayName = "INVINCIBLE"),		// ¹«Àû
-	EDT_VULNERABLE UMETA(DisplayName = "VULNERABLE"),		// µ¥¹ÌÁö¸¦ ¹ŞÀ» ¼ö ÀÖ´Â
-	EDT_EVADING UMETA(DisplayName = "EVADING")				// È¸ÇÇ ÁßÀÎ
+	EDT_INVINCIBLE UMETA(DisplayName = "INVINCIBLE"),		// ë¬´ì  ìƒíƒœ
+	EDT_VULNERABLE UMETA(DisplayName = "VULNERABLE"),		// ë°ë¯¸ì§€ë¥¼ ë°›ì„ ìˆ˜ ìˆëŠ” ìƒíƒœ
+	EDT_EVADING UMETA(DisplayName = "EVADING")				// íšŒí”¼ ì¤‘ì¸ ìƒíƒœ
 };
 
 UCLASS(Blueprintable, BlueprintType, ClassGroup = (Custom), meta = (BlueprintSpawnableComponent))
@@ -57,22 +57,22 @@ protected:
 	UFUNCTION()
 	void CalculateStaminaWaitTime();
 
-	/** ½ºÅÂ¹Ì³ª °æ°ú ½Ã°£ */
+	/** ìŠ¤íƒœë¯¸ë‚˜ ê²½ê³¼ ì‹œê°„ */
 	float StaminaElapsedTime = 0.0f;
 
-	/** Stamina È¸º¹ÀÌ ½ÃÀÛµÇ´Âµ¥ °É¸®´Â ½Ã°£ */
+	/** Stamina íšŒë³µì´ ì‹œì‘ë˜ëŠ”ë° ê±¸ë¦¬ëŠ” ì‹œê°„ */
 	float RecoveryStaminaWaitTime = 5.0f;
 
-	/** Stamina È¸º¹ ½ÃÀÛÀ» À§ÇÑ ½Ã°£ °è»êÀÌ ½ÃÀÛµÇ¾ú´ÂÁö. */
+	/** Stamina íšŒë³µ ì‹œì‘ì„ ìœ„í•œ ì‹œê°„ ê³„ì‚°ì´ ì‹œì‘ë˜ì—ˆëŠ”ì§€. */
 	bool bIsStartRecoveryStaminaWaitTimer;
 
-	/** È¸º¹ ½ºÅÂ¹Ì³ª Å¸ÀÌ¸Ó */
+	/** íšŒë³µ ìŠ¤íƒœë¯¸ë‚˜ íƒ€ì´ë¨¸ */
 	FTimerHandle RecoveryStaminaTimer;
 
-	/** ½ºÅÂ¹Ì³ª°¡ °í°¥µÇ¾ú´ÂÁö */
+	/** ìŠ¤íƒœë¯¸ë‚˜ê°€ ê³ ê°ˆë˜ì—ˆëŠ”ì§€ */
 	bool bIsExhaustedStamina;
 
-	/** ½ºÅÂ¹Ì³ª È¸º¹ÀÌ ½ÃÀÛµÇ¾ú´ÂÁö */
+	/** ìŠ¤íƒœë¯¸ë‚˜ íšŒë³µì´ ì‹œì‘ë˜ì—ˆëŠ”ì§€ */
 	bool bIsStartRecoveryStamina;
 
 	void PlayMontage(UAnimMontage* PlayMontage);
@@ -82,41 +82,41 @@ protected:
 
 	void PlayDeathMontage();
 
-	/* ÇÇ°İ ¾Ö´Ï¸ŞÀÌ¼ÇÀÌ ³¡³­ ÀÌÈÄ ½ÇÇàµÇ´Â ÇÔ¼ö */
+	/* í”¼ê²© ì• ë‹ˆë©”ì´ì…˜ì´ ëë‚œ ì´í›„ ì‹¤í–‰ë˜ëŠ” í•¨ìˆ˜ */
 	UFUNCTION() void OnGetDamagedEnded(UAnimMontage* Montage, bool bInterrupted);
 
 private:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Stat", meta = (AllowPrivateAccess = "true"))
-	float MaxHP;			// ÃÖ´ë Ã¼·Â
+	float MaxHP;				// ìµœëŒ€ ì²´ë ¥
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Stat", meta = (AllowPrivateAccess = "true"))
-	float CurrentHP;		// ÇöÀç Ã¼·Â
+	float CurrentHP;			// í˜„ì¬ ì²´ë ¥
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Stat", meta = (AllowPrivateAccess = "true"))
-	float MaxMP;			// ÃÖ´ë ¸¶³ª
+	float MaxMP;				// ìµœëŒ€ ë§ˆë‚˜
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Stat", meta = (AllowPrivateAccess = "true"))
-	float CurrentMP;		// ÇöÁ¦ ¸¶³ª
+	float CurrentMP;			// í˜„ì œ ë§ˆë‚˜
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Stat", meta = (AllowPrivateAccess = "true"))
-	float CurrentStamina;	// ÇöÀç ½ºÅÂ¹Ì³ª
+	float CurrentStamina;		// í˜„ì¬ ìŠ¤íƒœë¯¸ë‚˜
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Stat", meta = (AllowPrivateAccess = "true"))
-	float MaxStamina;		// ÃÖ´ë ½ºÅÂ¹Ì³ª
+	float MaxStamina;			// ìµœëŒ€ ìŠ¤íƒœë¯¸ë‚˜
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Stat", meta = (AllowPrivateAccess = "true"))
-	float DamageAccumulation;	// µ¥¹ÌÁö ´©Àû·® (ÇÑ¹ø¿¡ µé¾î¿À´Â ÇÇÇØ°¡ >= CurrentHP's 30% ÀÏ °æ¿ì, È¸ÇÇ)
+	float DamageAccumulation;	// ë°ë¯¸ì§€ ëˆ„ì ëŸ‰ (í•œë²ˆì— ë“¤ì–´ì˜¤ëŠ” í”¼í•´ê°€ >= CurrentHP's 30% ì¼ ê²½ìš°, íšŒí”¼)
 
 	FTimerHandle ResetDamageAccumulationTimer;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Stat", meta = (AllowPrivateAccess = "true"))
-	float StunGauge;		// ½ºÅÏ °ÔÀÌÁö
+	float StunGauge;			// ìŠ¤í„´ ê²Œì´ì§€
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Stat", meta = (AllowPrivateAccess = "true"))
-	float StunGaugeLimit;	// ÃÖ´ë ½ºÅÏ°ÔÀÌÁö (<= StunGageÀÏ °æ¿ì, ±×·Î±â »óÅÂ)
+	float StunGaugeLimit;		// ìµœëŒ€ ìŠ¤í„´ê²Œì´ì§€ (<= StunGageì¼ ê²½ìš°, ê·¸ë¡œê¸° ìƒíƒœ)
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "State", meta = (AllowPrivateAccess = "true"))
-	bool bIsDamagable;		// µ¥¹ÌÁö¸¦ ¹Ş´Â °´Ã¼ÀÎÁö
+	bool bIsDamagable;			// ë°ë¯¸ì§€ë¥¼ ë°›ëŠ” ê°ì²´ì¸ì§€
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "State", meta = (AllowPrivateAccess = "true"))
 	EDamagableType DamagableType;

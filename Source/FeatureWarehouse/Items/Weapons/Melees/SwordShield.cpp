@@ -71,13 +71,13 @@ void ASwordShield::HoldMeleeWeapon()
 	{
 		if (AnimInstance->Montage_IsPlaying(MontageInfo.m_EquipMontage))
 		{
-			// ¹«±â ÀåÂø
+			// ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
 			GetSkeletalMesh()->AttachToComponent(GetWeaponOwner()->GetMesh(), FAttachmentTransformRules::KeepRelativeTransform, Name_SwordEquip);
 			Shield->AttachToComponent(GetWeaponOwner()->GetMesh(), FAttachmentTransformRules::KeepRelativeTransform, Name_ShieldEquip);
 		}
 		else
 		{
-			// ¹«±â ÀåÂø ÇØÁ¦
+			// ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
 			GetSkeletalMesh()->AttachToComponent(GetWeaponOwner()->GetMesh(), FAttachmentTransformRules::KeepRelativeTransform, Name_SwordUnequip);
 			Shield->AttachToComponent(GetWeaponOwner()->GetMesh(), FAttachmentTransformRules::KeepRelativeTransform, Name_ShieldUnequip);
 		}
@@ -86,8 +86,8 @@ void ASwordShield::HoldMeleeWeapon()
 
 void ASwordShield::AttackTrace()
 {
-	// ½¯µå ¾îÅÃ
-	// ¸ðµç °ø°Ý Áß ¾à °ø°ÝÀ» Á¦¿ÜÇÏ°í 2È¸±îÁö¸¸ °ø°ÝÇÏ±â ¶§¹®¿¡ °ø°Ý ¸ùÅ¸ÁÖ ÀÎµ¦½º°¡ 3ÀÌ¶ó¸é == ¾à°ø°Ý (½¯µå ¾îÅÃ)
+	// ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
+	// ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½Ï°ï¿½ 2È¸ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½Ï±ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½Å¸ï¿½ï¿½ ï¿½Îµï¿½ï¿½ï¿½ï¿½ï¿½ 3ï¿½Ì¶ï¿½ï¿½ == ï¿½ï¿½ï¿½ï¿½ï¿½ (ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½)
 	bool IsShieldAttack = MontageIndex == 3 ? true : false;
 
 	if (IsShieldAttack)
@@ -144,7 +144,7 @@ void ASwordShield::DrawAttackTrace(const FVector& LineStart, const FVector& Line
 
 	if (IsShield)
 	{
-		// ½¯µåÄ¡´Â °æ¿ì
+		// ï¿½ï¿½ï¿½ï¿½Ä¡ï¿½ï¿½ ï¿½ï¿½ï¿½
 		IsHit = UKismetSystemLibrary::BoxTraceSingle(
 			GetWorld(),
 			LineStart,
@@ -161,7 +161,7 @@ void ASwordShield::DrawAttackTrace(const FVector& LineStart, const FVector& Line
 	}
 	else
 	{
-		// ¼Òµå °ø°ÝÀÏ °æ¿ì
+		// ï¿½Òµï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½
 		IsHit = UKismetSystemLibrary::LineTraceSingle(
 			GetWorld(),
 			LineStart,

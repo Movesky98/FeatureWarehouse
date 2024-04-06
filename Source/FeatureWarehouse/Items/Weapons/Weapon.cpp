@@ -32,6 +32,13 @@ void AWeapon::PostInitializeComponents()
 
 }
 
+void AWeapon::EndPlay(const EEndPlayReason::Type EndPlayReason)
+{
+	Super::EndPlay(EndPlayReason);
+
+	UnbindMontage();
+}
+
 void AWeapon::BindMontage()
 {
 	if (!GetWeaponOwner()) return;

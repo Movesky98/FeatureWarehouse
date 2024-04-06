@@ -21,64 +21,64 @@ public:
 
 	void NotifyUnderAttack(bool IsUnderAttack);
 
-	/* ¹«¾ð°¡¸¦ ÀÎÁöÇßÀ» ¶§ Behavior Tree¿¡ ¾Ë¸®´Â ÇÔ¼ö. */
+	/* ï¿½ï¿½ï¿½ð°¡¸ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ Behavior Treeï¿½ï¿½ ï¿½Ë¸ï¿½ï¿½ï¿½ ï¿½Ô¼ï¿½. */
 	void NotifyPerceiveSomething(FVector Location);
 
-	/* PatrolÇÒ ¶§ ½ÇÇàµÇ´Â ÇÔ¼ö */
+	/* Patrolï¿½ï¿½ ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½Ç´ï¿½ ï¿½Ô¼ï¿½ */
 	void NotifyPatrol();
 
-	/* Range °ü·Ã Å°¸¦ ÃÊ±âÈ­ÇÏ´Â ÇÔ¼ö */
+	/* Range ï¿½ï¿½ï¿½ï¿½ Å°ï¿½ï¿½ ï¿½Ê±ï¿½È­ï¿½Ï´ï¿½ ï¿½Ô¼ï¿½ */
 	void ClearRangeKey();
 
-	/* ¹«¾ð°¡¸¦ ¦i¾Æ°¥ ¶§ Behavior Tree¿¡ Å¸°ÙÀ» ¾Ë¸®´Â ÇÔ¼ö. */
+	/* ï¿½ï¿½ï¿½ð°¡¸ï¿½ ï¿½iï¿½Æ°ï¿½ ï¿½ï¿½ Behavior Treeï¿½ï¿½ Å¸ï¿½ï¿½ï¿½ï¿½ ï¿½Ë¸ï¿½ï¿½ï¿½ ï¿½Ô¼ï¿½. */
 	void NotifyApproachToEnemy(AActor* Enemy);
 
-	/* ÀüÅõ »óÈ²¿¡ ÀÓÇßÀ½À» Behavior Tree¿¡ ¾Ë¸®´Â ÇÔ¼ö. */
+	/* ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½È²ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ Behavior Treeï¿½ï¿½ ï¿½Ë¸ï¿½ï¿½ï¿½ ï¿½Ô¼ï¿½. */
 	void NotifyEngageInBattle(AActor* Enemy);
 
-	/* ¹«±â¸¦ Âø¿ëÇßÀ½À» Behavior Tree¿¡ ¾Ë¸®´Â ÇÔ¼ö */
+	/* ï¿½ï¿½ï¿½â¸¦ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ Behavior Treeï¿½ï¿½ ï¿½Ë¸ï¿½ï¿½ï¿½ ï¿½Ô¼ï¿½ */
 	void NotifyEquipWeapon();
 
-	/* ¹«ÀåÀ» ÇØÁ¦ÇßÀ½À» Behavior Tree¿¡ ¾Ë¸®´Â ÇÔ¼ö */
+	/* ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ Behavior Treeï¿½ï¿½ ï¿½Ë¸ï¿½ï¿½ï¿½ ï¿½Ô¼ï¿½ */
 	void NotifyUnequip();
 
-	/* ÇöÀç º¸°íÀÖ´Â PawnÀ» ¹ÝÈ¯ÇÏ´Â ÇÔ¼ö */
+	/* ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½Ö´ï¿½ Pawnï¿½ï¿½ ï¿½ï¿½È¯ï¿½Ï´ï¿½ ï¿½Ô¼ï¿½ */
 	AActor* GetSeeingPawn();
 
-	/* ÇÃ·¹ÀÌ¾î¸¦ ½Äº°Çß´ÂÁö */
+	/* ï¿½Ã·ï¿½ï¿½Ì¾î¸¦ ï¿½Äºï¿½ï¿½ß´ï¿½ï¿½ï¿½ */
 	bool IsIdentifiedEnemy() { return bIsIdentifiedEnemy; }
 
-	/* MovePos¸¦ ºí·¢º¸µå¿¡ ÀúÀåÇÏ´Â ÇÔ¼ö */
+	/* MovePosï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½å¿¡ ï¿½ï¿½ï¿½ï¿½ï¿½Ï´ï¿½ ï¿½Ô¼ï¿½ */
 	void SetMovePosToBlackboard(FVector MovePos);
 
-	/* HomePos¸¦ ºí·¢º¸µå¿¡ ÀúÀåÇÏ´Â ÇÔ¼ö */
+	/* HomePosï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½å¿¡ ï¿½ï¿½ï¿½ï¿½ï¿½Ï´ï¿½ ï¿½Ô¼ï¿½ */
 	void SetHomePosToBlackboard(FVector HomePos);
 
-	/* Àû Ä³¸¯ÅÍ¸¦ ºí·¢º¸µå¿¡ ÀúÀåÇÏ´Â ÇÔ¼ö */
+	/* ï¿½ï¿½ Ä³ï¿½ï¿½ï¿½Í¸ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½å¿¡ ï¿½ï¿½ï¿½ï¿½ï¿½Ï´ï¿½ ï¿½Ô¼ï¿½ */
 	void DesignateEnemy(AActor* Enemy);
 
-	/* HomePos·Î µ¹¾Æ°¡´Â ÇÔ¼ö */
+	/* HomePosï¿½ï¿½ ï¿½ï¿½ï¿½Æ°ï¿½ï¿½ï¿½ ï¿½Ô¼ï¿½ */
 	UFUNCTION(BlueprintCallable) void NotifyGoToHomePos();
 
-	/* °ø°Ý¹Þ¾ÒÀ» ¶§, °Å¸®¸¦ ¹ú·Á¾ß ÇÔÀ» Behavior Tree¿¡ ¾Ë¸®´Â ÇÔ¼ö. */
+	/* ï¿½ï¿½ï¿½Ý¹Þ¾ï¿½ï¿½ï¿½ ï¿½ï¿½, ï¿½Å¸ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ Behavior Treeï¿½ï¿½ ï¿½Ë¸ï¿½ï¿½ï¿½ ï¿½Ô¼ï¿½. */
 	void NotifyRetreat();
 
-	/* Á×¾úÀ½À» ¾Ë¸®´Â ÇÔ¼ö */
+	/* ï¿½×¾ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½Ë¸ï¿½ï¿½ï¿½ ï¿½Ô¼ï¿½ */
 	void NotifyDead();
 
 	////////////////////////////////////////////////////////////////////    Battle    ////////////////////////////////////////////////////////////////////
 	
-	/* In-Battle »óÅÂ¸¦ BehaviorTree¿¡ ¾Ë¸®´Â ÇÔ¼ö */
+	/* In-Battle ï¿½ï¿½ï¿½Â¸ï¿½ BehaviorTreeï¿½ï¿½ ï¿½Ë¸ï¿½ï¿½ï¿½ ï¿½Ô¼ï¿½ */
 	void NotifyBattleState(EBattleState State);
 
 	////////////////////////////////////////////////////////////////////    Battle - Approaching    ////////////////////////////////////////////////////////////////////
 	
-	/* In-Battle »óÅÂÀÏ ¶§, Behavior Tree¿¡ Àû¿¡°Ô ´Ù°¡°¡´Â »óÅÂÀÓÀ» ¾Ë¸®´Â ÇÔ¼ö. */
+	/* In-Battle ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½, Behavior Treeï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½Ù°ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½Ë¸ï¿½ï¿½ï¿½ ï¿½Ô¼ï¿½. */
 	UFUNCTION(BlueprintCallable) void NotifyApproaching();
 
 	////////////////////////////////////////////////////////////////////    Battle - Attacking    ////////////////////////////////////////////////////////////////////
 
-	/* ÀûÀÌ °ø°Ý ¹üÀ§ ³»¿¡ ÀÖÀ½À» BehaviorTree¿¡ ¾Ë¸®´Â ÇÔ¼ö. */
+	/* ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ BehaviorTreeï¿½ï¿½ ï¿½Ë¸ï¿½ï¿½ï¿½ ï¿½Ô¼ï¿½. */
 	void NotifyEnemyInAttackRange(bool IsInRange);
 
 	UFUNCTION(BlueprintCallable)
@@ -86,7 +86,7 @@ public:
 
 	////////////////////////////////////////////////////////////////////    Battle - Monitoring    ////////////////////////////////////////////////////////////////////
 	
-	/* In-Battle »óÅÂÀÏ ¶§, Behavior Tree¿¡ Monitor »óÅÂ¿¡ µé¾î°¨À» ¾Ë¸®´Â ÇÔ¼ö */
+	/* In-Battle ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½, Behavior Treeï¿½ï¿½ Monitor ï¿½ï¿½ï¿½Â¿ï¿½ ï¿½ï¿½î°¨ï¿½ï¿½ ï¿½Ë¸ï¿½ï¿½ï¿½ ï¿½Ô¼ï¿½ */
 	void NotifyMonitoring();
 
 protected:
@@ -96,7 +96,7 @@ protected:
 
 	virtual void OnPossess(APawn* InPawn) override;
 
-	/* Å¸°ÙÀ» ÀÎÁöÇßÀ» ¶§ ½ÇÇàµÇ´Â ÇÔ¼ö */
+	/* Å¸ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½Ç´ï¿½ ï¿½Ô¼ï¿½ */
 	UFUNCTION() void OnTargetDetected(AActor* Actor, FAIStimulus Stimulus);
 
 private:

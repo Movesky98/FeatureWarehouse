@@ -96,6 +96,8 @@ void APlayerCharacter::BeginPlay()
 	PlayerController = Cast<AFW_PlayerController>(Controller);
 
 	SetTPP();
+
+	NotifyToGameMode();
 }
 
 void APlayerCharacter::Tick(float DeltaSeconds)
@@ -558,12 +560,12 @@ void APlayerCharacter::EquipFirstWeapon()
 	bool CanTakeAction = CheckTakeAction(SpecificAction, false);
 	if (!CanTakeAction) return;
 
-	// ÇöÀç µé°í ÀÖ´Â ¹«±â°¡ µÎ¹øÂ° ¹«±âÀÎ °æ¿ì
+	// ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ ï¿½Ö´ï¿½ ï¿½ï¿½ï¿½â°¡ ï¿½Î¹ï¿½Â° ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½
 	if (WeaponComponent->CurEquipState() == EEquipState::SubWeapon)
 	{
 		if (EquipWeapon->GetWeaponType() == ETypeOfWeapon::Gun)
 		{
-			// ÃÑÀÇ °æ¿ì ÀåÂø ÇØÁ¦ ¸ùÅ¸ÁÖ°¡ ¾øÀ¸¹Ç·Î ¹Ù·Î »óÅÂ¸¦ ¹Ù²ãÁÜ.
+			// ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½Å¸ï¿½Ö°ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½Ç·ï¿½ ï¿½Ù·ï¿½ ï¿½ï¿½ï¿½Â¸ï¿½ ï¿½Ù²ï¿½ï¿½ï¿½.
 			EquipWeapon->Unequip();
 			ActionState = EActionState::EAS_Idle;
 		}
@@ -592,7 +594,7 @@ void APlayerCharacter::EquipSecondWeapon()
 	{
 		if (EquipWeapon->GetWeaponType() == ETypeOfWeapon::Gun)
 		{
-			// ÃÑÀÇ °æ¿ì ÀåÂø ÇØÁ¦ ¸ùÅ¸ÁÖ°¡ ¾øÀ¸¹Ç·Î ¹Ù·Î »óÅÂ¸¦ ¹Ù²ãÁÜ.
+			// ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½Å¸ï¿½Ö°ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½Ç·ï¿½ ï¿½Ù·ï¿½ ï¿½ï¿½ï¿½Â¸ï¿½ ï¿½Ù²ï¿½ï¿½ï¿½.
 			EquipWeapon->Unequip();
 			ActionState = EActionState::EAS_Idle;
 		}
@@ -863,13 +865,13 @@ void APlayerCharacter::OnUnequipEnded()
 	if (ActionState == EActionState::EAS_Swapping)
 	{
 		ActionState = EActionState::EAS_Idle;
-		// ¹«±â ±³Ã¼¸¦ ÇÏ´Â °æ¿ì
+		// ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½Ã¼ï¿½ï¿½ ï¿½Ï´ï¿½ ï¿½ï¿½ï¿½
 		WeaponComponent->EquipOtherWeapon();
 	}
 	else
 	{
 		ActionState = EActionState::EAS_Idle;
-		// ¹«±â ±³Ã¼°¡ ¾Æ´Ò °æ¿ì
+		// ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½Ã¼ï¿½ï¿½ ï¿½Æ´ï¿½ ï¿½ï¿½ï¿½
 		PlayerController->SwitchPlayerMenu();
 	}
 
@@ -893,11 +895,11 @@ void APlayerCharacter::Dodge()
 	float Direction = WielderAnim->GetDirection();
 	UAnimMontage* DodgeMontage = nullptr;
 
-	// ³ª´©±â À§ÇÑ ±âÁØ °¢µµ
+	// ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
 	float AngleDivider = 22.5f;
 	bool IsNegative = Direction < 0 ? true : false;
 
-	// ¸ò
+	// ï¿½ï¿½
 	int Quotient = (IsNegative ? -Direction / AngleDivider : Direction / AngleDivider);
 
 	switch (Quotient)
@@ -1114,6 +1116,28 @@ void APlayerCharacter::FindNearbyLockTarget(float DeltaYaw, float DeltaPitch)
 			}
 		}
 	}
+}
+
+void APlayerCharacter::Die()
+{
+	if (OnKilled.IsBound())
+	{
+		OnKilled.Execute(true);
+	}
+
+	WeaponComponent->RemoveOwnerWeapon();
+
+	UWielderAnimInstance* Anim = Cast<UWielderAnimInstance>(GetMesh()->GetAnimInstance());
+	if (Anim)
+	{
+		Anim->SetIsDead(true);
+	}
+
+	GetCapsuleComponent()->SetCollisionProfileName(FName("Ragdoll"));
+	GetMesh()->SetCollisionProfileName(FName("Ragdoll"));
+	GetMesh()->SetSimulatePhysics(true);
+
+	SetLifeSpan(5.0f);
 }
 
 #pragma region Movement_State

@@ -16,7 +16,7 @@ AKatana::AKatana()
 	SetMeleeType(ETypeOfMelee::Katana);
 }
 
-// Ä«Å¸³ª¸¦ ²¨³¾ ¶§ ¾²ÀÌ´Â ÇÔ¼ö.
+// Ä«Å¸ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ ï¿½ï¿½ï¿½Ì´ï¿½ ï¿½Ô¼ï¿½.
 void AKatana::Equip()
 {
 	if (GetWeaponOwner() && IsValid(MontageInfo.m_EquipMontage))
@@ -24,7 +24,7 @@ void AKatana::Equip()
 		UAnimInstance* AnimInstance = GetWeaponOwner()->GetMesh()->GetAnimInstance();
 		if (IsValid(AnimInstance))
 		{
-			// ¿Þ¼Õ¿¡ Ä®Áý, Ä®³¯À» º¸¿©Áà¾ßÇÔ.
+			// ï¿½Þ¼Õ¿ï¿½ Ä®ï¿½ï¿½, Ä®ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½.
 			GetSkeletalMesh()->AttachToComponent(GetWeaponOwner()->GetMesh(), FAttachmentTransformRules::KeepRelativeTransform, Blade_LeftHandSocketName);
 			Scabbard->AttachToComponent(GetWeaponOwner()->GetMesh(), FAttachmentTransformRules::KeepRelativeTransform, Scabbard_LeftHandSocketName);
 			AnimInstance->Montage_Play(MontageInfo.m_EquipMontage);
@@ -41,13 +41,13 @@ void AKatana::HoldMeleeWeapon()
 	{
 		if (AnimInstance->Montage_IsPlaying(MontageInfo.m_EquipMontage))
 		{
-			// ¸ö ¿ÞÂÊ¿¡ Ä®Áý, ¿À¸¥ ¼Õ¿¡ Ä®³¯.
+			// ï¿½ï¿½ ï¿½ï¿½ï¿½Ê¿ï¿½ Ä®ï¿½ï¿½, ï¿½ï¿½ï¿½ï¿½ ï¿½Õ¿ï¿½ Ä®ï¿½ï¿½.
 			GetSkeletalMesh()->AttachToComponent(GetWeaponOwner()->GetMesh(), FAttachmentTransformRules::KeepRelativeTransform, Blade_RightHandSocketName);
 			Scabbard->AttachToComponent(GetWeaponOwner()->GetMesh(), FAttachmentTransformRules::KeepRelativeTransform, Scabbard_UnequipSocketName);
 		}
 		else
 		{
-			// µÑ ´Ù ¸ö ¿ÞÂÊ¿¡ ¾îÅÂÄ¡.
+			// ï¿½ï¿½ ï¿½ï¿½ ï¿½ï¿½ ï¿½ï¿½ï¿½Ê¿ï¿½ ï¿½ï¿½ï¿½ï¿½Ä¡.
 			GetSkeletalMesh()->AttachToComponent(GetWeaponOwner()->GetMesh(), FAttachmentTransformRules::KeepRelativeTransform, Blade_UnequipSocketName);
 			Scabbard->AttachToComponent(GetWeaponOwner()->GetMesh(), FAttachmentTransformRules::KeepRelativeTransform, Scabbard_UnequipSocketName);
 		}
@@ -61,7 +61,7 @@ void AKatana::Unequip()
 		UAnimInstance* AnimInstance = GetWeaponOwner()->GetMesh()->GetAnimInstance();
 		if (IsValid(AnimInstance))
 		{
-			// ¿Þ¼Õ¿¡ Ä®Áý, ¿À¸¥¼Õ¿¡ Ä«Å¸³ª¸¦ º¸¿©Áà¾ßÇÔ.
+			// ï¿½Þ¼Õ¿ï¿½ Ä®ï¿½ï¿½, ï¿½ï¿½ï¿½ï¿½ï¿½Õ¿ï¿½ Ä«Å¸ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½.
 			GetSkeletalMesh()->AttachToComponent(GetWeaponOwner()->GetMesh(), FAttachmentTransformRules::KeepRelativeTransform, Blade_RightHandSocketName);
 			Scabbard->AttachToComponent(GetWeaponOwner()->GetMesh(), FAttachmentTransformRules::KeepRelativeTransform, Scabbard_LeftHandSocketName);
 			AnimInstance->Montage_Play(MontageInfo.m_UnequipMontage);
@@ -73,7 +73,7 @@ void AKatana::Attach()
 {
 	if (GetWeaponOwner())
 	{
-		// µÑ ´Ù ¸ö ¿ÞÂÊ¿¡ ¾îÅÂÄ¡.
+		// ï¿½ï¿½ ï¿½ï¿½ ï¿½ï¿½ ï¿½ï¿½ï¿½Ê¿ï¿½ ï¿½ï¿½ï¿½ï¿½Ä¡.
 		GetSkeletalMesh()->AttachToComponent(GetWeaponOwner()->GetMesh(), FAttachmentTransformRules::KeepRelativeTransform, Blade_UnequipSocketName);
 		Scabbard->AttachToComponent(GetWeaponOwner()->GetMesh(), FAttachmentTransformRules::KeepRelativeTransform, Scabbard_UnequipSocketName);
 	}

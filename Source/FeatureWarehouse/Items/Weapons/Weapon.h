@@ -60,6 +60,8 @@ public:
 	virtual void Unequip();
 
 protected:
+	virtual void EndPlay(const EEndPlayReason::Type EndPlayReason) override;
+
 	UFUNCTION()
 	void OnEquipEnded(class UAnimMontage* Montage, bool bInterrupted);
 

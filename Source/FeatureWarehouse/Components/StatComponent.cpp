@@ -63,14 +63,14 @@ void UStatComponent::OnGetDamagedEnded(UAnimMontage* Montage, bool bInterrupted)
 
 	UAnimInstance* Anim = WeaponWielder->GetMesh()->GetAnimInstance();
 
-	// ÇÇ°Ý ¸ùÅ¸ÁÖ°¡ ½ÇÇàµÇÁö ¾ÊÀ» ¶§¿¡ »óÅÂ º¯°æ
+	// ï¿½Ç°ï¿½ ï¿½ï¿½Å¸ï¿½Ö°ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
 	if (Anim && !Anim->Montage_IsPlaying(GetDamagedMontage))
 	{
 		WeaponWielder->SetActionState(EActionState::EAS_Idle);
 
 		if (!OnGetDamaged.IsBound()) return;
 
-		// ÇÇ°Ý µ¨¸®°ÔÀÌÆ® ÄÝ¹é ÇÔ¼ö È£Ãâ.
+		// ï¿½Ç°ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Æ® ï¿½Ý¹ï¿½ ï¿½Ô¼ï¿½ È£ï¿½ï¿½.
 		(DamageAccumulation > MaxHP * 0.3f) ? OnGetDamaged.Execute(true) : OnGetDamaged.Execute(false);
 		DamageAccumulation = 0.0f;
 	}
@@ -110,7 +110,7 @@ void UStatComponent::SetMontages(TMap<FString, UAnimMontage*> AnimMontages)
 
 void UStatComponent::DecreaseHP(float Damage)
 {
-	// µ¥¹ÌÁö¸¦ ¹ÞÀ» ¼ö ÀÖ´Â »óÅÂ°¡ ¾Æ´Ï¶ó¸é HP¸¦ ±ðÁö ¾ÊÀ½.
+	// ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ ï¿½Ö´ï¿½ ï¿½ï¿½ï¿½Â°ï¿½ ï¿½Æ´Ï¶ï¿½ï¿½ HPï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½.
 	if (DamagableType != EDamagableType::EDT_VULNERABLE) return;
 
 	AWeaponWielder* WeaponWielder = Cast<AWeaponWielder>(GetOwner());
@@ -126,7 +126,7 @@ void UStatComponent::DecreaseHP(float Damage)
 
 	CurrentHP -= Damage;
 
-	// ÇÇ°Ý ¸ùÅ¸ÁÖ°¡ ¾øÀ¸¸é ¹Ù·Î »óÅÂ º¯°æ
+	// ï¿½Ç°ï¿½ ï¿½ï¿½Å¸ï¿½Ö°ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½Ù·ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
 	IsValid(GetDamagedMontage) ? PlayMontage(GetDamagedMontage) : WeaponWielder->SetActionState(EActionState::EAS_Idle);
 
 	DamageAccumulation += Damage;
@@ -157,15 +157,15 @@ void UStatComponent::DecreaseStamina(float Amount)
 
 	if (bIsStartRecoveryStamina)
 	{
-		// ½ºÅÂ¹Ì³ª È¸º¹ Áß, ½ºÅÂ¹Ì³ª¸¦ ±ðÀ» ÀÏÀÌ »ý±ä °æ¿ì È¸º¹ Á¾·á
+		// ï¿½ï¿½ï¿½Â¹Ì³ï¿½ È¸ï¿½ï¿½ ï¿½ï¿½, ï¿½ï¿½ï¿½Â¹Ì³ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ È¸ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
 		StopRecoveryStamina();
 
-		// ½Ã°£ °è»êÀ» ½ÃÀÛÇÏ±â À§ÇØ °ª º¯°æ.
+		// ï¿½Ã°ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½Ï±ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½.
 		bIsStartRecoveryStaminaWaitTimer = false;
 		bIsStartRecoveryStamina = false;
 	}
 
-	// ½Ã°£ °è»ê ½ÃÀÛ Ã¼Å©
+	// ï¿½Ã°ï¿½ ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ Ã¼Å©
 	if (!bIsStartRecoveryStaminaWaitTimer && !bIsStartRecoveryStamina)
 	{
 		bIsStartRecoveryStaminaWaitTimer = true;
@@ -173,7 +173,7 @@ void UStatComponent::DecreaseStamina(float Amount)
 	}
 	else
 	{
-		// ½ÃÀÛÇßÀ¸¸é ½ºÅÂ¹Ì³ª ¼Ò¸ðÇÒ ¶§ ¸¶´Ù ´ë±â ½Ã°£ ÃÊ±âÈ­
+		// ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½Â¹Ì³ï¿½ ï¿½Ò¸ï¿½ï¿½ï¿½ ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ ï¿½Ã°ï¿½ ï¿½Ê±ï¿½È­
 		StaminaElapsedTime = 0.0f;
 	}
 }
@@ -192,7 +192,7 @@ void UStatComponent::CalculateStaminaWaitTime()
 {
 	StaminaElapsedTime += 1.0f;
 
-	// ÃæºÐÇÑ ½Ã°£ÀÌ µÈ´Ù¸é
+	// ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½Ã°ï¿½ï¿½ï¿½ ï¿½È´Ù¸ï¿½
 	if (RecoveryStaminaWaitTime <= StaminaElapsedTime)
 	{
 		GetWorld()->GetTimerManager().ClearTimer(RecoveryStaminaTimer);
@@ -205,12 +205,12 @@ void UStatComponent::RecoveryStamina()
 {
 	CurrentStamina += MaxStamina * 0.01f;
 
-	// ÁöÄ£ »óÅÂÀÎÁö Ã¼Å©
+	// ï¿½ï¿½Ä£ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ Ã¼Å©
 	if (bIsExhaustedStamina)
 	{
 		if (CurrentStamina > MaxStamina * 0.5f)
 		{
-			// Stamina°¡ ¹ÝÀ» ³Ñ¾ú´Ù¸é, ÁöÄ£ »óÅÂ¸¦ ÇØÁ¦ÇÏ°í ´ÙÀ½ ¾×¼ÇÀ» ÃëÇÒ ¼ö ÀÖµµ·Ï Idle·Î ¹Ù²ãÁÜ.
+			// Staminaï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½Ñ¾ï¿½ï¿½Ù¸ï¿½, ï¿½ï¿½Ä£ ï¿½ï¿½ï¿½Â¸ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½Ï°ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½×¼ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ ï¿½Öµï¿½ï¿½ï¿½ Idleï¿½ï¿½ ï¿½Ù²ï¿½ï¿½ï¿½.
 			bIsExhaustedStamina = false;
 
 			AWeaponWielder* WielderOwner = Cast<AWeaponWielder>(GetOwner());
@@ -267,11 +267,11 @@ void UStatComponent::PlayMontage(UAnimMontage* PlayMontage)
 	UAnimInstance* OwnerAnim = WeaponWielder->GetMesh()->GetAnimInstance();
 	if (OwnerAnim)
 	{
-		// Àç»ýµÇ°í ÀÖ´Â ¸ùÅ¸ÁÖ ÁßÁö.
+		// ï¿½ï¿½ï¿½ï¿½Ç°ï¿½ ï¿½Ö´ï¿½ ï¿½ï¿½Å¸ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½.
 		if(OwnerAnim->IsAnyMontagePlaying())
 			OwnerAnim->StopAllMontages(0.0f);
 
-		// ¸ùÅ¸ÁÖ Àç»ý (ÇÇ°Ý, Á×À½)
+		// ï¿½ï¿½Å¸ï¿½ï¿½ ï¿½ï¿½ï¿½ (ï¿½Ç°ï¿½, ï¿½ï¿½ï¿½ï¿½)
 		OwnerAnim->Montage_Play(PlayMontage);
 	}
 }

@@ -4,6 +4,7 @@
 #include "FW_GameInstance.h"
 #include "Widgets/PlayerMenu.h"
 #include "Widgets/SystemMenu.h"
+#include "Widgets/GameEndMenu.h"
 
 UFW_GameInstance::UFW_GameInstance(const FObjectInitializer& ObjectInitializer)
 {
@@ -21,6 +22,10 @@ void UFW_GameInstance::Init()
 	if (!SystemWidgetClass) return;
 
 	SystemMenu = CreateWidget<USystemMenu>(this, SystemWidgetClass);
+
+	if (!GameEndClass) return;
+
+	GameEndMenu = CreateWidget<UGameEndMenu>(this, GameEndClass);
 }
 
 void UFW_GameInstance::LoadPlayerMenu()
@@ -41,6 +46,16 @@ void UFW_GameInstance::LoadSystemMenu()
 	else
 	{
 		SystemMenu->SetUp();
-		GEngine->AddOnScreenDebugMessage(-1, 3.0f, FColor::Blue, FString("SystemMenu added to viewport."));
 	}
+}
+
+void UFW_GameInstance::LoadGameEndMenu()
+{
+	if (!GameEndMenu)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("GameInstance || Can't GameEndMenu."));
+		return;
+	}
+
+	GameEndMenu->SetUp();
 }

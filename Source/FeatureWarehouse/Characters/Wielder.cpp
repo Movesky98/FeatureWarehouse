@@ -112,6 +112,8 @@ void AWielder::BeginPlay()
 			bIsEquipWeapon = true;
 		}
 	}
+
+	NotifyToGameMode();
 }
 
 AActor* AWielder::GetSeeingPawn()
@@ -140,14 +142,14 @@ void AWielder::OnRecognizeRangeBeginOverlap(class UPrimitiveComponent* SelfComp,
 {
 	if (OtherActor)
 	{
-		// [Å¸°ÔÆÃÇÏ°í ÀÖ´Â ¾×ÅÍ != ÄÝ¸®Àü¿¡ Á¢±ÙÇÑ ¾×ÅÍ]¸é ¾Æ¹«°Íµµ ÇÏÁö ¾ÊÀ½.
+		// [Å¸ï¿½ï¿½ï¿½ï¿½ï¿½Ï°ï¿½ ï¿½Ö´ï¿½ ï¿½ï¿½ï¿½ï¿½ != ï¿½Ý¸ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½]ï¿½ï¿½ ï¿½Æ¹ï¿½ï¿½Íµï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½.
 		if (GetSeeingPawn() && GetSeeingPawn() != OtherActor) return;
 
 		bIsRecognizedSomething = true;
 
 		AWielderController* WielderController = Cast<AWielderController>(GetController());
 
-		// ÀÌ¹Ì ÄÁÆ®·Ñ·¯°¡ ÇÃ·¹ÀÌ¾î¸¦ ½Äº°ÇÏ°í ÀÎ½Ä ¹üÀ§¿¡ µé¾î¿ÔÀ» °æ¿ì.
+		// ï¿½Ì¹ï¿½ ï¿½ï¿½Æ®ï¿½Ñ·ï¿½ï¿½ï¿½ ï¿½Ã·ï¿½ï¿½Ì¾î¸¦ ï¿½Äºï¿½ï¿½Ï°ï¿½ ï¿½Î½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½.
 		if (IsValid(WielderController) && WielderController->IsIdentifiedEnemy())
 		{
 			WielderController->NotifyPerceiveSomething(OtherActor->GetActorLocation());
@@ -159,7 +161,7 @@ void AWielder::OnRecognizeRangeEndOverlap(class UPrimitiveComponent* SelfComp, c
 {
 	if (OtherActor)
 	{
-		// [Å¸°ÔÆÃÇÏ°í ÀÖ´Â ¾×ÅÍ != ÄÝ¸®Àü¿¡ Á¢±ÙÇÑ ¾×ÅÍ]¸é ¾Æ¹«°Íµµ ÇÏÁö ¾ÊÀ½.
+		// [Å¸ï¿½ï¿½ï¿½ï¿½ï¿½Ï°ï¿½ ï¿½Ö´ï¿½ ï¿½ï¿½ï¿½ï¿½ != ï¿½Ý¸ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½]ï¿½ï¿½ ï¿½Æ¹ï¿½ï¿½Íµï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½.
 		if (GetSeeingPawn() && GetSeeingPawn() != OtherActor)
 		{
 			AWeaponWielder* WeaponWielder = Cast<AWeaponWielder>(OtherActor);
@@ -179,7 +181,7 @@ void AWielder::OnDetectionRangeBeginOverlap(class UPrimitiveComponent* SelfComp,
 {
 	if (OtherActor)
 	{
-		// [Å¸°ÔÆÃÇÏ°í ÀÖ´Â ¾×ÅÍ != ÄÝ¸®Àü¿¡ Á¢±ÙÇÑ ¾×ÅÍ]¸é ¾Æ¹«°Íµµ ÇÏÁö ¾ÊÀ½.
+		// [Å¸ï¿½ï¿½ï¿½ï¿½ï¿½Ï°ï¿½ ï¿½Ö´ï¿½ ï¿½ï¿½ï¿½ï¿½ != ï¿½Ý¸ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½]ï¿½ï¿½ ï¿½Æ¹ï¿½ï¿½Íµï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½.
 		if (GetSeeingPawn() && GetSeeingPawn() != OtherActor) return;
 		
 		bIsEnemyApproached = true;
@@ -198,7 +200,7 @@ void AWielder::OnDetectionRangeEndOverlap(class UPrimitiveComponent* SelfComp, c
 {
 	if (OtherActor)
 	{
-		// [Å¸°ÔÆÃÇÏ°í ÀÖ´Â ¾×ÅÍ != ÄÝ¸®Àü¿¡ Á¢±ÙÇÑ ¾×ÅÍ]¸é ¾Æ¹«°Íµµ ÇÏÁö ¾ÊÀ½.
+		// [Å¸ï¿½ï¿½ï¿½ï¿½ï¿½Ï°ï¿½ ï¿½Ö´ï¿½ ï¿½ï¿½ï¿½ï¿½ != ï¿½Ý¸ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½]ï¿½ï¿½ ï¿½Æ¹ï¿½ï¿½Íµï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½.
 		if (GetSeeingPawn() && GetSeeingPawn() != OtherActor) return;
 
 		bIsEnemyApproached = false;
@@ -209,7 +211,7 @@ void AWielder::OnAttackRangeBeginOverlap(class UPrimitiveComponent* SelfComp, cl
 {
 	if (OtherActor)
 	{
-		// [Å¸°ÔÆÃÇÏ°í ÀÖ´Â ¾×ÅÍ != ÄÝ¸®Àü¿¡ Á¢±ÙÇÑ ¾×ÅÍ]¸é ¾Æ¹«°Íµµ ÇÏÁö ¾ÊÀ½.
+		// [Å¸ï¿½ï¿½ï¿½ï¿½ï¿½Ï°ï¿½ ï¿½Ö´ï¿½ ï¿½ï¿½ï¿½ï¿½ != ï¿½Ý¸ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½]ï¿½ï¿½ ï¿½Æ¹ï¿½ï¿½Íµï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½.
 		if (GetSeeingPawn() && GetSeeingPawn() != OtherActor) return;
 
 		AWielderController* WielderController = Cast<AWielderController>(GetController());
@@ -232,12 +234,12 @@ void AWielder::OnAttackRangeEndOverlap(class UPrimitiveComponent* SelfComp, clas
 {
 	if (OtherActor)
 	{
-		// [Å¸°ÔÆÃÇÏ°í ÀÖ´Â ¾×ÅÍ != ÄÝ¸®Àü¿¡ Á¢±ÙÇÑ ¾×ÅÍ]¸é ¾Æ¹«°Íµµ ÇÏÁö ¾ÊÀ½.
+		// [Å¸ï¿½ï¿½ï¿½ï¿½ï¿½Ï°ï¿½ ï¿½Ö´ï¿½ ï¿½ï¿½ï¿½ï¿½ != ï¿½Ý¸ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½]ï¿½ï¿½ ï¿½Æ¹ï¿½ï¿½Íµï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½.
 		if (GetSeeingPawn() && GetSeeingPawn() != OtherActor) return;
 
 		AWielderController* WielderController = Cast<AWielderController>(GetController());
 
-		// ÇöÀç AIÀÇ »óÅÂ°¡ ÀüÅõ»óÅÂÀÏ ¶§.
+		// ï¿½ï¿½ï¿½ï¿½ AIï¿½ï¿½ ï¿½ï¿½ï¿½Â°ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½.
 		if (IsValid(WielderController) && CurState == EStateOfEnemy::In_Battle)
 		{
 			WielderController->NotifyEnemyInAttackRange(false);
@@ -289,7 +291,7 @@ void AWielder::OnReceivePointDamageEvent(AActor* DamagedActor, float Damage, ACo
 		StatBarComponent->ShowUI();
 	}
 	
-	// °ø°Ý ¹Þ¾ÒÀ» ¶§, °ø°ÝÇÑ ´ë»óÀ» Å¸°ÙÀ¸·Î ÁöÁ¤.
+	// ï¿½ï¿½ï¿½ï¿½ ï¿½Þ¾ï¿½ï¿½ï¿½ ï¿½ï¿½, ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ Å¸ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½.
 	AWielderController* WielderController = Cast<AWielderController>(GetController());
 	if (IsValid(WielderController))
 	{
@@ -307,14 +309,14 @@ void AWielder::OnGetDamaged(bool IsRetreat)
 		WielderController->NotifyUnderAttack(false);
 	}
 
-	// È¸ÇÇ°¡ ÇÊ¿äÇÑ »óÈ²ÀÌ¶ó¸é
+	// È¸ï¿½Ç°ï¿½ ï¿½Ê¿ï¿½ï¿½ï¿½ ï¿½ï¿½È²ï¿½Ì¶ï¿½ï¿½
 	if (IsRetreat)
 	{
 		ChangeToRetreatMode();
 		return;
 	}
 
-	// ÀüÅõ»óÈ²ÀÌ ¾Æ´Ï¶ó¸é ¹Ù·Î È¸ÇÇ
+	// ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½È²ï¿½ï¿½ ï¿½Æ´Ï¶ï¿½ï¿½ ï¿½Ù·ï¿½ È¸ï¿½ï¿½
 	if (CurState == EStateOfEnemy::In_Battle) return;
 
 	ChangeToRetreatMode();
@@ -322,7 +324,7 @@ void AWielder::OnGetDamaged(bool IsRetreat)
 
 void AWielder::ChangeToRetreatMode()
 {
-	// °ø°Ý ¹Þ¾ÒÀ» ¶§, Retreat »óÅÂ·Î º¯°æ
+	// ï¿½ï¿½ï¿½ï¿½ ï¿½Þ¾ï¿½ï¿½ï¿½ ï¿½ï¿½, Retreat ï¿½ï¿½ï¿½Â·ï¿½ ï¿½ï¿½ï¿½ï¿½
 	AWielderController* WielderController = Cast<AWielderController>(GetController());
 	if (IsValid(WielderController))
 	{
@@ -333,12 +335,12 @@ void AWielder::ChangeToRetreatMode()
 void AWielder::RetreatFromEnemy()
 {
 	// TO DO
-	// 1. ÇöÀç Å¸°ÙÀ¸·Î ÇÏ°í ÀÖ´Â ¾×ÅÍ¿ÍÀÇ °Å¸®°¡ 'ÃÖ¼Ò È¸ÇÇ °Å¸®'¸¦ ³Ñ´ÂÁö Ã¼Å© 
-	// 2. ¾×ÅÍ·Î ºÎÅÍ ¸Ö¾îÁö±â À§ÇØ ¹é½ºÅÜ ¾Ö´Ï¸ÞÀÌ¼Ç ½ÇÇà
+	// 1. ï¿½ï¿½ï¿½ï¿½ Å¸ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½Ï°ï¿½ ï¿½Ö´ï¿½ ï¿½ï¿½ï¿½Í¿ï¿½ï¿½ï¿½ ï¿½Å¸ï¿½ï¿½ï¿½ 'ï¿½Ö¼ï¿½ È¸ï¿½ï¿½ ï¿½Å¸ï¿½'ï¿½ï¿½ ï¿½Ñ´ï¿½ï¿½ï¿½ Ã¼Å© 
+	// 2. ï¿½ï¿½ï¿½Í·ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½Ö¾ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½é½ºï¿½ï¿½ ï¿½Ö´Ï¸ï¿½ï¿½Ì¼ï¿½ ï¿½ï¿½ï¿½ï¿½
 
 	UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance();
 
-	// ¹é½ºÅÜ ¸ùÅ¸ÁÖ°¡ Àç»ý ÁßÀÌ ¾Æ´Ò ¶§ Àç»ý
+	// ï¿½é½ºï¿½ï¿½ ï¿½ï¿½Å¸ï¿½Ö°ï¿½ ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½Æ´ï¿½ ï¿½ï¿½ ï¿½ï¿½ï¿½
 	if (AnimInstance->Montage_IsPlaying(StatComponent->GetBackstepMontage())) return;
 	if (!IsValid(GetSeeingPawn())) return;
 
@@ -412,11 +414,11 @@ void AWielder::OnUnequipEnded()
 
 void AWielder::CheckEquipWeapon()
 {
-	// ÇöÀç ¹«±â¸¦ ÀåÂøÇÏ°í ÀÖÁö ¾Ê´Ù¸é Âø¿ë.
+	// ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½â¸¦ ï¿½ï¿½ï¿½ï¿½ï¿½Ï°ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½Ê´Ù¸ï¿½ ï¿½ï¿½ï¿½ï¿½.
 	if (!IsValid(EquipWeapon))
 		EquipFirstWeapon();
 
-	// ¹«±â¸¦ Âø¿ëÁßÀÌ¶ó¸é ¾Æ¹«°Íµµ ÇÏÁö ¾ÊÀ½.
+	// ï¿½ï¿½ï¿½â¸¦ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ì¶ï¿½ï¿½ ï¿½Æ¹ï¿½ï¿½Íµï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½.
 }
 
 void AWielder::EquipFirstWeapon()
@@ -510,7 +512,7 @@ FVector AWielder::CirclingAroundTheEnemy()
 
 	FVector GoalDirection = GetActorRightVector();
 
-	// Àû°úÀÇ °Å¸®°¡ ¸ð´ÏÅÍ¸µ °Å¸® ±âÁØº¸´Ù °¡±õ´Ù¸é
+	// ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½Å¸ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½Í¸ï¿½ ï¿½Å¸ï¿½ ï¿½ï¿½ï¿½Øºï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½Ù¸ï¿½
 	if (GetDistanceTo(Enemy) < MonitoringDistance)
 	{
 		MoveLocation = GetActorLocation() + GoalDirection * 100.0f;
@@ -542,7 +544,7 @@ FVector AWielder::CirclingAroundTheEnemy()
 	}
 	else
 	{
-		// ¾Æ´Ò °æ¿ì ÇÃ·¹ÀÌ¾î¿¡°Ô ÃµÃµÈ÷ Á¢±Ù
+		// ï¿½Æ´ï¿½ ï¿½ï¿½ï¿½ ï¿½Ã·ï¿½ï¿½Ì¾î¿¡ï¿½ï¿½ ÃµÃµï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
 		MoveLocation = GetActorLocation() + GetActorForwardVector() * 100.0f;
 
 		DrawDebugLine(GetWorld(), GetActorLocation(), MoveLocation, FColor::Green, true, -1, 0, 3);
@@ -592,6 +594,13 @@ void AWielder::SetMovementSpeed(float Speed)
 
 void AWielder::Die()
 {
+	if (OnKilled.IsBound())
+	{
+		OnKilled.Execute(false);
+	}
+
+	WeaponComponent->RemoveOwnerWeapon();
+
 	AWielderController* WielderController = Cast<AWielderController>(GetController());
 	if (!IsValid(WielderController)) return;
 
@@ -606,7 +615,7 @@ void AWielder::Die()
 	GetMesh()->SetCollisionProfileName(FName("Ragdoll"));
 	GetMesh()->SetSimulatePhysics(true);
 
-	SetLifeSpan(3.0f);
+	SetLifeSpan(5.0f);
 }
 
 void AWielder::ShowStatBar()

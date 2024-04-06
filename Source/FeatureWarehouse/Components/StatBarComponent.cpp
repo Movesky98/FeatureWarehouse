@@ -37,13 +37,18 @@ void UStatBarComponent::LookAtPlayer()
 	FVector Start = GetOwner()->GetActorLocation();
 	ACharacter* PlayerCharacter = UGameplayStatics::GetPlayerCharacter(GetWorld(), 0);
 	
-	ensureMsgf(PlayerCharacter != nullptr, TEXT("PlayerCharacter is invalid"));
+	if (PlayerCharacter)
+	{
+		FVector Target = UGameplayStatics::GetPlayerCameraManager(GetWorld(), 0)->GetCameraLocation();
 
-	FVector Target = UGameplayStatics::GetPlayerCameraManager(GetWorld(), 0)->GetCameraLocation();
+		FRotator GoalRotation = UKismetMathLibrary::FindLookAtRotation(Start, Target);
 
-	FRotator GoalRotation = UKismetMathLibrary::FindLookAtRotation(Start, Target);
-
-	SetWorldRotation(GoalRotation);
+		SetWorldRotation(GoalRotation);
+	}
+	else
+	{
+		GetWorld()->GetTimerManager().ClearTimer(ShowingTimer);
+	}
 }
 
 void UStatBarComponent::ShowUI()

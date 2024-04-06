@@ -22,12 +22,6 @@
 // Sets default values for this component's properties
 UWeaponComponent::UWeaponComponent()
 {
-	// Set this component to be initialized when the game starts, and to be ticked every frame.  You can turn these features
-	// off to improve performance if you don't need them.
-	PrimaryComponentTick.bCanEverTick = false;
-
-	// ...
-
 	EquipState = EEquipState::None;
 }
 
@@ -73,9 +67,8 @@ void UWeaponComponent::EquipSubWeapon()
 
 void UWeaponComponent::EquipOtherWeapon()
 {
-	// ÇöÀç µé°í ÀÖ´Â ¹«±â°¡ ¹«¾ùÀÌ³Ä¿¡ µû¶ó ¹Ý´ë ¹«±â¸¦ ÀåÂøÇÔ.
-	EquipState == EEquipState::MainWeapon ? EquipSubWeapon()
-		: EquipMainWeapon();
+	// í˜„ìž¬ ë“¤ê³  ìžˆëŠ” ë¬´ê¸°ê°€ ë¬´ì—‡ì´ëƒì— ë”°ë¼ ë°˜ëŒ€ ë¬´ê¸°ë¥¼ ìž¥ì°©í•¨.
+	EquipState == EEquipState::MainWeapon ? EquipSubWeapon() : EquipMainWeapon();
 }
 
 void UWeaponComponent::Unequip()
@@ -95,18 +88,18 @@ void UWeaponComponent::SaveAcquiredWeaponInfo(AWeapon* NewWeapon)
 	switch (EquipNum)
 	{
 	case 0:
-		// Ã³À½ È¹µæÇÑ ¹«±âÀÏ ¶§ == ¸ÞÀÎ ¹«±â·Î µî·Ï.
+		// ì²˜ìŒ íšë“í•œ ë¬´ê¸°ì¼ ë•Œ == ë©”ì¸ ë¬´ê¸°ë¡œ ë“±ë¡.
 		EquipNum++;
 		SaveMainWeaponInfo(NewWeapon);
 		break;
 	case 1:
-		// µÎ¹øÂ° È¹µæÇÑ ¹«±âÀÏ ¶§
+		// ë‘ë²ˆì§¸ íšë“í•œ ë¬´ê¸°ì¼ ë•Œ
 		EquipNum++;
 		SaveSingleWeaponInfo(NewWeapon);
 		return;
 		break;
 	case 2:
-		// ÀÌ¹Ì µÎ °³ÀÇ ¹«±â¸¦ °¡Áö°í ÀÖÀ» ¶§ (¹«±â ±³Ã¼)
+		// ì´ë¯¸ ë‘ ê°œì˜ ë¬´ê¸°ë¥¼ ê°€ì§€ê³  ìžˆì„ ë•Œ (ë¬´ê¸° êµì²´)
 		SaveMultipleWeaponInfo(NewWeapon);
 		break;
 	default:
@@ -118,8 +111,8 @@ void UWeaponComponent::SaveAcquiredWeaponInfo(AWeapon* NewWeapon)
 
 void UWeaponComponent::SaveSingleWeaponInfo(AWeapon* Weapon)
 {
-	// ³ªÁß¿¡ ÀÎº¥Åä¸®¸¦ ±¸ÇöÇÏ°Ô µÇ¸é, ¹èÆ² ±×¶ó¿îµåÃ³·³ ¸ÞÀÎ, ¼­ºê ¹«±â¸¦ ¸¶À½´ë·Î ¹Ù²Ü ¼ö ÀÖµµ·Ï ±¸ÇöÇÏ°ÚÀ½.
-	// Áö±ÝÀº ¹«±â¸¦ È¹µæÇÏ¸é µÎ¹øÂ° ¹«±â·Î µé¾î°¡µµ·Ï ¸¸µé¾î³õÀ½.
+	// ë‚˜ì¤‘ì— ì¸ë²¤í† ë¦¬ë¥¼ êµ¬í˜„í•˜ê²Œ ë˜ë©´, ë°°í‹€ ê·¸ë¼ìš´ë“œì²˜ëŸ¼ ë©”ì¸, ì„œë¸Œ ë¬´ê¸°ë¥¼ ë§ˆìŒëŒ€ë¡œ ë°”ê¿€ ìˆ˜ ìžˆë„ë¡ êµ¬í˜„í•˜ê² ìŒ.
+	// ì§€ê¸ˆì€ ë¬´ê¸°ë¥¼ íšë“í•˜ë©´ ë‘ë²ˆì§¸ ë¬´ê¸°ë¡œ ë“¤ì–´ê°€ë„ë¡ ë§Œë“¤ì–´ë†“ìŒ.
 
 	SaveSubWeaponInfo(Weapon);
 }
@@ -144,7 +137,7 @@ void UWeaponComponent::SaveMainWeaponInfo(AWeapon* Weapon)
 {
 	if (IsValid(MainWeapon))
 	{
-		// ¸ÞÀÎ ¹«±â°¡ ÀÌ¹Ì ÀÖ´Â °æ¿ì (¹«±â ±³Ã¼)
+		// ë©”ì¸ ë¬´ê¸°ê°€ ì´ë¯¸ ìžˆëŠ” ê²½ìš° (ë¬´ê¸° êµì²´)
 		FVector DropLocation = Weapon->GetActorLocation();
 		MainWeapon->ThrowAway(DropLocation);
 	}
@@ -167,7 +160,7 @@ void UWeaponComponent::SaveSubWeaponInfo(AWeapon* Weapon)
 {
 	if (IsValid(SubWeapon))
 	{
-		// ¸ÞÀÎ ¹«±â°¡ ÀÌ¹Ì ÀÖ´Â °æ¿ì (¹«±â ±³Ã¼)
+		// ë©”ì¸ ë¬´ê¸°ê°€ ì´ë¯¸ ìžˆëŠ” ê²½ìš° (ë¬´ê¸° êµì²´)
 		FVector DropLocation = Weapon->GetActorLocation();
 		SubWeapon->ThrowAway(DropLocation);
 	}
@@ -175,7 +168,7 @@ void UWeaponComponent::SaveSubWeaponInfo(AWeapon* Weapon)
 	ACharacter* CharacterOwner = Cast<ACharacter>(GetOwner());
 	Weapon->TakeUp(CharacterOwner);
 
-	// ¹«±â¸¦ Ä³¸¯ÅÍ¿¡ ¾îÅÂÄ¡
+	// ë¬´ê¸°ë¥¼ ìºë¦­í„°ì— ì–´íƒœì¹˜
 	Weapon->Attach();
 
 	SubWeapon = Weapon;
@@ -196,7 +189,7 @@ void UWeaponComponent::NotifyToAnimInstance()
 		UpdateWeaponInfoToPlayerAnimInstance() :
 		UpdateWeaponInfoToWielderAnimInstance();
 
-	// ÃÑÀÇ °æ¿ì (¾Ö´Ï¸ÞÀÌ¼ÇÀÌ ¾øÀ½. »ý±â¸é ÄÚµå ¼öÁ¤ÇÏ±â)
+	// ì´ì˜ ê²½ìš° (ì• ë‹ˆë©”ì´ì…˜ì´ ì—†ìŒ. ìƒê¸°ë©´ ì½”ë“œ ìˆ˜ì •í•˜ê¸°)
 	if (!WeaponWielder->CurWeapon()) return;
 
 	if (WeaponWielder->CurWeapon()->GetWeaponType() == ETypeOfWeapon::Gun)
@@ -292,7 +285,7 @@ void UWeaponComponent::NotifyHasWeaponToAnim()
 	}
 }
 
-// ±ÙÁ¢ ¹«±â¸¦ µé°í Á¡ÇÁ°ø°ÝÀ» ÇÏ´Ù°¡ ¶¥¿¡ ´ê¾ÒÀ» ¶§ ½ÇÇàµÇ´Â ÇÔ¼ö.
+// ê·¼ì ‘ ë¬´ê¸°ë¥¼ ë“¤ê³  ì í”„ê³µê²©ì„ í•˜ë‹¤ê°€ ë•…ì— ë‹¿ì•˜ì„ ë•Œ ì‹¤í–‰ë˜ëŠ” í•¨ìˆ˜.
 void UWeaponComponent::JumpAttackLanding()
 {
 	if (!IsValid(WeaponWielder->CurWeapon())) return;
@@ -304,9 +297,28 @@ void UWeaponComponent::JumpAttackLanding()
 	}
 }
 
-// ¹«±â¸¦ ½º¿ÒÇÒ ¶§ »ç¿ëÇÏ´Â ÇÔ¼ö
+// ë¬´ê¸°ë¥¼ ìŠ¤ì™‘í•  ë•Œ ì‚¬ìš©í•˜ëŠ” í•¨ìˆ˜
 void UWeaponComponent::Swap()
 {
 	WeaponWielder->SetActionState(EActionState::EAS_Swapping);
 	WeaponWielder->CurWeapon()->Unequip();
+}
+
+void UWeaponComponent::RemoveOwnerWeapon()
+{
+	WeaponWielder->SetWeapon(nullptr);
+
+	if (MainWeapon)
+	{
+		MainWeapon->UnbindMontage();
+		MainWeapon->SetWeaponOwner(nullptr);
+		MainWeapon->Destroy();
+	}
+
+	if (SubWeapon)
+	{
+		SubWeapon->UnbindMontage();
+		SubWeapon->SetWeaponOwner(nullptr);
+		SubWeapon->Destroy();
+	}
 }

@@ -16,9 +16,9 @@ UENUM(BlueprintType)
 enum class ETypeOfWielder : uint8
 {
 	ETW_NONE = 0 UMETA(DisplayName = "NONE"),
-	ETW_Samurai = 1 UMETA(DisplayName = "Samurai"),			// »ç¹«¶óÀÌ
-	ETW_Halberdier = 2 UMETA(DisplayName = "Halberdier"),	// ÇÒ¹öµå º´
-	ETW_Warrior = 3 UMETA(DisplayName = "Warrior")			// ¿ö¸®¾î
+	ETW_Samurai = 1 UMETA(DisplayName = "Samurai"),			// ï¿½ç¹«ï¿½ï¿½ï¿½ï¿½
+	ETW_Halberdier = 2 UMETA(DisplayName = "Halberdier"),	// ï¿½Ò¹ï¿½ï¿½ï¿½ ï¿½ï¿½
+	ETW_Warrior = 3 UMETA(DisplayName = "Warrior")			// ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 };
 
 /**
@@ -33,29 +33,29 @@ public:
 
 	void CheckEquipWeapon();
 
-	/* ÇöÀç Å¸°ÙÀ¸·Î ÁöÁ¤µÈ ¾×ÅÍ¸¦ °¡Á®¿À´Â ÇÔ¼ö */
+	/* ï¿½ï¿½ï¿½ï¿½ Å¸ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½Í¸ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½Ô¼ï¿½ */
 	UFUNCTION(BlueprintCallable) AActor* GetSeeingPawn();
 
-	/* Å¸°ÙÀ» ÁöÁ¤ÇÏ´Â ÇÔ¼ö */
+	/* Å¸ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½Ï´ï¿½ ï¿½Ô¼ï¿½ */
 	UFUNCTION() void DesignateEnemy(AActor* Enemy);
 
-	/* ÇÃ·¹ÀÌ¾î°¡ AI¿¡°Ô Á¢±ÙÇß´ÂÁö */
+	/* ï¿½Ã·ï¿½ï¿½Ì¾î°¡ AIï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ß´ï¿½ï¿½ï¿½ */
 	UFUNCTION(BlueprintCallable) bool IsEnemyApproached();
 
-	/* ¹«¾ð°¡¸¦ ÀÎ½ÄÇß´ÂÁö */
+	/* ï¿½ï¿½ï¿½ð°¡¸ï¿½ ï¿½Î½ï¿½ï¿½ß´ï¿½ï¿½ï¿½ */
 	UFUNCTION(BlueprintCallable) bool IsRecognizedSomething();
 
-	/* AIÀÇ ½ºÇÇµå¸¦ ¼³Á¤ÇÏ´Â ÇÔ¼ö */
+	/* AIï¿½ï¿½ ï¿½ï¿½ï¿½Çµå¸¦ ï¿½ï¿½ï¿½ï¿½ï¿½Ï´ï¿½ ï¿½Ô¼ï¿½ */
 	UFUNCTION(BlueprintCallable) void SetMovementSpeed(float Speed);
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "State|Speed")
-	float WalkSpeed;	// °ÉÀ» ¶§ ¼Óµµ
+	float WalkSpeed;	// ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ ï¿½Óµï¿½
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "State|Speed")
-	float SprintSpeed;	// ¶Û ¶§ ¼Óµµ
+	float SprintSpeed;	// ï¿½ï¿½ ï¿½ï¿½ ï¿½Óµï¿½
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "State|Speed")
-	float CreepSpeed;	// ÃµÃµÈ÷ °ÉÀ» ¶§ ¼Óµµ
+	float CreepSpeed;	// ÃµÃµï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ ï¿½Óµï¿½
 
 	UFUNCTION(BlueprintCallable)
 	void ShowStatBar();
@@ -95,49 +95,49 @@ protected:
 	UFUNCTION()
 	void ChangeToRetreatMode();
 
-	/* ÀûÀ¸·ÎºÎÅÍ °Å¸®¸¦ ¹ú¸± ¶§ ½ÇÇàµÇ´Â ÇÔ¼ö */
+	/* ï¿½ï¿½ï¿½ï¿½ï¿½Îºï¿½ï¿½ï¿½ ï¿½Å¸ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½Ç´ï¿½ ï¿½Ô¼ï¿½ */
 	UFUNCTION(BlueprintCallable)
 	void RetreatFromEnemy();
 
 #pragma region Monitoring
 public:
-	/* ¸ð´ÏÅÍ¸µÀ» ½ÃÀÛÇÒ ¶§ ½ÇÇàµÇ´Â ÇÔ¼ö */
+	/* ï¿½ï¿½ï¿½ï¿½Í¸ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½Ç´ï¿½ ï¿½Ô¼ï¿½ */
 	UFUNCTION(BlueprintCallable) void Monitoring();
 
 protected:
-	/* ¸ð´ÏÅÍ¸µ ÇÏ´Â ½Ã°£À» ±¸ÇÏ´Â ÇÔ¼ö */
+	/* ï¿½ï¿½ï¿½ï¿½Í¸ï¿½ ï¿½Ï´ï¿½ ï¿½Ã°ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½Ï´ï¿½ ï¿½Ô¼ï¿½ */
 	UFUNCTION() void CalculateMonitoringTime();
 
-	/* ¸ð´ÏÅÍ¸µ(°æ°è) »óÅÂÀÏ ¶§ ÀûÀÇ ÁÖº¯À» µ¹±âÀ§ÇØ À§Ä¡¸¦ ±¸ÇÏ´Â ÇÔ¼ö */
+	/* ï¿½ï¿½ï¿½ï¿½Í¸ï¿½(ï¿½ï¿½ï¿½) ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½Öºï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½Ä¡ï¿½ï¿½ ï¿½ï¿½ï¿½Ï´ï¿½ ï¿½Ô¼ï¿½ */
 	UFUNCTION(BlueprintCallable)
 	FVector CirclingAroundTheEnemy();
 
-	/* ¸ð´ÏÅÍ¸µ »óÅÂ¿¡¼­ »ç¿ëµÇ´Â º¯¼öµéÀ» ÃÊ±âÈ­ÇÏ´Â ÇÔ¼ö */
+	/* ï¿½ï¿½ï¿½ï¿½Í¸ï¿½ ï¿½ï¿½ï¿½Â¿ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½Ç´ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½Ê±ï¿½È­ï¿½Ï´ï¿½ ï¿½Ô¼ï¿½ */
 	void ClearMonitoring();
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Monitor")
-	float MonitoringDistance;		// °æ°è °Å¸®
+	float MonitoringDistance;		// ï¿½ï¿½ï¿½ ï¿½Å¸ï¿½
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Monitor")
-	float ElapsedTime;				// °æ°ú ½Ã°£
+	float ElapsedTime;				// ï¿½ï¿½ï¿½ ï¿½Ã°ï¿½
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Monitor")
-	float MonitoringTimerDuration;	// ¸ð´ÏÅÍ¸µ Å¸ÀÌ¸Ó ½Ã°£
+	float MonitoringTimerDuration;	// ï¿½ï¿½ï¿½ï¿½Í¸ï¿½ Å¸ï¿½Ì¸ï¿½ ï¿½Ã°ï¿½
 	
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Monitor")
-	bool bIsStartMonitoring;		// ¸ð´ÏÅÍ¸µÀ» ½ÃÀÛÇß´ÂÁö
+	bool bIsStartMonitoring;		// ï¿½ï¿½ï¿½ï¿½Í¸ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ß´ï¿½ï¿½ï¿½
 
 	FTimerHandle MonitoringTimer;
 #pragma endregion
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "State")
-	EStateOfEnemy CurState;			// ÇöÀç AIÀÇ »óÅÂ
+	EStateOfEnemy CurState;			// ï¿½ï¿½ï¿½ï¿½ AIï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "State")
 	EBattleState BattleState;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "State")
-	ETypeOfWielder WielderType;		// Wielder Å¸ÀÔ
+	ETypeOfWielder WielderType;		// Wielder Å¸ï¿½ï¿½
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Component")
 	UStatBarComponent* StatBarComponent;
@@ -179,25 +179,25 @@ protected:
 
 	// Variables
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Range")
-	float RecognizeRange;			// ÀÎ½Ä ¹üÀ§
+	float RecognizeRange;			// ï¿½Î½ï¿½ ï¿½ï¿½ï¿½ï¿½
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Range")
-	float DetectionRange;			// Å½Áö ¹üÀ§
+	float DetectionRange;			// Å½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Range")
-	float AttackRange;				// °ø°Ý ½ÃÀÛ ¹üÀ§
+	float AttackRange;				// ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
 
 	UPROPERTY(EditDefaultsOnly, BLueprintReadOnly, Category = "Range")
-	float RetreatDistanceMin;		// ÃÖ¼Ò È¸ÇÇ °Å¸®
+	float RetreatDistanceMin;		// ï¿½Ö¼ï¿½ È¸ï¿½ï¿½ ï¿½Å¸ï¿½
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Range")
-	bool bIsRecognizedSomething;	// ¹«¾ð°¡¸¦ ÀÎ½ÄÇß´ÂÁö
+	bool bIsRecognizedSomething;	// ï¿½ï¿½ï¿½ð°¡¸ï¿½ ï¿½Î½ï¿½ï¿½ß´ï¿½ï¿½ï¿½
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Range")
-	bool bIsEnemyApproached;		// ÇÃ·¹ÀÌ¾î°¡ Á¢±ÙÇß´ÂÁö
+	bool bIsEnemyApproached;		// ï¿½Ã·ï¿½ï¿½Ì¾î°¡ ï¿½ï¿½ï¿½ï¿½ï¿½ß´ï¿½ï¿½ï¿½
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Range")
-	TArray<AWeaponWielder*> DetectedWielders;	// °¨ÁöµÈ Wielderµé
+	TArray<AWeaponWielder*> DetectedWielders;	// ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ Wielderï¿½ï¿½
 
 	// Initial Settings
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Initial Setting")
@@ -205,13 +205,13 @@ protected:
 
 	// Components
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Range")
-	class USphereComponent* RecognizeRangeComponent;	// ¹«¾ð°¡¸¦ ÀÎ½ÄÇÑ ´Ü°è (ÇÃ·¹ÀÌ¾îÀÎÁö, ´Ù¸¥ ¹«¾ùÀÎÁö ¸ð¸£´Â ´Ü°è)
+	class USphereComponent* RecognizeRangeComponent;	// ï¿½ï¿½ï¿½ð°¡¸ï¿½ ï¿½Î½ï¿½ï¿½ï¿½ ï¿½Ü°ï¿½ (ï¿½Ã·ï¿½ï¿½Ì¾ï¿½ï¿½ï¿½ï¿½ï¿½, ï¿½Ù¸ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ð¸£´ï¿½ ï¿½Ü°ï¿½)
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Range")
-	class USphereComponent* DetectionRangeComponent;	// ÀÌ¹Ì ÇÃ·¹ÀÌ¾î¸¦ ÀÎ½ÄÇÏ°í Combat¿¡ µé¾î°¡´Â ´Ü°è
+	class USphereComponent* DetectionRangeComponent;	// ï¿½Ì¹ï¿½ ï¿½Ã·ï¿½ï¿½Ì¾î¸¦ ï¿½Î½ï¿½ï¿½Ï°ï¿½ Combatï¿½ï¿½ ï¿½ï¿½î°¡ï¿½ï¿½ ï¿½Ü°ï¿½
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Range")
-	class USphereComponent* AttackRangeComponent;		//  Combat »óÅÂ¿¡ µé¾î°¬À» ¶§ °ø°Ý ½ÃÀÛ ¹üÀ§
+	class USphereComponent* AttackRangeComponent;		//  Combat ï¿½ï¿½ï¿½Â¿ï¿½ ï¿½ï¿½î°¬ï¿½ï¿½ ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
 
 public:
 	// Getter and Setter

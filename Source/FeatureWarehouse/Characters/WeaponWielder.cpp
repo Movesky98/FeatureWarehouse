@@ -3,6 +3,7 @@
 
 #include "WeaponWielder.h"
 #include "AnimInstance/WielderAnimInstance.h"
+#include "GamePlay/FW_GameMode.h"
 
 #include "Enums/ActionState.h"
 #include "Enums/MovementState.h"
@@ -17,6 +18,7 @@
 
 #include "GameFramework/CharacterMovementComponent.h"
 #include "Kismet/KismetMathLibrary.h"
+#include "Kismet/GameplayStatics.h"
 
 AWeaponWielder::AWeaponWielder()
 {
@@ -62,7 +64,15 @@ void AWeaponWielder::BeginPlay()
 {
 	Super::BeginPlay();
 	
+}
 
+void AWeaponWielder::NotifyToGameMode()
+{
+	AFW_GameMode* GameMode = Cast<AFW_GameMode>(UGameplayStatics::GetGameMode(GetWorld()));
+	if (GameMode)
+	{
+		GameMode->BindCharacterDeathEvent(this);
+	}
 }
 
 void AWeaponWielder::PlayMontage(UAnimMontage* Montage)
@@ -155,11 +165,12 @@ void AWeaponWielder::OnMovementModeChanged(EMovementMode PrevMovementMode, uint8
 
 void AWeaponWielder::Die()
 {
-	// Ä³¸¯ÅÍ¸¸ Á×¿©µµ ¹«±â°¡ »ç¶óÁö´ÂÁö Å×½ºÆ®
-	/*if (EquipWeapon)
+	if (OnKilled.IsBound())
 	{
-		EquipWeapon->Destroy();
-	}*/
+		OnKilled.Execute(false);
+	}
+
+	WeaponComponent->RemoveOwnerWeapon();
 
 	UWielderAnimInstance* Anim = Cast<UWielderAnimInstance>(GetMesh()->GetAnimInstance());
 	if (Anim)
@@ -176,22 +187,22 @@ void AWeaponWielder::Die()
 
 bool AWeaponWielder::CheckTakeAction(EActionState SpecificAction, bool bCanTakeContinuously)
 {
-	// Æ¯Á¤ ¾×¼ÇÀ» ÃëÇÏ°í ÀÖÁö ¾Ê´Â °æ¿ì, ½ÇÇà °¡´É.
+	// Æ¯ï¿½ï¿½ ï¿½×¼ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½Ï°ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½Ê´ï¿½ ï¿½ï¿½ï¿½, ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½.
 	if (ActionState == EActionState::EAS_Idle)
 	{
 		ActionState = SpecificAction;
 		return true;
 	}
 
-	// ¿¬¼ÓÀ¸·Î ¾×¼ÇÀ» ÃëÇÒ ¼ö ÀÖ´ÂÁö ¿©ºÎ
+	// ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½×¼ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ ï¿½Ö´ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
 	if (bCanTakeContinuously)
 	{
-		// Æ¯Á¤ ¾×¼ÇÀ» ÃëÇÏ´Âµ¥ ¾×¼Ç »óÅÂ¿Í ÀÏÄ¡ÇÒ °æ¿ì true ¾Æ´Ï¸é false.
+		// Æ¯ï¿½ï¿½ ï¿½×¼ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½Ï´Âµï¿½ ï¿½×¼ï¿½ ï¿½ï¿½ï¿½Â¿ï¿½ ï¿½ï¿½Ä¡ï¿½ï¿½ ï¿½ï¿½ï¿½ true ï¿½Æ´Ï¸ï¿½ false.
 		return  ActionState == SpecificAction ? true : false;
 	}
 	else
 	{
-		// Idle »óÅÂÀÏ ¶§¸¸ ¾×¼ÇÀ» ÃëÇÏµµ·Ï ±¸Çö.
+		// Idle ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½×¼ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½Ïµï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½.
 		return false;
 	}
 }

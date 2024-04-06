@@ -2,11 +2,46 @@
 
 
 #include "FW_GameMode.h"
+#include "FW_GameInstance.h"
+
+#include "Characters/WeaponWielder.h"
+#include "Kismet/GameplayStatics.h"
 
 // Sets default values
 AFW_GameMode::AFW_GameMode()
 {
- 	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
+	EnemyKills = 0;
 	
-	
+}
+
+void AFW_GameMode::BeginPlay()
+{
+	Super::BeginPlay();
+
+}
+
+void AFW_GameMode::BindCharacterDeathEvent(AWeaponWielder* Character)
+{
+	Character->OnKilled.BindUObject(this, &AFW_GameMode::CheckCharacterDead);
+
+	UE_LOG(LogTemp, Warning, TEXT("GameMode || Bind the character's death event."))
+}
+
+void AFW_GameMode::CheckCharacterDead(bool bIsPlayer)
+{
+	if (bIsPlayer)
+	{
+		// Load GameEndUI
+		UFW_GameInstance* GameInstance = Cast<UFW_GameInstance>(GetGameInstance());
+
+		if (GameInstance)
+		{
+			GameInstance->LoadGameEndMenu();
+		}
+	}
+	else
+	{
+		// Increase player's enemy kill.
+		EnemyKills++;
+	}
 }

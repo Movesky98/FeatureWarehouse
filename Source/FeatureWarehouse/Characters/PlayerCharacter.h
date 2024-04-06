@@ -43,6 +43,8 @@ protected:
 
 	virtual void OnMovementModeChanged(EMovementMode PrevMovementMode, uint8 PreviousCustomMode) override;
 
+	void Die() override;
+
 	UFUNCTION()
 	void DecreaseStamina(float Stamina);
 

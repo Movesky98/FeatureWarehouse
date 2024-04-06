@@ -23,19 +23,28 @@ public:
 	UFUNCTION(BlueprintCallable)
 	void LoadSystemMenu();
 
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Widget)
+	UFUNCTION(BlueprintCallable)
+	void LoadGameEndMenu();
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Widget")
 	class UPlayerMenu* PlayerMenu;
 
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Widget)
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Widget")
 	class USystemMenu* SystemMenu;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Widget")
+	class UGameEndMenu* GameEndMenu;
 
 protected:
 	void Init() override;
 
 private:
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = Widget, meta = (AllowPrivateAccess = "true"))
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Widget", meta = (AllowPrivateAccess = "true"))
 	TSubclassOf<class UUserWidget> PlayerClass;
 
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = Widget, meta = (AllowPrivateAccess = "true"))
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Widget", meta = (AllowPrivateAccess = "true"))
 	TSubclassOf<class UUserWidget> SystemWidgetClass;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Widget", meta = (AllowPrivateAccess = "true"))
+	TSubclassOf<class UUserWidget> GameEndClass;
 };

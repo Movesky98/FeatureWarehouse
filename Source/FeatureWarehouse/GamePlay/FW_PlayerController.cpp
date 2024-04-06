@@ -117,7 +117,7 @@ void AFW_PlayerController::SwitchPlayerMenu()
 		return;
 	}
 	
-	// ¹«±â°¡ ¾øÀ¸¸é RPG ÆÐ³Î.
+	// ï¿½ï¿½ï¿½â°¡ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ RPG ï¿½Ð³ï¿½.
 	PlayerMenu->SetRPGPanel();
 	PlayerMenu->ChangeWeaponImage(nullptr);
 }
