@@ -22,15 +22,30 @@ class FEATUREWAREHOUSE_API UGameEndMenu : public UMenu
 public:
 	UGameEndMenu(const FObjectInitializer& ObjectInitializer);
 
+	void SaveGameOverInfo(int p_EnemyKill, float p_Time, float p_Score);
+
 	void LoadDeadPanel();
 
-	void LoadGameEndPanel(int EnemyKillNum, float Time, float Score);
+	void LoadGameEndPanel();
 
 	UFUNCTION(BlueprintImplementableEvent)
 	void LoadMainMenu();
 
 protected:
 	virtual bool Initialize() override;
+
+	bool bIsClearTheGame;
+
+	FTimerHandle LoadPanelTimerHandle;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "GameOver|Info")
+	int EnemyKills;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "GameOver|Info")
+	float GameDuration;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "GameOver|Info")
+	float TotalScore;
 
 private:
 	UPROPERTY(meta = (BindWidget))
@@ -44,6 +59,9 @@ private:
 
 	UPROPERTY(meta = (BindWidget))
 	UCanvasPanel* GameEndPanel;
+
+	UPROPERTY(meta = (BindWidget))
+	UTextBlock* GameOverText;
 
 	UPROPERTY(meta = (BindWidget))
 	UTextBlock* EnemyKillText;

@@ -7,6 +7,7 @@
 #include "FW_GameMode.generated.h"
 
 class AWeaponWielder;
+class UGameEndMenu;
 
 UCLASS()
 class FEATUREWAREHOUSE_API AFW_GameMode : public AGameModeBase
@@ -30,8 +31,14 @@ private:
 	bool bIsPlayerDead;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "State", meta = (AllowPrivateAccess = "true"))
+	int EnemyNum;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "State", meta = (AllowPrivateAccess = "true"))
 	int EnemyKills;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "State", meta = (AllowPrivateAccess = "true"))
-	float TimeTakenToClear;
+	float GameDuration;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "State", meta = (AllowPrivateAccess = "true"))
+	float TotalScore;
 };

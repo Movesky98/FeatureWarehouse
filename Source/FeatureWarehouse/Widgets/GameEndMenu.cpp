@@ -37,17 +37,30 @@ void UGameEndMenu::LoadDeadPanel()
 
 	// 1. Play Dead Sound.
 	// 2. Show GameEnd Panel when dead sound is completed.
+
+	UGameplayStatics::PlaySound2D(GetWorld(), DeadSound);
+
+	GetWorld()->GetTimerManager().SetTimer(LoadPanelTimerHandle, this, &UGameEndMenu::LoadGameEndPanel, DeadSound->Duration, false);
 }
 
-void UGameEndMenu::LoadGameEndPanel(int EnemyKillNum, float Time, float Score)
+void UGameEndMenu::LoadGameEndPanel()
 {
 	WidgetSwitcher->SetActiveWidget(GameEndPanel);
 
-	FString EnemyKillString = FString("Enemy Kill : ") + FString::FromInt(EnemyKillNum);
-	FString TimeTakenToClearString = FString("Time Taken To Clear : ") + FString::SanitizeFloat(Time);
-	FString TotalScoreString = FString("Total Score : ") + FString::SanitizeFloat(Score);
+	FString GameOverMessage = bIsClearTheGame ? FString("You cleared the Game. Congratulations!") : FString("GAME OVER... It's okay. You'll do better next time.");
+	FString EnemyKillString = FString("Enemy Kill : ") + FString::FromInt(EnemyKills);
+	FString TimeTakenToClearString = FString("Time Taken To Clear : ") + FString::SanitizeFloat(GameDuration);
+	FString TotalScoreString = FString("Total Score : ") + FString::SanitizeFloat(TotalScore);
 
+	GameOverText->SetText(FText::FromString(GameOverMessage));
 	EnemyKillText->SetText(FText::FromString(EnemyKillString));
 	TimeTakenToClearText->SetText(FText::FromString(TimeTakenToClearString));
 	TotalScoreText->SetText(FText::FromString(TotalScoreString));
+}
+
+void UGameEndMenu::SaveGameOverInfo(int EnemyKill, float Time, float Score)
+{
+	EnemyKills = EnemyKill;
+	GameDuration = Time;
+	TotalScore = Score;
 }

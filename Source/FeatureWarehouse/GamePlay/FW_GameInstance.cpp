@@ -59,3 +59,12 @@ void UFW_GameInstance::LoadGameEndMenu()
 
 	GameEndMenu->SetUp();
 }
+
+void UFW_GameInstance::GameOver(int EnemyKills, float GameDuration, float TotalScore)
+{
+	if (!GameEndMenu) return;
+
+	GameEndMenu->SetUp();
+	GameEndMenu->SaveGameOverInfo(EnemyKills, GameDuration, TotalScore);
+	GameEndMenu->LoadDeadPanel();
+}

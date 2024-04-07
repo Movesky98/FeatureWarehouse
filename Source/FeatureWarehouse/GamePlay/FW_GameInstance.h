@@ -26,6 +26,8 @@ public:
 	UFUNCTION(BlueprintCallable)
 	void LoadGameEndMenu();
 
+	void GameOver(int EnemyKills, float GameDuration, float TotalScore);
+
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Widget")
 	class UPlayerMenu* PlayerMenu;
 

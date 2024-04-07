@@ -4,14 +4,19 @@
 #include "FW_GameMode.h"
 #include "FW_GameInstance.h"
 
+#include "Widgets/GameEndMenu.h"
+
 #include "Characters/WeaponWielder.h"
+#include "Characters/PlayerCharacter.h"
+
 #include "Kismet/GameplayStatics.h"
+#include "Kismet/KismetSystemLibrary.h"
 
 // Sets default values
 AFW_GameMode::AFW_GameMode()
 {
 	EnemyKills = 0;
-	
+	EnemyNum = 0;
 }
 
 void AFW_GameMode::BeginPlay()
@@ -24,7 +29,9 @@ void AFW_GameMode::BindCharacterDeathEvent(AWeaponWielder* Character)
 {
 	Character->OnKilled.BindUObject(this, &AFW_GameMode::CheckCharacterDead);
 
-	UE_LOG(LogTemp, Warning, TEXT("GameMode || Bind the character's death event."))
+	if (Character->IsA<APlayerCharacter>()) return;
+
+	EnemyNum++;
 }
 
 void AFW_GameMode::CheckCharacterDead(bool bIsPlayer)
@@ -36,7 +43,8 @@ void AFW_GameMode::CheckCharacterDead(bool bIsPlayer)
 
 		if (GameInstance)
 		{
-			GameInstance->LoadGameEndMenu();
+			GameDuration = UKismetSystemLibrary::GetGameTimeInSeconds(GetWorld());
+			GameInstance->GameOver(EnemyKills, GameDuration, TotalScore);
 		}
 	}
 	else
