@@ -64,19 +64,23 @@ protected:
 	UArrowComponent* FrontDirection;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "State")
-	bool bIsNearTheCharacter;	// Ä³¸¯ÅÍ°¡ ±ÙÃ³¿¡ ÀÖ´ÂÁö (¹®À» ¿­ ¼ö ÀÖ´Â »óÅÂÀÎÁö)
+	bool bIsNearTheCharacter;
 
+	/** ìºë¦­í„°ê°€ ë¬¸ ë’¤ì—ì„œ ì—´ì—ˆëŠ”ì§€ */
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "State")
-	bool bOpenedFromBehind;		// Ä³¸¯ÅÍ°¡ ¹® µÚ¿¡¼­ ¿­¾ú´ÂÁö
+	bool bOpenedFromBehind;
 
+	/** ë¬¸ì´ ì›€ì§ì´ê³  ìˆëŠ”ì§€ */
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "State")
-	bool bIsDoorMoving;			// ¹®ÀÌ ¿òÁ÷ÀÌ°í ÀÖ´ÂÁö
+	bool bIsDoorMoving;
 
+	/** ë¬¸ì´ ì—´ë ¤ìˆëŠ”ì§€ */
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "State")
-	bool bIsOpen;				// ¹®ÀÌ ¿­·ÁÀÖ´ÂÁö
+	bool bIsOpen;
 
+	/** ë¬¸ ì—´ë¦¼ ìµœëŒ€ ê°ë„ */
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "State")
-	float OpenLimitAngle;		// ¹® ¿­¸² ÃÖ´ë °¢µµ
+	float OpenLimitAngle;		// ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½Ö´ï¿½ ï¿½ï¿½ï¿½ï¿½
 
 	FTimerHandle DoorTimerHandle;
 };

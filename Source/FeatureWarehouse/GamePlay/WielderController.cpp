@@ -81,7 +81,7 @@ void AWielderController::OnPossess(APawn* InPawn)
 	ConfigSight->LoseSightRadius = ConfigSight->SightRadius + LoseRange;
 
 	AIPerception->RequestStimuliListenerUpdate();
-
+	UE_LOG(LogTemp, Warning, TEXT("Set Sense ID"));
 }
 
 void AWielderController::PostInitializeComponents()
@@ -99,6 +99,7 @@ void AWielderController::BeginPlay()
 
 void AWielderController::OnTargetDetected(AActor* Actor, FAIStimulus Stimulus)
 {	
+	UE_LOG(LogTemp, Warning, TEXT("OnTargetDetected is called"));
 	AWielder* Wielder = Cast<AWielder>(GetPawn());
 	if (!IsValid(Wielder)) return;
 
@@ -106,7 +107,7 @@ void AWielderController::OnTargetDetected(AActor* Actor, FAIStimulus Stimulus)
 	{
 		bIsIdentifiedEnemy = true;
 
-		// ������ Wielder�� ����
+		// 감지된 Wielder를 저장
 		AWeaponWielder* WeaponWielder = Cast<AWeaponWielder>(Actor);
 		if (WeaponWielder)
 		{
@@ -114,10 +115,10 @@ void AWielderController::OnTargetDetected(AActor* Actor, FAIStimulus Stimulus)
 			UE_LOG(LogTemp, Warning, TEXT("%s Add Detected Wielder %s"), *UKismetSystemLibrary::GetDisplayName(Wielder), *UKismetSystemLibrary::GetDisplayName(WeaponWielder));
 		}
 
-		// ���� �ٶ󺸰� �ִ� ���� ������ �ƹ��͵� ��������.
+		// 현재 바라보고 있는 폰이 있으면 아무것도 하지않음.
 		if (GetSeeingPawn()) return;
 
-		// ���� �̹� �����Ͽ�����, AI�� ���� �ν��� ���
+		// 적이 이미 접근하였으며, AI가 적을 인식한 경우
 		if (Wielder->IsEnemyApproached())
 		{
 			Wielder->CheckEquipWeapon();
@@ -126,10 +127,10 @@ void AWielderController::OnTargetDetected(AActor* Actor, FAIStimulus Stimulus)
 			return;
 		}
 
-		// AI�� ���� ������ ���� �ν�������, ���� �Ÿ��� �ִ� ���
+		// AI가 무언가 접근한 것을 인식했으나, 아직 거리가 있는 경우
 		if (Wielder->IsRecognizedSomething())
 		{
-			// ���𰡰� ��ġ�� ��ҷ� ����
+			// 무언가가 위치한 장소로 정찰
 			Wielder->CheckEquipWeapon();
 			Wielder->ShowStatBar();
 			NotifyPerceiveSomething(Actor->GetActorLocation());
@@ -138,10 +139,10 @@ void AWielderController::OnTargetDetected(AActor* Actor, FAIStimulus Stimulus)
 	}
 	else
 	{
-		// �÷��̾ �νĵǾ��ٰ� �þ߿��� ��� ���.
+		// 플레이어가 인식되었다가 시야에서 벗어난 경우.
 		bIsIdentifiedEnemy = false;
 
-		// ���� �ٶ󺸰� �ִ� ���� �ƴϸ� �ƹ��͵� ����.
+		// 현재 바라보고 있는 폰이 아니면 아무것도 안함.
 		if (GetSeeingPawn() != Actor) return;
 
 		if (Wielder->GetDetectedWielders().Num() > 0)
@@ -149,7 +150,7 @@ void AWielderController::OnTargetDetected(AActor* Actor, FAIStimulus Stimulus)
 			FindNewTarget();
 		}
 
-		// �þ߿��� ��� ��� ó���� ������� ��.
+		// 시야에서 벗어난 경우 처리를 해줘야할 듯.
 		if (!Wielder->IsRecognizedSomething())
 		{
 			NotifyGoToHomePos();
@@ -206,7 +207,7 @@ void AWielderController::NotifyRetreat()
 	{
 		Wielder->SetBattleState(EBattleState::Retreating);
 
-		// In_Battle ���·� ��.
+		// In_Battle 상태로 들어감.
 		if (Wielder->GetCurState() != EStateOfEnemy::In_Battle)
 		{
 			Wielder->SetCurState(EStateOfEnemy::In_Battle);
@@ -228,7 +229,7 @@ void AWielderController::NotifyEngageInBattle(AActor* Enemy)
 		Blackboard->SetValueAsEnum(FName("CurState"), (uint8)Wielder->GetCurState());
 		DesignateEnemy(Enemy);
 
-		// ���� �Ÿ� �̻��̸� ����͸�, �ƴϸ� ����.
+		// 일정 거리 이상이면 모니터링, 아니면 접근.
 		Wielder->GetDistanceTo(Enemy) > 600.0f ? Wielder->Monitoring() : NotifyApproaching();
 	}
 }

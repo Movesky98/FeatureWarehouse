@@ -16,7 +16,7 @@
 AFW_GameMode::AFW_GameMode()
 {
 	EnemyKills = 0;
-	EnemyNum = 0;
+	EnemyCount = 0;
 }
 
 void AFW_GameMode::BeginPlay()
@@ -27,16 +27,32 @@ void AFW_GameMode::BeginPlay()
 
 void AFW_GameMode::BindCharacterDeathEvent(AWeaponWielder* Character)
 {
-	Character->OnKilled.BindUObject(this, &AFW_GameMode::CheckCharacterDead);
+	Character->OnKilled.AddUObject(this, &AFW_GameMode::CheckCharacterDead);
 
 	if (Character->IsA<APlayerCharacter>()) return;
 
-	EnemyNum++;
+	Wielders.Add(Character);
+
+	EnemyCount++;
 }
 
-void AFW_GameMode::CheckCharacterDead(bool bIsPlayer)
+void AFW_GameMode::HandlerGameOver()
 {
-	if (bIsPlayer)
+	if (EnemyKills > EnemyCount) return;
+
+	UFW_GameInstance* GameInstance = Cast<UFW_GameInstance>(GetGameInstance());
+	if (!GameInstance) return;
+
+	GameDuration = UKismetSystemLibrary::GetGameTimeInSeconds(GetWorld());
+	GameInstance->GameClear(EnemyKills, GameDuration, TotalScore);
+}
+
+void AFW_GameMode::CheckCharacterDead(AActor* Actor)
+{
+	ACharacter* Player = UGameplayStatics::GetPlayerCharacter(GetWorld(), 0);
+	if (!Player) return;
+
+	if (Actor == Player)
 	{
 		// Load GameEndUI
 		UFW_GameInstance* GameInstance = Cast<UFW_GameInstance>(GetGameInstance());

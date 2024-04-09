@@ -7,7 +7,7 @@
 #include "GenericTeamAgentInterface.h"
 #include "WeaponWielder.generated.h"
 
-DECLARE_DELEGATE_OneParam(FOnKilledDelegate, bool);
+DECLARE_MULTICAST_DELEGATE_OneParam(FOnKilledDelegate, AActor*);
 
 enum class EMovementState :uint8;
 enum class EActionState :uint8;

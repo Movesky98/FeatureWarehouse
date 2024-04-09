@@ -12,7 +12,7 @@ struct FMeleeInfo : public FTableRowBase
 {
 	GENERATED_BODY()
 public:
-	/** ±ÙÁ¢ ¹«±â Å¸ÀÔ */
+	/** ê·¼ì ‘ ë¬´ê¸° íƒ€ìž… */
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, meta = (DisplayName = "MeleeType", MakeStructureDefaultValue = "None"))
 	ETypeOfMelee D_MeleeType;
 

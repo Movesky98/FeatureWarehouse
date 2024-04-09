@@ -20,18 +20,23 @@ public:
 
 	void BindCharacterDeathEvent(class AWeaponWielder* Character);
 
+	void HandlerGameOver();
+
 protected:
 	virtual void BeginPlay() override;
 
 	UFUNCTION()
-	void CheckCharacterDead(bool bIsPlayer);
+	void CheckCharacterDead(AActor* Actor);
 
 private:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "State", meta = (AllowPrivateAccess = "true"))
 	bool bIsPlayerDead;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "State", meta = (AllowPrivateAccess = "true"))
-	int EnemyNum;
+	TArray<AWeaponWielder*> Wielders;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "State", meta = (AllowPrivateAccess = "true"))
+	int EnemyCount;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "State", meta = (AllowPrivateAccess = "true"))
 	int EnemyKills;

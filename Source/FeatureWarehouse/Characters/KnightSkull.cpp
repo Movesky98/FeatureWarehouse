@@ -58,7 +58,7 @@ void AKnightSkull::OnTriggerBeginOverlap(class UPrimitiveComponent* SelfComp, cl
 		AEnemyController* EnemyController = Cast<AEnemyController>(GetController());
 		if (EnemyController->IsIdentifiedPlayer())
 		{
-			// ÀüÅõ ½ÃÀÛ.
+			// ì „íˆ¬ ì‹œì‘.
 			EngagingInCombat(OtherActor);
 		}
 	}
@@ -112,9 +112,9 @@ void AKnightSkull::OnAttackRangeEndOverlap(class UPrimitiveComponent* SelfComp, 
 void AKnightSkull::MonitoringPlayer()
 {
 	/*
-	* ÀÌ ÇÔ¼ö¿¡¼­ ÇÃ·¹ÀÌ¾î¸¦ °æ°èÇÏ´Â ±â´É ±¸Çö
-	* 1. À§Ä¡¿¡ °¡¸¸È÷ ¼­¼­ ÇÃ·¹ÀÌ¾î¸¦ ¹Ù¶óº¸´ø°¡.
-	* 2. ÇÃ·¹ÀÌ¾î¸¦ ±âÁØÀ¸·Î ¿øÇüÀ¸·Î µ¹´ø°¡.
+	* ì´ í•¨ìˆ˜ì—ì„œ í”Œë ˆì´ì–´ë¥¼ ê²½ê³„í•˜ëŠ” ê¸°ëŠ¥ êµ¬í˜„
+	* 1. ìœ„ì¹˜ì— ê°€ë§Œíˆ ì„œì„œ í”Œë ˆì´ì–´ë¥¼ ë°”ë¼ë³´ë˜ê°€.
+	* 2. í”Œë ˆì´ì–´ë¥¼ ê¸°ì¤€ìœ¼ë¡œ ì›í˜•ìœ¼ë¡œ ëŒë˜ê°€.
 	*/
 	bIsStartMonitoring = true;
 	bIsCirclingAroundThePlayer = UKismetMathLibrary::RandomBool();
@@ -208,7 +208,7 @@ FVector AKnightSkull::CirclingAroundThePlayer()
 	DirectionFromPlayer = DirectionFromPlayer.GetSafeNormal();
 
 	FRotator DirectionRot = UKismetMathLibrary::MakeRotFromX(DirectionFromPlayer);
-	DirectionRot.Yaw -= 0.5f;	// ÀÏ´Ü ¿ŞÂÊÀ¸·Î ÀÌµ¿ÇÏ°Ô ÇØº½.
+	DirectionRot.Yaw -= 0.5f;	// ì¼ë‹¨ ì™¼ìª½ìœ¼ë¡œ ì´ë™í•˜ê²Œ í•´ë´„.
 		
 	FVector GoalDirection = UKismetMathLibrary::GetForwardVector(DirectionRot);
 
@@ -273,7 +273,7 @@ void AKnightSkull::EngagingInCombat(AActor* AdversaryActor)
 	EnemyController->NotifyEnemyActor(AdversaryActor);
 	EnemyController->NotifyEnemyState(EStateOfEnemy::In_Battle);
 
-	// ÀÌ ºÎºĞÀº ³ªÁß¿¡ °ø°İ, µÚ·Î ¹°¸®±â ±â´ÉÀÌ ¿Ï¼ºµÇ¸é ¼Â Áß ·£´ıÀ¸·Î ÀÛµ¿ÇÏµµ·Ï ÇØµµ ±¦ÂúÀ» µí.
+	// ì´ ë¶€ë¶„ì€ ë‚˜ì¤‘ì— ê³µê²©, ë’¤ë¡œ ë¬¼ë¦¬ê¸° ê¸°ëŠ¥ì´ ì™„ì„±ë˜ë©´ ì…‹ ì¤‘ ëœë¤ìœ¼ë¡œ ì‘ë™í•˜ë„ë¡ í•´ë„ ê´œì°®ì„ ë“¯.
 	EnemyController->NotifyBattleState(EBattleState::Monitoring);
 	EnemyController->SetFocus(AdversaryActor);
 }
@@ -300,7 +300,7 @@ void AKnightSkull::OnNextAttackChecked()
 	USkullAnimInstance* SkullAnim = Cast<USkullAnimInstance>(GetMesh()->GetAnimInstance());
 	if (!ensure(SkullAnim != nullptr)) return;
 
-	// ³ªÀÌÆ®½ºÄÃÀÌ °ø°İ ÁßÀÌ¶ó¸é,
+	// ë‚˜ì´íŠ¸ìŠ¤ì»¬ì´ ê³µê²© ì¤‘ì´ë¼ë©´,
 	if (!bIsAttacking) return;
 
 	if (!bIsPlayerInAttackRange)

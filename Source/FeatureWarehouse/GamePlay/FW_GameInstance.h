@@ -28,6 +28,8 @@ public:
 
 	void GameOver(int EnemyKills, float GameDuration, float TotalScore);
 
+	void GameClear(int EnemyKills, float GameDuration, float TotalScore);
+
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Widget")
 	class UPlayerMenu* PlayerMenu;
 

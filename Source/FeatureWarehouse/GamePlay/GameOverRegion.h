@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
+#include "Interfaces/GameOverNotifier.h"
 #include "GameOverRegion.generated.h"
 
 UENUM(BlueprintType)
@@ -15,7 +16,7 @@ enum class EGameOverType :uint8
 };
 
 UCLASS()
-class FEATUREWAREHOUSE_API AGameOverRegion : public AActor
+class FEATUREWAREHOUSE_API AGameOverRegion : public AActor, public IGameOverNotifier
 {
 	GENERATED_BODY()
 	
@@ -28,6 +29,11 @@ protected:
 
 	virtual void PostInitializeComponents() override;
 
+	virtual void NotifyGameOver() override;
+
+	UFUNCTION()
+	void DecreaseWielderCount(AActor* Actor);
+
 	UFUNCTION()
 	void OnRegionBeginOverlap(class UPrimitiveComponent* SelfComp, class AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
 
@@ -37,8 +43,10 @@ protected:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Component")
 	class UBoxComponent* BoxComponent;
 
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "State")
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "State")
 	TArray<class AWeaponWielder*> Wielders;
+
+	int WielderCount;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "State")
 	EGameOverType GameOverType;

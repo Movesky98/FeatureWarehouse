@@ -117,7 +117,7 @@ void AFW_PlayerController::SwitchPlayerMenu()
 		return;
 	}
 	
-	// ���Ⱑ ������ RPG �г�.
+	// 맨 손일 경우 RPG 패널을 보여줌.
 	PlayerMenu->SetRPGPanel();
 	PlayerMenu->ChangeWeaponImage(nullptr);
 }

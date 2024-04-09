@@ -30,6 +30,8 @@ public:
 
 	UFUNCTION(BlueprintImplementableEvent)
 	void LoadMainMenu();
+	
+	virtual void SetUp() override;
 
 protected:
 	virtual bool Initialize() override;
@@ -77,4 +79,7 @@ private:
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Sound", meta = (AllowPrivateAccess = "true"))
 	class USoundCue* DeadSound;
+
+public:
+	FORCEINLINE void SetIsClearTheGame(bool IsClear) { bIsClearTheGame = IsClear; }
 };

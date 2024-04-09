@@ -63,7 +63,7 @@ FVector AGoldenSkull::CalculateFleeLocation()
 
 	if (World)
 	{
-		// (180¡Æ ¡À ½ò TraceÀÇ °³¼ö) / ÀÏÁ¤ÇÑ °¢µµ·Î ·¹ÀÌ¸¦ ½î±â À§ÇØ °è»ê.
+		// (180Â° Ã· ì  Traceì˜ ê°œìˆ˜) / ì¼ì •í•œ ê°ë„ë¡œ ë ˆì´ë¥¼ ì˜ê¸° ìœ„í•´ ê³„ì‚°.
 		float DeltaYaw = 180.0f / (FleeTraceNum - 1);
 
 		// Player's location - GoldenSkull's location == Goal Direction. 
@@ -77,7 +77,7 @@ FVector AGoldenSkull::CalculateFleeLocation()
 
 		float ReturnDistance = 0.0f;
 		FVector ReturnLocation = FVector::ZeroVector;
-		
+
 		FVector Direction;
 		TArray<AActor*> IgnoreActors;
 		IgnoreActors.Add(this);
@@ -101,7 +101,7 @@ FVector AGoldenSkull::CalculateFleeLocation()
 				true
 			);
 
-			// ¸ÂÀº À§Ä¡, °Å¸®¿¡ µû¶ó ¾î´À ÁöÁ¡À» ¼±ÅÃÇÒÁö °áÁ¤.
+			// ë§ì€ ìœ„ì¹˜, ê±°ë¦¬ì— ë”°ë¼ ì–´ëŠ ì§€ì ì„ ì„ íƒí• ì§€ ê²°ì •.
 			if (IsHit)
 			{
 				if (Hit.Distance < MinAvoidanceRange) continue;
@@ -123,7 +123,7 @@ FVector AGoldenSkull::CalculateFleeLocation()
 			}
 		}
 
-		// Step 3. °è»êµÈ °Å¸® Áß °¡Àå ±ä °Å¸®ÀÇ ¹Ù´Ú À§Ä¡¸¦ ±×¸².
+		// Step 3. ê³„ì‚°ëœ ê±°ë¦¬ ì¤‘ ê°€ì¥ ê¸´ ê±°ë¦¬ì˜ ë°”ë‹¥ ìœ„ì¹˜ë¥¼ ê·¸ë¦¼.
 		DrawDebugSolidBox(World, ReturnLocation, FVector(10.0f), FColor::Cyan, false, 5.0f, 5);
 		return ReturnLocation;
 	}

@@ -21,64 +21,64 @@ public:
 
 	void NotifyUnderAttack(bool IsUnderAttack);
 
-	/* ���𰡸� �������� �� Behavior Tree�� �˸��� �Լ�. */
+	/* 무언가를 인지했을 때 Behavior Tree에 알리는 함수. */
 	void NotifyPerceiveSomething(FVector Location);
 
-	/* Patrol�� �� ����Ǵ� �Լ� */
+	/* Patrol할 때 실행되는 함수 */
 	void NotifyPatrol();
 
-	/* Range ���� Ű�� �ʱ�ȭ�ϴ� �Լ� */
+	/* Range 관련 키를 초기화하는 함수 */
 	void ClearRangeKey();
 
-	/* ���𰡸� �i�ư� �� Behavior Tree�� Ÿ���� �˸��� �Լ�. */
+	/* 무언가를 i아갈 때 Behavior Tree에 타겟을 알리는 함수. */
 	void NotifyApproachToEnemy(AActor* Enemy);
 
-	/* ���� ��Ȳ�� �������� Behavior Tree�� �˸��� �Լ�. */
+	/* 전투 상황에 임했음을 Behavior Tree에 알리는 함수. */
 	void NotifyEngageInBattle(AActor* Enemy);
 
-	/* ���⸦ ���������� Behavior Tree�� �˸��� �Լ� */
+	/* 무기를 착용했음을 Behavior Tree에 알리는 함수 */
 	void NotifyEquipWeapon();
 
-	/* ������ ���������� Behavior Tree�� �˸��� �Լ� */
+	/* 무장을 해제했음을 Behavior Tree에 알리는 함수 */
 	void NotifyUnequip();
 
-	/* ���� �����ִ� Pawn�� ��ȯ�ϴ� �Լ� */
+	/* 현재 보고있는 Pawn을 반환하는 함수 */
 	AActor* GetSeeingPawn();
 
-	/* �÷��̾ �ĺ��ߴ��� */
+	/* 플레이어를 식별했는지 */
 	bool IsIdentifiedEnemy() { return bIsIdentifiedEnemy; }
 
-	/* MovePos�� ������忡 �����ϴ� �Լ� */
+	/* MovePos를 블랙보드에 저장하는 함수 */
 	void SetMovePosToBlackboard(FVector MovePos);
 
-	/* HomePos�� ������忡 �����ϴ� �Լ� */
+	/* HomePos를 블랙보드에 저장하는 함수 */
 	void SetHomePosToBlackboard(FVector HomePos);
 
-	/* �� ĳ���͸� ������忡 �����ϴ� �Լ� */
+	/* 적 캐릭터를 블랙보드에 저장하는 함수 */
 	void DesignateEnemy(AActor* Enemy);
 
-	/* HomePos�� ���ư��� �Լ� */
+	/* HomePos로 돌아가는 함수 */
 	UFUNCTION(BlueprintCallable) void NotifyGoToHomePos();
 
-	/* ���ݹ޾��� ��, �Ÿ��� ������ ���� Behavior Tree�� �˸��� �Լ�. */
+	/* 공격받았을 때, 거리를 벌려야 함을 Behavior Tree에 알리는 함수. */
 	void NotifyRetreat();
 
-	/* �׾����� �˸��� �Լ� */
+	/* 죽었음을 알리는 함수 */
 	void NotifyDead();
 
 	////////////////////////////////////////////////////////////////////    Battle    ////////////////////////////////////////////////////////////////////
 	
-	/* In-Battle ���¸� BehaviorTree�� �˸��� �Լ� */
+	/* In-Battle 상태를 BehaviorTree에 알리는 함수 */
 	void NotifyBattleState(EBattleState State);
 
 	////////////////////////////////////////////////////////////////////    Battle - Approaching    ////////////////////////////////////////////////////////////////////
 	
-	/* In-Battle ������ ��, Behavior Tree�� ������ �ٰ����� �������� �˸��� �Լ�. */
+	/* In-Battle 상태일 때, Behavior Tree에 적에게 다가가는 상태임을 알리는 함수. */
 	UFUNCTION(BlueprintCallable) void NotifyApproaching();
 
 	////////////////////////////////////////////////////////////////////    Battle - Attacking    ////////////////////////////////////////////////////////////////////
 
-	/* ���� ���� ���� ���� ������ BehaviorTree�� �˸��� �Լ�. */
+	/* 적이 공격 범위 내에 있음을 BehaviorTree에 알리는 함수. */
 	void NotifyEnemyInAttackRange(bool IsInRange);
 
 	UFUNCTION(BlueprintCallable)
@@ -86,7 +86,7 @@ public:
 
 	////////////////////////////////////////////////////////////////////    Battle - Monitoring    ////////////////////////////////////////////////////////////////////
 	
-	/* In-Battle ������ ��, Behavior Tree�� Monitor ���¿� ���� �˸��� �Լ� */
+	/* In-Battle 상태일 때, Behavior Tree에 Monitor 상태에 들어감을 알리는 함수 */
 	void NotifyMonitoring();
 
 protected:
@@ -96,7 +96,7 @@ protected:
 
 	virtual void OnPossess(APawn* InPawn) override;
 
-	/* Ÿ���� �������� �� ����Ǵ� �Լ� */
+	/* 타겟을 인지했을 때 실행되는 함수 */
 	UFUNCTION() void OnTargetDetected(AActor* Actor, FAIStimulus Stimulus);
 
 private:

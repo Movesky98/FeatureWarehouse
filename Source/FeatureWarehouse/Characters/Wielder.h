@@ -16,9 +16,9 @@ UENUM(BlueprintType)
 enum class ETypeOfWielder : uint8
 {
 	ETW_NONE = 0 UMETA(DisplayName = "NONE"),
-	ETW_Samurai = 1 UMETA(DisplayName = "Samurai"),			// �繫����
-	ETW_Halberdier = 2 UMETA(DisplayName = "Halberdier"),	// �ҹ��� ��
-	ETW_Warrior = 3 UMETA(DisplayName = "Warrior")			// ������
+	ETW_Samurai = 1 UMETA(DisplayName = "Samurai"),			// 사무라이
+	ETW_Halberdier = 2 UMETA(DisplayName = "Halberdier"),	// 할버드병
+	ETW_Warrior = 3 UMETA(DisplayName = "Warrior")			// 워리어 
 };
 
 /**
@@ -33,29 +33,29 @@ public:
 
 	void CheckEquipWeapon();
 
-	/* ���� Ÿ������ ������ ���͸� �������� �Լ� */
+	/* 현재 타겟으로 지정된 액터를 가져오는 함수 */
 	UFUNCTION(BlueprintCallable) AActor* GetSeeingPawn();
 
-	/* Ÿ���� �����ϴ� �Լ� */
+	/* 타겟을 지정하는 함수 */
 	UFUNCTION() void DesignateEnemy(AActor* Enemy);
 
-	/* �÷��̾ AI���� �����ߴ��� */
+	/* 플레이어가 AI에게 접근했는지 */
 	UFUNCTION(BlueprintCallable) bool IsEnemyApproached();
 
-	/* ���𰡸� �ν��ߴ��� */
+	/* 무언가를 인식했는지 */
 	UFUNCTION(BlueprintCallable) bool IsRecognizedSomething();
 
-	/* AI�� ���ǵ带 �����ϴ� �Լ� */
+	/* AI의 스피드를 설정하는 함수 */
 	UFUNCTION(BlueprintCallable) void SetMovementSpeed(float Speed);
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "State|Speed")
-	float WalkSpeed;	// ���� �� �ӵ�
+	float WalkSpeed;	// 걸을 때 속도
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "State|Speed")
-	float SprintSpeed;	// �� �� �ӵ�
+	float SprintSpeed;	// 뛸 때 속도
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "State|Speed")
-	float CreepSpeed;	// õõ�� ���� �� �ӵ�
+	float CreepSpeed;	// 천천히 걸을 때 속도
 
 	UFUNCTION(BlueprintCallable)
 	void ShowStatBar();
@@ -95,49 +95,56 @@ protected:
 	UFUNCTION()
 	void ChangeToRetreatMode();
 
-	/* �����κ��� �Ÿ��� ���� �� ����Ǵ� �Լ� */
+	/* 적으로부터 거리를 벌릴 때 실행되는 함수 */
 	UFUNCTION(BlueprintCallable)
 	void RetreatFromEnemy();
 
 #pragma region Monitoring
 public:
-	/* ����͸��� ������ �� ����Ǵ� �Լ� */
+	/* 모니터링을 시작할 때 실행되는 함수 */
 	UFUNCTION(BlueprintCallable) void Monitoring();
 
 protected:
-	/* ����͸� �ϴ� �ð��� ���ϴ� �Լ� */
+	/* 모니터링 하는 시간을 구하는 함수 */
 	UFUNCTION() void CalculateMonitoringTime();
 
-	/* ����͸�(���) ������ �� ���� �ֺ��� �������� ��ġ�� ���ϴ� �Լ� */
+	/* 모니터링(경계) 상태일 때 적의 주변을 돌기위해 위치를 구하는 함수 */
 	UFUNCTION(BlueprintCallable)
 	FVector CirclingAroundTheEnemy();
 
-	/* ����͸� ���¿��� ���Ǵ� �������� �ʱ�ȭ�ϴ� �Լ� */
+	/* 모니터링 상태에서 사용되는 변수들을 초기화하는 함수 */
 	void ClearMonitoring();
 
+	/** 경계(모니터링) 거리 */
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Monitor")
-	float MonitoringDistance;		// ��� �Ÿ�
+	float MonitoringDistance;
 
+	/** 경과 시간 */
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Monitor")
-	float ElapsedTime;				// ��� �ð�
+	float ElapsedTime;
 
+	/** 모니터링 타이머 시간 */
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Monitor")
-	float MonitoringTimerDuration;	// ����͸� Ÿ�̸� �ð�
+	float MonitoringTimerDuration;
 	
+	/** 모니터링을 시작했는지 */
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Monitor")
-	bool bIsStartMonitoring;		// ����͸��� �����ߴ���
+	bool bIsStartMonitoring;
 
 	FTimerHandle MonitoringTimer;
 #pragma endregion
 
+	/** 현재 AI의 상태 */
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "State")
-	EStateOfEnemy CurState;			// ���� AI�� ����
+	EStateOfEnemy CurState;
 
+	/** 전투 상태로 들어갔을 때 상태 */
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "State")
 	EBattleState BattleState;
 
+	/** Wielder 타입 */
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "State")
-	ETypeOfWielder WielderType;		// Wielder Ÿ��
+	ETypeOfWielder WielderType;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Component")
 	UStatBarComponent* StatBarComponent;
@@ -178,40 +185,51 @@ protected:
 	void OnAttackRangeEndOverlap(class UPrimitiveComponent* SelfComp, class AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex);
 
 	// Variables
+	/** 인지 범위 */
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Range")
-	float RecognizeRange;			// �ν� ����
+	float RecognizeRange;
 
+	/** 탐지 범위 */
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Range")
-	float DetectionRange;			// Ž�� ����
+	float DetectionRange;
 
+	/** 공격 시작 범위 */
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Range")
-	float AttackRange;				// ���� ���� ����
+	float AttackRange;
 
+	/** 최소 회피 거리 */
 	UPROPERTY(EditDefaultsOnly, BLueprintReadOnly, Category = "Range")
-	float RetreatDistanceMin;		// �ּ� ȸ�� �Ÿ�
+	float RetreatDistanceMin;
 
+	/** 무언가를 인지했는지 */
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Range")
-	bool bIsRecognizedSomething;	// ���𰡸� �ν��ߴ���
+	bool bIsRecognizedSomething;
 
+	/** 적이 접근했는지 */
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Range")
-	bool bIsEnemyApproached;		// �÷��̾ �����ߴ���
+	bool bIsEnemyApproached;
 
+	/** 감지된 Wielder들 */
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Range")
-	TArray<AWeaponWielder*> DetectedWielders;	// ������ Wielder��
+	TArray<AWeaponWielder*> DetectedWielders;
 
 	// Initial Settings
+	/** 시작과 동시에 패트롤을 진행할 것인지 여부 */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Initial Setting")
 	bool bStartWithPatrol;
 
 	// Components
+	/** 무언가를 인식할 단계 (어떤 액터인지 모르는 단계) */
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Range")
-	class USphereComponent* RecognizeRangeComponent;	// ���𰡸� �ν��� �ܰ� (�÷��̾�����, �ٸ� �������� �𸣴� �ܰ�)
+	class USphereComponent* RecognizeRangeComponent;
 
+	/** 이미 적을 인지하고 전투(Battle)에 들어가는 상태*/
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Range")
-	class USphereComponent* DetectionRangeComponent;	// �̹� �÷��̾ �ν��ϰ� Combat�� ���� �ܰ�
+	class USphereComponent* DetectionRangeComponent;
 
+	/** 전투에 들어갔을 때 공격 시작 범위 */
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Range")
-	class USphereComponent* AttackRangeComponent;		//  Combat ���¿� ���� �� ���� ���� ����
+	class USphereComponent* AttackRangeComponent;
 
 public:
 	// Getter and Setter

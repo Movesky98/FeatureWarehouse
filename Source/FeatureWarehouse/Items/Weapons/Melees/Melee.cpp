@@ -429,7 +429,7 @@ UAnimMontage* AMelee::FindAppropriateAttackAnimationWithParam(float& Change_Dama
 
 			break;
 		default:
-			// Idle, Walking ������ �� ���, ���� ����.
+			// Idle, Walking 상태일 때 약공, 강공 선택.
 			if (Wielder->CurActionState() == EActionState::EAS_HeavyAttacking)
 			{
 				ReturnMontage = MontageInfo.m_HeavyAttackMontage;

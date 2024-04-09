@@ -167,7 +167,7 @@ void AWeaponWielder::Die()
 {
 	if (OnKilled.IsBound())
 	{
-		OnKilled.Execute(false);
+		OnKilled.Broadcast(this);
 	}
 
 	WeaponComponent->RemoveOwnerWeapon();
@@ -187,22 +187,22 @@ void AWeaponWielder::Die()
 
 bool AWeaponWielder::CheckTakeAction(EActionState SpecificAction, bool bCanTakeContinuously)
 {
-	// Ư�� �׼��� ���ϰ� ���� �ʴ� ���, ���� ����.
+	// 특정 액션을 취하고 있지 않는 경우, 실행 가능.
 	if (ActionState == EActionState::EAS_Idle)
 	{
 		ActionState = SpecificAction;
 		return true;
 	}
 
-	// �������� �׼��� ���� �� �ִ��� ����
+	// 연속으로 액션을 취할 수 있는지 여부
 	if (bCanTakeContinuously)
 	{
-		// Ư�� �׼��� ���ϴµ� �׼� ���¿� ��ġ�� ��� true �ƴϸ� false.
+		// 특정 액션을 취하는데 액션 상태와 일치할 경우 true 아니면 false.
 		return  ActionState == SpecificAction ? true : false;
 	}
 	else
 	{
-		// Idle ������ ���� �׼��� ���ϵ��� ����.
+		// Idle 상태일 때만 액션을 취하도록 구현.
 		return false;
 	}
 }

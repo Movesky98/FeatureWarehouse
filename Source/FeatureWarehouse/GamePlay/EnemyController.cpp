@@ -70,7 +70,7 @@ void AEnemyController::BeginPlay()
 
 void AEnemyController::OnTragetDetected(AActor* Actor, FAIStimulus Stimulus)
 {
-	// ½Ã¾ß¿¡ µé¾î¿Â ¾×ÅÍ°¡ ÇÃ·¹ÀÌ¾î¶ó¸é
+	// ì‹œì•¼ì— ë“¤ì–´ì˜¨ ì•¡í„°ê°€ í”Œë ˆì´ì–´ë¼ë©´
 	if (Actor->ActorHasTag(FName("Player")))
 	{
 		AEnemy* Enemy = Cast<AEnemy>(GetPawn());
@@ -79,7 +79,7 @@ void AEnemyController::OnTragetDetected(AActor* Actor, FAIStimulus Stimulus)
 		{
 			bIsIdentifiedPlayer = true;
 
-			// ÇÃ·¹ÀÌ¾î°¡ ½Äº° °Å¸® ¾È¿¡ µé¾î¿Ô´Ù¸é
+			// í”Œë ˆì´ì–´ê°€ ì‹ë³„ ê±°ë¦¬ ì•ˆì— ë“¤ì–´ì™”ë‹¤ë©´
 			if (Enemy->IsPlayerApproached())
 			{
 				switch (Enemy->GetEnemyType())
@@ -88,7 +88,7 @@ void AEnemyController::OnTragetDetected(AActor* Actor, FAIStimulus Stimulus)
 					NotifyEnemyState(Enemy->IdentifiedPlayer());
 					break;
 				case ETypeOfEnemy::Knight:
-					// ÀüÅõ ½ÃÀÛ.
+					// ì „íˆ¬ ì‹œìž‘.
 					Enemy->EngagingInCombat(Actor);
 					break;
 				default:

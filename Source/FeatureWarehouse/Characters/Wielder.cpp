@@ -142,14 +142,14 @@ void AWielder::OnRecognizeRangeBeginOverlap(class UPrimitiveComponent* SelfComp,
 {
 	if (OtherActor)
 	{
-		// [Ÿ�����ϰ� �ִ� ���� != �ݸ����� ������ ����]�� �ƹ��͵� ���� ����.
+		// [타게팅하고 있는 액터 != 콜리전에 접근한 액터]면 아무것도 하지 않음.
 		if (GetSeeingPawn() && GetSeeingPawn() != OtherActor) return;
 
 		bIsRecognizedSomething = true;
 
 		AWielderController* WielderController = Cast<AWielderController>(GetController());
 
-		// �̹� ��Ʈ�ѷ��� �÷��̾ �ĺ��ϰ� �ν� ������ ������ ���.
+		// 이미 컨트롤러가 플레이어를 식별하고 인식 범위에 들어왔을 경우.
 		if (IsValid(WielderController) && WielderController->IsIdentifiedEnemy())
 		{
 			WielderController->NotifyPerceiveSomething(OtherActor->GetActorLocation());
@@ -161,7 +161,7 @@ void AWielder::OnRecognizeRangeEndOverlap(class UPrimitiveComponent* SelfComp, c
 {
 	if (OtherActor)
 	{
-		// [Ÿ�����ϰ� �ִ� ���� != �ݸ����� ������ ����]�� �ƹ��͵� ���� ����.
+		// [타게팅하고 있는 액터 != 콜리전에 접근한 액터]면 아무것도 하지 않음.
 		if (GetSeeingPawn() && GetSeeingPawn() != OtherActor)
 		{
 			AWeaponWielder* WeaponWielder = Cast<AWeaponWielder>(OtherActor);
@@ -181,7 +181,7 @@ void AWielder::OnDetectionRangeBeginOverlap(class UPrimitiveComponent* SelfComp,
 {
 	if (OtherActor)
 	{
-		// [Ÿ�����ϰ� �ִ� ���� != �ݸ����� ������ ����]�� �ƹ��͵� ���� ����.
+		// [타게팅하고 있는 액터 != 콜리전에 접근한 액터]면 아무것도 하지 않음.
 		if (GetSeeingPawn() && GetSeeingPawn() != OtherActor) return;
 		
 		bIsEnemyApproached = true;
@@ -200,7 +200,7 @@ void AWielder::OnDetectionRangeEndOverlap(class UPrimitiveComponent* SelfComp, c
 {
 	if (OtherActor)
 	{
-		// [Ÿ�����ϰ� �ִ� ���� != �ݸ����� ������ ����]�� �ƹ��͵� ���� ����.
+		// [타게팅하고 있는 액터 != 콜리전에 접근한 액터]면 아무것도 하지 않음.
 		if (GetSeeingPawn() && GetSeeingPawn() != OtherActor) return;
 
 		bIsEnemyApproached = false;
@@ -211,7 +211,7 @@ void AWielder::OnAttackRangeBeginOverlap(class UPrimitiveComponent* SelfComp, cl
 {
 	if (OtherActor)
 	{
-		// [Ÿ�����ϰ� �ִ� ���� != �ݸ����� ������ ����]�� �ƹ��͵� ���� ����.
+		// [타게팅하고 있는 액터 != 콜리전에 접근한 액터]면 아무것도 하지 않음.
 		if (GetSeeingPawn() && GetSeeingPawn() != OtherActor) return;
 
 		AWielderController* WielderController = Cast<AWielderController>(GetController());
@@ -234,12 +234,12 @@ void AWielder::OnAttackRangeEndOverlap(class UPrimitiveComponent* SelfComp, clas
 {
 	if (OtherActor)
 	{
-		// [Ÿ�����ϰ� �ִ� ���� != �ݸ����� ������ ����]�� �ƹ��͵� ���� ����.
+		// [타게팅하고 있는 액터 != 콜리전에 접근한 액터]면 아무것도 하지 않음.
 		if (GetSeeingPawn() && GetSeeingPawn() != OtherActor) return;
 
 		AWielderController* WielderController = Cast<AWielderController>(GetController());
 
-		// ���� AI�� ���°� ���������� ��.
+		// 현재 AI의 상태가 전투상태일 때.
 		if (IsValid(WielderController) && CurState == EStateOfEnemy::In_Battle)
 		{
 			WielderController->NotifyEnemyInAttackRange(false);
@@ -291,7 +291,7 @@ void AWielder::OnReceivePointDamageEvent(AActor* DamagedActor, float Damage, ACo
 		StatBarComponent->ShowUI();
 	}
 	
-	// ���� �޾��� ��, ������ ����� Ÿ������ ����.
+	// 공격 받았을 때, 공격한 대상을 타겟으로 지정.
 	AWielderController* WielderController = Cast<AWielderController>(GetController());
 	if (IsValid(WielderController))
 	{
@@ -309,14 +309,14 @@ void AWielder::OnGetDamaged(bool IsRetreat)
 		WielderController->NotifyUnderAttack(false);
 	}
 
-	// ȸ�ǰ� �ʿ��� ��Ȳ�̶��
+	// 회피가 필요한 상황이라면
 	if (IsRetreat)
 	{
 		ChangeToRetreatMode();
 		return;
 	}
 
-	// ������Ȳ�� �ƴ϶�� �ٷ� ȸ��
+	// 전투상황이 아니라면 바로 회피
 	if (CurState == EStateOfEnemy::In_Battle) return;
 
 	ChangeToRetreatMode();
@@ -324,7 +324,7 @@ void AWielder::OnGetDamaged(bool IsRetreat)
 
 void AWielder::ChangeToRetreatMode()
 {
-	// ���� �޾��� ��, Retreat ���·� ����
+	// 공격 받았을 때, Retreat 상태로 변경
 	AWielderController* WielderController = Cast<AWielderController>(GetController());
 	if (IsValid(WielderController))
 	{
@@ -335,12 +335,12 @@ void AWielder::ChangeToRetreatMode()
 void AWielder::RetreatFromEnemy()
 {
 	// TO DO
-	// 1. ���� Ÿ������ �ϰ� �ִ� ���Ϳ��� �Ÿ��� '�ּ� ȸ�� �Ÿ�'�� �Ѵ��� üũ 
-	// 2. ���ͷ� ���� �־����� ���� �齺�� �ִϸ��̼� ����
+	// 1. 현재 타겟으로 하고 있는 액터와의 거리가 '최소 회피 거리'를 넘는지 체크 
+	// 2. 액터로 부터 멀어지기 위해 백스텝 애니메이션 실행
 
 	UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance();
 
-	// �齺�� ��Ÿ�ְ� ��� ���� �ƴ� �� ���
+	// 백스텝 몽타주가 재생 중이 아닐 때 재생
 	if (AnimInstance->Montage_IsPlaying(StatComponent->GetBackstepMontage())) return;
 	if (!IsValid(GetSeeingPawn())) return;
 
@@ -414,11 +414,11 @@ void AWielder::OnUnequipEnded()
 
 void AWielder::CheckEquipWeapon()
 {
-	// ���� ���⸦ �����ϰ� ���� �ʴٸ� ����.
+	// 현재 무기를 장착하고 있지 않다면 착용.
 	if (!IsValid(EquipWeapon))
 		EquipFirstWeapon();
 
-	// ���⸦ �������̶�� �ƹ��͵� ���� ����.
+	// 무기를 착용중이라면 아무것도 하지 않음.
 }
 
 void AWielder::EquipFirstWeapon()
@@ -512,7 +512,7 @@ FVector AWielder::CirclingAroundTheEnemy()
 
 	FVector GoalDirection = GetActorRightVector();
 
-	// ������ �Ÿ��� ����͸� �Ÿ� ���غ��� �����ٸ�
+	// 적과의 거리가 모니터링 거리 기준보다 가깝다면
 	if (GetDistanceTo(Enemy) < MonitoringDistance)
 	{
 		MoveLocation = GetActorLocation() + GoalDirection * 100.0f;
@@ -544,7 +544,7 @@ FVector AWielder::CirclingAroundTheEnemy()
 	}
 	else
 	{
-		// �ƴ� ��� �÷��̾�� õõ�� ����
+		// 아닐 경우 플레이어에게 천천히 접근
 		MoveLocation = GetActorLocation() + GetActorForwardVector() * 100.0f;
 
 		DrawDebugLine(GetWorld(), GetActorLocation(), MoveLocation, FColor::Green, true, -1, 0, 3);
@@ -596,7 +596,7 @@ void AWielder::Die()
 {
 	if (OnKilled.IsBound())
 	{
-		OnKilled.Execute(false);
+		OnKilled.Broadcast(this);
 	}
 
 	WeaponComponent->RemoveOwnerWeapon();

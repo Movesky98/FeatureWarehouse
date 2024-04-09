@@ -71,13 +71,13 @@ void ASwordShield::HoldMeleeWeapon()
 	{
 		if (AnimInstance->Montage_IsPlaying(MontageInfo.m_EquipMontage))
 		{
-			// ���� ����
+			// 무기 장착
 			GetSkeletalMesh()->AttachToComponent(GetWeaponOwner()->GetMesh(), FAttachmentTransformRules::KeepRelativeTransform, Name_SwordEquip);
 			Shield->AttachToComponent(GetWeaponOwner()->GetMesh(), FAttachmentTransformRules::KeepRelativeTransform, Name_ShieldEquip);
 		}
 		else
 		{
-			// ���� ���� ����
+			// 무기 장착 해제
 			GetSkeletalMesh()->AttachToComponent(GetWeaponOwner()->GetMesh(), FAttachmentTransformRules::KeepRelativeTransform, Name_SwordUnequip);
 			Shield->AttachToComponent(GetWeaponOwner()->GetMesh(), FAttachmentTransformRules::KeepRelativeTransform, Name_ShieldUnequip);
 		}
@@ -86,8 +86,8 @@ void ASwordShield::HoldMeleeWeapon()
 
 void ASwordShield::AttackTrace()
 {
-	// ���� ����
-	// ��� ���� �� �� ������ �����ϰ� 2ȸ������ �����ϱ� ������ ���� ��Ÿ�� �ε����� 3�̶�� == ����� (���� ����)
+	// 쉴드 어택
+	// 모든 공격 중 약 공격을 제외하고 2회까지만 공격하기 때문에 공격 몽타주 인덱스가 3이라면 == 약공격 (쉴드 어택)
 	bool IsShieldAttack = MontageIndex == 3 ? true : false;
 
 	if (IsShieldAttack)
@@ -144,7 +144,7 @@ void ASwordShield::DrawAttackTrace(const FVector& LineStart, const FVector& Line
 
 	if (IsShield)
 	{
-		// ����ġ�� ���
+		// 쉴드치는 경우
 		IsHit = UKismetSystemLibrary::BoxTraceSingle(
 			GetWorld(),
 			LineStart,
@@ -161,7 +161,7 @@ void ASwordShield::DrawAttackTrace(const FVector& LineStart, const FVector& Line
 	}
 	else
 	{
-		// �ҵ� ������ ���
+		// 소드 공격일 경우
 		IsHit = UKismetSystemLibrary::LineTraceSingle(
 			GetWorld(),
 			LineStart,

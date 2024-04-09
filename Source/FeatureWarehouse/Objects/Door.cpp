@@ -123,7 +123,7 @@ void ADoor::OpenDoor()
 {
 	bIsDoorMoving = true;
 	
-	// ¿©±â¼­ ¼­ºê·¹º§ ·Îµå&¾ð·Îµå ÇÊ¿ä
+	// ì—¬ê¸°ì„œ ì„œë¸Œë ˆë²¨ ë¡œë“œ&ì–¸ë¡œë“œ í•„ìš”
 	bOpenedFromBehind ? LoadLevel(NextLevel) : LoadLevel(CurrentLevel);
 
 	GetWorldTimerManager().SetTimer(DoorTimerHandle, this, &ADoor::SetDoorRotation, 0.01f, true);

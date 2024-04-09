@@ -31,6 +31,24 @@ bool UGameEndMenu::Initialize()
 	return true;
 }
 
+void UGameEndMenu::SetUp()
+{
+	this->AddToViewport();
+
+	FInputModeUIOnly InputModeData;
+	this->bIsFocusable = true;
+	InputModeData.SetLockMouseToViewportBehavior(EMouseLockMode::DoNotLock);
+
+	UWorld* World = GetWorld();
+	if (!ensure(World != nullptr)) return;
+
+	APlayerController* PlayerController = World->GetFirstPlayerController();
+	if (!ensure(PlayerController != nullptr)) return;
+
+	PlayerController->SetInputMode(InputModeData);
+	PlayerController->SetShowMouseCursor(true);
+}
+
 void UGameEndMenu::LoadDeadPanel()
 {
 	WidgetSwitcher->SetActiveWidget(DeadPanel);

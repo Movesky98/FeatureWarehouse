@@ -6,9 +6,9 @@
 UENUM(BlueprintType)
 enum class EBattleState : uint8
 {
-	None UMETA(DisplayName = "None"),				// ÀüÅõ »óÅÂ°¡ ¾Æ´Ô
-	Monitoring UMETA(DisplayName = "Monitoring"),	// °æ°Ô
-	Approaching UMETA(DisplayName = "Approaching"),	// Á¢±Ù
-	Attacking UMETA(DisplayName = "Attacking"),		// °ø°İ
-	Retreating UMETA(DisplayName = "Retreating")	// µÚ·Î ¹°¸²
+	None UMETA(DisplayName = "None"),				// ì „íˆ¬ ìƒíƒœê°€ ì•„ë‹Œ ìƒíƒœ
+	Monitoring UMETA(DisplayName = "Monitoring"),	// ê²½ê³„ ìƒíƒœ
+	Approaching UMETA(DisplayName = "Approaching"),	// ì ‘ê·¼ ìƒíƒœ
+	Attacking UMETA(DisplayName = "Attacking"),		// ê³µê²© ìƒíƒœ
+	Retreating UMETA(DisplayName = "Retreating")	// ë’¤ë¡œ ë¬¼ë¦¬ëŠ” ìƒíƒœ (íšŒí”¼)
 };

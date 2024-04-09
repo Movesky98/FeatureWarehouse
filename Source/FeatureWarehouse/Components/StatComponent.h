@@ -61,7 +61,8 @@ protected:
 	float StaminaElapsedTime = 0.0f;
 
 	/** Stamina 회복이 시작되는데 걸리는 시간 */
-	float RecoveryStaminaWaitTime = 5.0f;
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "State")
+	float RecoveryStaminaWaitTime = 3.0f;
 
 	/** Stamina 회복 시작을 위한 시간 계산이 시작되었는지. */
 	bool bIsStartRecoveryStaminaWaitTimer;
@@ -87,36 +88,40 @@ protected:
 
 private:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Stat", meta = (AllowPrivateAccess = "true"))
-	float MaxHP;				// 최대 체력
+	float MaxHP;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Stat", meta = (AllowPrivateAccess = "true"))
-	float CurrentHP;			// 현재 체력
+	float CurrentHP;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Stat", meta = (AllowPrivateAccess = "true"))
-	float MaxMP;				// 최대 마나
+	float MaxMP;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Stat", meta = (AllowPrivateAccess = "true"))
-	float CurrentMP;			// 현제 마나
+	float CurrentMP;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Stat", meta = (AllowPrivateAccess = "true"))
-	float CurrentStamina;		// 현재 스태미나
+	float CurrentStamina;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Stat", meta = (AllowPrivateAccess = "true"))
-	float MaxStamina;			// 최대 스태미나
+	float MaxStamina;
 
+	/** 데미지 누적량 (한번에 들어오는 피해가 >= MaxHP's 30% 일 경우, 회피) */
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Stat", meta = (AllowPrivateAccess = "true"))
-	float DamageAccumulation;	// 데미지 누적량 (한번에 들어오는 피해가 >= CurrentHP's 30% 일 경우, 회피)
+	float DamageAccumulation;
 
 	FTimerHandle ResetDamageAccumulationTimer;
 
+	/** 스턴 게이지 */
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Stat", meta = (AllowPrivateAccess = "true"))
-	float StunGauge;			// 스턴 게이지
+	float StunGauge;
 
+	/** 최대 스턴게이지 (<= StunGage일 경우, 그로기 상태) */
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Stat", meta = (AllowPrivateAccess = "true"))
-	float StunGaugeLimit;		// 최대 스턴게이지 (<= StunGage일 경우, 그로기 상태)
+	float StunGaugeLimit;
 
+	/** 데미지를 받는 객체인지 */
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "State", meta = (AllowPrivateAccess = "true"))
-	bool bIsDamagable;			// 데미지를 받는 객체인지
+	bool bIsDamagable;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "State", meta = (AllowPrivateAccess = "true"))
 	EDamagableType DamagableType;

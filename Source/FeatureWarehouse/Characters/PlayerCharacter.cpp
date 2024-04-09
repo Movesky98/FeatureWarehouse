@@ -560,12 +560,12 @@ void APlayerCharacter::EquipFirstWeapon()
 	bool CanTakeAction = CheckTakeAction(SpecificAction, false);
 	if (!CanTakeAction) return;
 
-	// ���� ��� �ִ� ���Ⱑ �ι�° ������ ���
+	// 현재 들고 있는 무기가 두번째 무기인 경우
 	if (WeaponComponent->CurEquipState() == EEquipState::SubWeapon)
 	{
 		if (EquipWeapon->GetWeaponType() == ETypeOfWeapon::Gun)
 		{
-			// ���� ��� ���� ���� ��Ÿ�ְ� �����Ƿ� �ٷ� ���¸� �ٲ���.
+			// 총의 경우 장착 해제 몽타주가 없으므로 바로 상태를 바꿔줌.
 			EquipWeapon->Unequip();
 			ActionState = EActionState::EAS_Idle;
 		}
@@ -594,7 +594,7 @@ void APlayerCharacter::EquipSecondWeapon()
 	{
 		if (EquipWeapon->GetWeaponType() == ETypeOfWeapon::Gun)
 		{
-			// ���� ��� ���� ���� ��Ÿ�ְ� �����Ƿ� �ٷ� ���¸� �ٲ���.
+			// 총의 경우 장착 해제 몽타주가 없으므로 바로 상태를 바꿔줌.
 			EquipWeapon->Unequip();
 			ActionState = EActionState::EAS_Idle;
 		}
@@ -865,13 +865,13 @@ void APlayerCharacter::OnUnequipEnded()
 	if (ActionState == EActionState::EAS_Swapping)
 	{
 		ActionState = EActionState::EAS_Idle;
-		// ���� ��ü�� �ϴ� ���
+		// 무기 교체를 하는 경우
 		WeaponComponent->EquipOtherWeapon();
 	}
 	else
 	{
 		ActionState = EActionState::EAS_Idle;
-		// ���� ��ü�� �ƴ� ���
+		// 무기 교체가 아닐 경우
 		PlayerController->SwitchPlayerMenu();
 	}
 
@@ -895,11 +895,11 @@ void APlayerCharacter::Dodge()
 	float Direction = WielderAnim->GetDirection();
 	UAnimMontage* DodgeMontage = nullptr;
 
-	// ������ ���� ���� ����
+	// 나누기 위한 기준 각도
 	float AngleDivider = 22.5f;
 	bool IsNegative = Direction < 0 ? true : false;
 
-	// ��
+	// 몫
 	int Quotient = (IsNegative ? -Direction / AngleDivider : Direction / AngleDivider);
 
 	switch (Quotient)
@@ -1122,7 +1122,7 @@ void APlayerCharacter::Die()
 {
 	if (OnKilled.IsBound())
 	{
-		OnKilled.Execute(true);
+		OnKilled.Broadcast(this);
 	}
 
 	WeaponComponent->RemoveOwnerWeapon();

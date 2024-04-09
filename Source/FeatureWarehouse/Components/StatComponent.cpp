@@ -63,14 +63,14 @@ void UStatComponent::OnGetDamagedEnded(UAnimMontage* Montage, bool bInterrupted)
 
 	UAnimInstance* Anim = WeaponWielder->GetMesh()->GetAnimInstance();
 
-	// �ǰ� ��Ÿ�ְ� ������� ���� ���� ���� ����
+	// 피격 몽타주가 실행되지 않을 때에 상태 변경
 	if (Anim && !Anim->Montage_IsPlaying(GetDamagedMontage))
 	{
 		WeaponWielder->SetActionState(EActionState::EAS_Idle);
 
 		if (!OnGetDamaged.IsBound()) return;
 
-		// �ǰ� ��������Ʈ �ݹ� �Լ� ȣ��.
+		// 피격 델리게이트 콜백 함수 호출.
 		(DamageAccumulation > MaxHP * 0.3f) ? OnGetDamaged.Execute(true) : OnGetDamaged.Execute(false);
 		DamageAccumulation = 0.0f;
 	}
@@ -110,12 +110,14 @@ void UStatComponent::SetMontages(TMap<FString, UAnimMontage*> AnimMontages)
 
 void UStatComponent::DecreaseHP(float Damage)
 {
-	// �������� ���� �� �ִ� ���°� �ƴ϶�� HP�� ���� ����.
+	// 데미지를 받을 수 있는 상태가 아니라면 HP를 깎지 않음.
 	if (DamagableType != EDamagableType::EDT_VULNERABLE) return;
 
 	AWeaponWielder* WeaponWielder = Cast<AWeaponWielder>(GetOwner());
 	if (!IsValid(WeaponWielder)) return;
 	
+	CurrentHP -= Damage;
+
 	if (CurrentHP <= 0.0f)
 	{
 		UE_LOG(LogTemp, Warning, TEXT("Set %s's dead state."), *UKismetSystemLibrary::GetDisplayName(WeaponWielder));
@@ -124,9 +126,7 @@ void UStatComponent::DecreaseHP(float Damage)
 		return;
 	}
 
-	CurrentHP -= Damage;
-
-	// �ǰ� ��Ÿ�ְ� ������ �ٷ� ���� ����
+	// 피격 몽타주가 없으면 바로 상태 변경
 	IsValid(GetDamagedMontage) ? PlayMontage(GetDamagedMontage) : WeaponWielder->SetActionState(EActionState::EAS_Idle);
 
 	DamageAccumulation += Damage;
@@ -157,15 +157,15 @@ void UStatComponent::DecreaseStamina(float Amount)
 
 	if (bIsStartRecoveryStamina)
 	{
-		// ���¹̳� ȸ�� ��, ���¹̳��� ���� ���� ���� ��� ȸ�� ����
+		// 스태미나 회복 중, 스태미나를 깎을 일이 생긴 경우 회복 종료
 		StopRecoveryStamina();
 
-		// �ð� ����� �����ϱ� ���� �� ����.
+		// 시간 계산을 시작하기 위해 값 변경.
 		bIsStartRecoveryStaminaWaitTimer = false;
 		bIsStartRecoveryStamina = false;
 	}
 
-	// �ð� ��� ���� üũ
+	// 시간 계산 시작 체크
 	if (!bIsStartRecoveryStaminaWaitTimer && !bIsStartRecoveryStamina)
 	{
 		bIsStartRecoveryStaminaWaitTimer = true;
@@ -173,7 +173,7 @@ void UStatComponent::DecreaseStamina(float Amount)
 	}
 	else
 	{
-		// ���������� ���¹̳� �Ҹ��� �� ���� ��� �ð� �ʱ�ȭ
+		// 시작했으면 스태미나 소모할 때 마다 대기 시간 초기화
 		StaminaElapsedTime = 0.0f;
 	}
 }
@@ -192,7 +192,7 @@ void UStatComponent::CalculateStaminaWaitTime()
 {
 	StaminaElapsedTime += 1.0f;
 
-	// ����� �ð��� �ȴٸ�
+	// 충분한 시간이 된다면
 	if (RecoveryStaminaWaitTime <= StaminaElapsedTime)
 	{
 		GetWorld()->GetTimerManager().ClearTimer(RecoveryStaminaTimer);
@@ -205,12 +205,12 @@ void UStatComponent::RecoveryStamina()
 {
 	CurrentStamina += MaxStamina * 0.01f;
 
-	// ��ģ �������� üũ
+	// 지친 상태인지 체크
 	if (bIsExhaustedStamina)
 	{
 		if (CurrentStamina > MaxStamina * 0.5f)
 		{
-			// Stamina�� ���� �Ѿ��ٸ�, ��ģ ���¸� �����ϰ� ���� �׼��� ���� �� �ֵ��� Idle�� �ٲ���.
+			// Stamina가 반을 넘었다면, 지친 상태를 해제하고 다음 액션을 취할 수 있도록 Idle로 바꿔줌.
 			bIsExhaustedStamina = false;
 
 			AWeaponWielder* WielderOwner = Cast<AWeaponWielder>(GetOwner());
@@ -267,11 +267,11 @@ void UStatComponent::PlayMontage(UAnimMontage* PlayMontage)
 	UAnimInstance* OwnerAnim = WeaponWielder->GetMesh()->GetAnimInstance();
 	if (OwnerAnim)
 	{
-		// ����ǰ� �ִ� ��Ÿ�� ����.
-		if(OwnerAnim->IsAnyMontagePlaying())
+		// 재생되고 있는 몽타주 중지.
+		if (OwnerAnim->IsAnyMontagePlaying())
 			OwnerAnim->StopAllMontages(0.0f);
 
-		// ��Ÿ�� ��� (�ǰ�, ����)
+		// 몽타주 재생 (피격, 죽음)
 		OwnerAnim->Montage_Play(PlayMontage);
 	}
 }
