@@ -99,7 +99,6 @@ void AWielderController::BeginPlay()
 
 void AWielderController::OnTargetDetected(AActor* Actor, FAIStimulus Stimulus)
 {	
-	UE_LOG(LogTemp, Warning, TEXT("OnTargetDetected is called"));
 	AWielder* Wielder = Cast<AWielder>(GetPawn());
 	if (!IsValid(Wielder)) return;
 
@@ -112,11 +111,11 @@ void AWielderController::OnTargetDetected(AActor* Actor, FAIStimulus Stimulus)
 		if (WeaponWielder)
 		{
 			Wielder->AddDetectedWielder(WeaponWielder);
-			UE_LOG(LogTemp, Warning, TEXT("%s Add Detected Wielder %s"), *UKismetSystemLibrary::GetDisplayName(Wielder), *UKismetSystemLibrary::GetDisplayName(WeaponWielder));
 		}
 
 		// 현재 바라보고 있는 폰이 있으면 아무것도 하지않음.
 		if (GetSeeingPawn()) return;
+		if (WeaponWielder->GetGenericTeamId() == Wielder->GetGenericTeamId()) return;
 
 		// 적이 이미 접근하였으며, AI가 적을 인식한 경우
 		if (Wielder->IsEnemyApproached())
@@ -153,7 +152,7 @@ void AWielderController::OnTargetDetected(AActor* Actor, FAIStimulus Stimulus)
 		// 시야에서 벗어난 경우 처리를 해줘야할 듯.
 		if (!Wielder->IsRecognizedSomething())
 		{
-			NotifyGoToHomePos();
+			// NotifyGoToHomePos();
 		}
 	}
 }
@@ -340,7 +339,8 @@ void AWielderController::FindNewTarget()
 	{
 		if (IsValid(DetectedWielder))
 		{
-			UE_LOG(LogTemp, Warning, TEXT("%s Set New Target"), *UKismetSystemLibrary::GetDisplayName(Wielder));
+			if (DetectedWielder->GetGenericTeamId() == Wielder->GetGenericTeamId())
+				continue;
 
 			Wielder->GetDistanceTo(DetectedWielder) <= Wielder->GetAttackRange() ? NotifyEnemyInAttackRange(true) : NotifyEnemyInAttackRange(false);
 			DesignateEnemy(DetectedWielder);

@@ -30,7 +30,7 @@ public:
 	/* Range 관련 키를 초기화하는 함수 */
 	void ClearRangeKey();
 
-	/* 무언가를 i아갈 때 Behavior Tree에 타겟을 알리는 함수. */
+	/* 적에게 접근할 때 Behavior Tree에 타겟을 알리는 함수. */
 	void NotifyApproachToEnemy(AActor* Enemy);
 
 	/* 전투 상황에 임했음을 Behavior Tree에 알리는 함수. */
@@ -55,6 +55,7 @@ public:
 	void SetHomePosToBlackboard(FVector HomePos);
 
 	/* 적 캐릭터를 블랙보드에 저장하는 함수 */
+	UFUNCTION(BlueprintCallable)
 	void DesignateEnemy(AActor* Enemy);
 
 	/* HomePos로 돌아가는 함수 */
