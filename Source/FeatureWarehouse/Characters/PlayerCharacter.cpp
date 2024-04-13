@@ -33,6 +33,7 @@
 #include "Interfaces/InteractInterface.h"
 
 #include "AnimInstance/PlayerAnimInstance.h"
+#include "AnimInstance/WielderAnimInstance.h"
 #include "GamePlay/FW_PlayerController.h"
 
 // Sets default values
@@ -86,6 +87,12 @@ void APlayerCharacter::PostInitializeComponents()
 	StatComponent->OnExhaustedStamina.BindUObject(this, &APlayerCharacter::StopRunning);
 
 	TeamId = FGenericTeamId((uint8)Faction);
+
+	UWielderAnimInstance* WielderAnim = Cast<UWielderAnimInstance>(GetMesh()->GetAnimInstance());
+	if (WielderAnim)
+	{
+		WielderAnim->OnHitEnd.BindUObject(this, &APlayerCharacter::OnHitEnded);
+	}
 }
 
 // Called when the game starts or when spawned
@@ -1006,7 +1013,7 @@ void APlayerCharacter::TryLockTarget()
 		{
 			if (Hit.GetActor())
 			{
-				LockOnTarget = Hit.GetActor();
+				LockOnTarget = Cast<AWeaponWielder>(Hit.GetActor());
 				bIsTargetLocked = true;
 
 				AWielder* Wielder = Cast<AWielder>(LockOnTarget);
@@ -1025,7 +1032,7 @@ void APlayerCharacter::TryLockTarget()
 
 void APlayerCharacter::LockTarget()
 {
-	if (bIsTargetLocked && IsValid(LockOnTarget))
+	if (bIsTargetLocked && !LockOnTarget->IsDead())
 	{
 		FVector Start = GetActorLocation();
 		FVector End = LockOnTarget->GetActorLocation();
@@ -1047,8 +1054,11 @@ void APlayerCharacter::LockTarget()
 		return;
 	}
 
-	if (!IsValid(LockOnTarget))
+	if (LockOnTarget->IsDead())
 	{
+		AWielder* Wielder = Cast<AWielder>(LockOnTarget);
+		Wielder->SetVisibleLockOnImage(false);
+
 		bIsTargetLocked = false;
 		LockOnTarget = nullptr;
 		LockChangeElapsedTime = 0.0f;
@@ -1102,7 +1112,7 @@ void APlayerCharacter::FindNearbyLockTarget(float DeltaYaw, float DeltaPitch)
 					Wielder->SetVisibleLockOnImage(false);
 				}
 
-				LockOnTarget = Hit.GetActor();
+				LockOnTarget = Cast<AWeaponWielder>(Hit.GetActor());
 
 				Wielder = Cast<AWielder>(LockOnTarget);
 				if (Wielder)

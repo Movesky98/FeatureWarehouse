@@ -35,6 +35,8 @@ public:
 
 	void PlayMontage(UAnimMontage* Montage);
 
+	void TransferReactionMontages(TMap<FString, UAnimMontage*> AnimMontages);
+
 	virtual void OnEquipEnded();
 
 	virtual void OnUnequipEnded();
@@ -53,6 +55,9 @@ protected:
 	UFUNCTION() virtual void OnReceivePointDamageEvent(AActor* DamagedActor, float Damage, AController* InstigatedBy, 
 		FVector HitLocation, UPrimitiveComponent* FHitComponent, FName BoneName,
 		FVector ShotFromDirection, const UDamageType* DamageType, AActor* DamageCauser);
+
+	UFUNCTION()
+	virtual void OnHitEnded();
 	
 	virtual void StopAttack();
 
@@ -96,18 +101,20 @@ protected:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Character|State")
 	EActionState ActionState;
 
-	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "State")
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "State|Death")
 	bool bIsDead;
 
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Montage")
-	TMap<EDirection, UAnimMontage*> DodgeMontages;
-
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "State|Death")
+	AWeaponWielder* KilledByWielder;
+	
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Team")
 	EFactionType Faction;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Team")
 	FGenericTeamId TeamId;
 
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Montage|Dodge")
+	TMap<EDirection, UAnimMontage*> DodgeMontages;
 #pragma region GetterSetter
 public:
 	// Equip Weapon
@@ -129,5 +136,7 @@ public:
 
 	FGenericTeamId GetGenericTeamId() const override;
 	FORCEINLINE EFactionType GetFaction() { return Faction; }
+
+	FORCEINLINE AWeaponWielder* GetKilledByWielder() { return KilledByWielder; }
 #pragma endregion
 };

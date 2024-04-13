@@ -111,7 +111,7 @@ protected:
 	bool bIsTargetLocked;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "LockOn")
-	AActor* LockOnTarget;
+	AWeaponWielder* LockOnTarget;
 
 	FTimerHandle LockOnTimer;
 

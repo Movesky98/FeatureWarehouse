@@ -26,6 +26,7 @@ UStatComponent::UStatComponent()
 
 	StunGauge = 0.0f;
 	DamagableType = EDamagableType::EDT_VULNERABLE;
+	EvadeThreshold = 0.3f;
 }
 
 // Called when the game starts
@@ -33,7 +34,7 @@ void UStatComponent::BeginPlay()
 {
 	Super::BeginPlay();
 
-	AWeaponWielder* WeaponWielder = Cast<AWeaponWielder>(GetOwner());
+	/*AWeaponWielder* WeaponWielder = Cast<AWeaponWielder>(GetOwner());
 
 	if (!IsValid(WeaponWielder)) return;
 
@@ -41,7 +42,7 @@ void UStatComponent::BeginPlay()
 	if (AnimInstance)
 	{
 		AnimInstance->OnMontageEnded.AddDynamic(this, &UStatComponent::OnGetDamagedEnded);
-	}
+	}*/
 }
 
 void UStatComponent::OnDeathEnded(UAnimMontage* Montage, bool bInterrupted)
@@ -113,23 +114,35 @@ void UStatComponent::DecreaseHP(float Damage)
 	// 데미지를 받을 수 있는 상태가 아니라면 HP를 깎지 않음.
 	if (DamagableType != EDamagableType::EDT_VULNERABLE) return;
 
-	AWeaponWielder* WeaponWielder = Cast<AWeaponWielder>(GetOwner());
-	if (!IsValid(WeaponWielder)) return;
-	
 	CurrentHP -= Damage;
+
+	DamageAccumulation += Damage;
+}
+
+bool UStatComponent::CheckDeathStatus()
+{
+	return CurrentHP <= 0.0f ? true : false;
 
 	if (CurrentHP <= 0.0f)
 	{
-		UE_LOG(LogTemp, Warning, TEXT("Set %s's dead state."), *UKismetSystemLibrary::GetDisplayName(WeaponWielder));
-		WeaponWielder->SetIsDead(true);
-		IsValid(DeathMontage) ? PlayDeathMontage() : WeaponWielder->Die();
-		return;
+		return true;
+
 	}
+	else
+	{
+		// 피격 몽타주가 없으면 바로 상태 변경
+		// IsValid(GetDamagedMontage) ? PlayMontage(GetDamagedMontage) : WeaponWielder->SetActionState(EActionState::EAS_Idle);
 
-	// 피격 몽타주가 없으면 바로 상태 변경
-	IsValid(GetDamagedMontage) ? PlayMontage(GetDamagedMontage) : WeaponWielder->SetActionState(EActionState::EAS_Idle);
+		return false;
+	}
+}
 
-	DamageAccumulation += Damage;
+bool UStatComponent::CheckShouldEvade()
+{
+	bool ShouldEvade = (DamageAccumulation > MaxHP * EvadeThreshold) ? true : false;
+	DamageAccumulation = 0.0f;
+
+	return ShouldEvade;
 }
 
 void UStatComponent::DecreaseStamina(float Amount)

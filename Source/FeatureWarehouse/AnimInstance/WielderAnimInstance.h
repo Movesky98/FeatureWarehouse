@@ -8,6 +8,9 @@
 
 DECLARE_DELEGATE(FOnHoldMeleeWeaponDelegate);
 DECLARE_DELEGATE(FOnNextAttackCheckDelegate);
+DECLARE_DELEGATE(FOnHitEndDelegate);
+DECLARE_DELEGATE(FOnRetreatEndDelegate);
+
 DECLARE_DELEGATE(FOnPlaySlashSoundDelegate);
 DECLARE_DELEGATE(FOnPlayEquipSoundDelegate);
 DECLARE_DELEGATE(FOnPlayUnequipSoundDelegate);
@@ -30,10 +33,41 @@ public:
 
 	FOnPlayUnequipSoundDelegate OnPlayUnequipSound;
 
+	FOnHitEndDelegate OnHitEnd;
+
+	FOnRetreatEndDelegate OnRetreatEnd;
+
+	/** Reaction Montages */
+	void SetReactionMontages(TMap<FString, UAnimMontage*> AnimMontages);
+
+	void PlayDeathMontage();
+
+	void PlayHitMontage();
+
+	void PlayRetreatMontage();
+
 protected:
 	virtual void NativeInitializeAnimation() override;
 
 	virtual void NativeUpdateAnimation(float DeltaSeconds) override;
+
+	UFUNCTION()
+	void OnDeath(UAnimMontage* Montage, bool bInterrupted);
+
+	UFUNCTION()
+	void OnHitEnded(UAnimMontage* Montage, bool bInterrupted);
+
+	UFUNCTION()
+	void OnRetreatEnded(UAnimMontage* Montage, bool bInterrupted);
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Montage|Reaction")
+	UAnimMontage* DeathMontage;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Montage|Reaction")
+	UAnimMontage* RetreatMontage;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Montage|Reaction")
+	UAnimMontage* HitMontage;
 
 	UFUNCTION()
 	void AnimNotify_NextAttackCheck();

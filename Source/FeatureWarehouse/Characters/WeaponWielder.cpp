@@ -58,6 +58,12 @@ void AWeaponWielder::PostInitializeComponents()
 	this->OnTakePointDamage.AddDynamic(this, &AWeaponWielder::OnReceivePointDamageEvent);
 
 	TeamId = FGenericTeamId((uint8)Faction);
+
+	UWielderAnimInstance* WielderAnim = Cast<UWielderAnimInstance>(GetMesh()->GetAnimInstance());
+	if (WielderAnim)
+	{
+		WielderAnim->OnHitEnd.BindUObject(this, &AWeaponWielder::OnHitEnded);
+	}
 }
 
 void AWeaponWielder::BeginPlay()
@@ -75,34 +81,39 @@ void AWeaponWielder::NotifyToGameMode()
 	}
 }
 
-void AWeaponWielder::PlayMontage(UAnimMontage* Montage)
-{
-	UAnimInstance* CharacterAnim = GetMesh()->GetAnimInstance();
-
-	if (CharacterAnim)
-	{
-		CharacterAnim->Montage_Play(Montage);
-	}
-}
-
 void AWeaponWielder::OnReceivePointDamageEvent(AActor* DamagedActor, float Damage, AController* InstigatedBy, 
 	FVector HitLocation, UPrimitiveComponent* FHitComponent, FName BoneName, 
 	FVector ShotFromDirection, const UDamageType* DamageType, AActor* DamageCauser)
 {
-	/* 
-	* To Do List
-	* 1. Decrease HP
-	* 2. Show Blood effect.
-	* 3. Play hit sound.
-	*/
 	if (bIsDead) return;
+	UWielderAnimInstance* WielderAnim = Cast<UWielderAnimInstance>(GetMesh()->GetAnimInstance());
+	if (!WielderAnim) return;
 
 	ActionState = EActionState::EAS_GetDamaged;
-
 	StatComponent->DecreaseHP(Damage);
 
-	FRotator ImpactRotation = UKismetMathLibrary::MakeRotFromZ(ShotFromDirection);
-	StatComponent->ShowBloodEffect(HitLocation, ImpactRotation);
+	bool IsDead = StatComponent->CheckDeathStatus();
+	
+	if (IsDead)
+	{
+		bIsDead = true;
+		KilledByWielder = Cast<AWeaponWielder>(InstigatedBy->GetPawn());
+		
+		WielderAnim->PlayDeathMontage();
+	}
+	else
+	{
+		WielderAnim->PlayHitMontage();
+
+		FRotator ImpactRotation = UKismetMathLibrary::MakeRotFromZ(ShotFromDirection);
+		StatComponent->ShowBloodEffect(HitLocation, ImpactRotation);
+	}
+}
+
+void AWeaponWielder::OnHitEnded()
+{
+	UE_LOG(LogTemp, Warning, TEXT("%s || Hit Ended. Change ActionState to Idle."), *UKismetSystemLibrary::GetDisplayName(this));
+	ActionState = EActionState::EAS_Idle;
 }
 
 void AWeaponWielder::Attack()
@@ -210,4 +221,24 @@ bool AWeaponWielder::CheckTakeAction(EActionState SpecificAction, bool bCanTakeC
 FGenericTeamId AWeaponWielder::GetGenericTeamId() const
 {
 	return TeamId;
+}
+
+void AWeaponWielder::PlayMontage(UAnimMontage* Montage)
+{
+	UAnimInstance* CharacterAnim = GetMesh()->GetAnimInstance();
+
+	if (CharacterAnim)
+	{
+		CharacterAnim->Montage_Play(Montage);
+	}
+}
+
+void AWeaponWielder::TransferReactionMontages(TMap<FString, UAnimMontage*> AnimMontages)
+{
+	UWielderAnimInstance* WielderAnim = Cast<UWielderAnimInstance>(GetMesh()->GetAnimInstance());
+
+	if (WielderAnim)
+	{
+		WielderAnim->SetReactionMontages(AnimMontages);
+	}
 }

@@ -183,6 +183,9 @@ void ASwordShield::DrawAttackTrace(const FVector& LineStart, const FVector& Line
 		IgnoreActor.Add(Hit.GetActor());
 		TSubclassOf<UDamageType> DamageType;
 
+		if (HitSound)
+			UGameplayStatics::PlaySoundAtLocation(GetWorld(), HitSound, Hit.ImpactPoint);
+
 		UGameplayStatics::ApplyPointDamage(Hit.GetActor(), Damage, Hit.ImpactNormal, Hit, GetWeaponOwner()->GetController(), this, DamageType);
 
 		ShakePlayerCamera();

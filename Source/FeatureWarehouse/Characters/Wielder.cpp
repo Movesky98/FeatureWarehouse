@@ -71,7 +71,7 @@ void AWielder::PostInitializeComponents()
 	AttackRangeComponent->OnComponentBeginOverlap.AddDynamic(this, &AWielder::OnAttackRangeBeginOverlap);
 	AttackRangeComponent->OnComponentEndOverlap.AddDynamic(this, &AWielder::OnAttackRangeEndOverlap);
 
-	StatComponent->OnGetDamaged.BindUFunction(this, FName("OnGetDamaged"));
+	// StatComponent->OnGetDamaged.BindUFunction(this, FName("OnGetDamaged"));
 
 	StatBarComponent->Init();
 	StatBarComponent->HideUI();
@@ -87,6 +87,12 @@ void AWielder::PostInitializeComponents()
 		ensureMsgf(WielderController, TEXT("%s's Controller is not wielder controller class !!"), *UKismetSystemLibrary::GetDisplayName(this));
 
 		WielderController->NotifyPatrol();
+	}
+
+	UWielderAnimInstance* WielderAnim = Cast<UWielderAnimInstance>(GetMesh()->GetAnimInstance());
+	if (WielderAnim)
+	{
+		WielderAnim->OnHitEnd.BindUObject(this, &AWielder::OnHitEnded);
 	}
 }
 
@@ -279,12 +285,31 @@ void AWielder::OnReceivePointDamageEvent(AActor* DamagedActor, float Damage, ACo
 	AWeaponWielder* WeaponWielder = Cast<AWeaponWielder>(InstigatedBy->GetPawn());
 	if (WeaponWielder && WeaponWielder->GetGenericTeamId() == TeamId) return;
 
+	UWielderAnimInstance* WielderAnim = Cast<UWielderAnimInstance>(GetMesh()->GetAnimInstance());
+	if (!WielderAnim) return;
+
 	ActionState = EActionState::EAS_GetDamaged;
 
 	StatComponent->DecreaseHP(Damage);
 
-	FRotator ImpactRotation = UKismetMathLibrary::MakeRotFromZ(ShotFromDirection);
-	StatComponent->ShowBloodEffect(HitLocation, ImpactRotation);
+	bool IsDead = StatComponent->CheckDeathStatus();
+
+	if (IsDead)
+	{
+		bIsDead = true;
+		KilledByWielder = Cast<AWeaponWielder>(InstigatedBy->GetPawn());
+
+		WielderAnim->PlayDeathMontage();
+
+		return;
+	}
+	else
+	{
+		WielderAnim->PlayHitMontage();
+
+		FRotator ImpactRotation = UKismetMathLibrary::MakeRotFromZ(ShotFromDirection);
+		StatComponent->ShowBloodEffect(HitLocation, ImpactRotation);
+	}
 
 	if (!StatBarComponent->IsShowing())
 	{
@@ -322,6 +347,30 @@ void AWielder::OnGetDamaged(bool IsRetreat)
 	ChangeToRetreatMode();
 }
 
+void AWielder::OnHitEnded()
+{
+	ActionState = EActionState::EAS_Idle;
+
+	AWielderController* WielderController = Cast<AWielderController>(GetController());
+	if (IsValid(WielderController))
+	{
+		WielderController->NotifyUnderAttack(false);
+	}
+
+	// 회피가 필요한 상황이라면
+	bool ShouldRetreat = StatComponent->CheckShouldEvade();
+	if (ShouldRetreat)
+	{
+		ChangeToRetreatMode();
+		return;
+	}
+
+	// 전투상황이 아니라면 바로 회피
+	if (CurState == EStateOfEnemy::In_Battle) return;
+
+	ChangeToRetreatMode();
+}
+
 void AWielder::ChangeToRetreatMode()
 {
 	// 공격 받았을 때, Retreat 상태로 변경
@@ -338,15 +387,15 @@ void AWielder::RetreatFromEnemy()
 	// 1. 현재 타겟으로 하고 있는 액터와의 거리가 '최소 회피 거리'를 넘는지 체크 
 	// 2. 액터로 부터 멀어지기 위해 백스텝 애니메이션 실행
 
-	UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance();
+	UWielderAnimInstance* WielderAnim = Cast<UWielderAnimInstance>(GetMesh()->GetAnimInstance());
+	if (!WielderAnim) return;
 
-	// 백스텝 몽타주가 재생 중이 아닐 때 재생
-	if (AnimInstance->Montage_IsPlaying(StatComponent->GetBackstepMontage())) return;
 	if (!IsValid(GetSeeingPawn())) return;
 
+	// 타겟이 회피 최소 거리보다 가까이 있을 경우 실행
 	if (GetDistanceTo(GetSeeingPawn()) <= RetreatDistanceMin)
 	{
-		PlayMontage(StatComponent->GetBackstepMontage());
+		WielderAnim->PlayRetreatMontage();
 	}
 	else
 	{

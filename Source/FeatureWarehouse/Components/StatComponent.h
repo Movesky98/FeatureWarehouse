@@ -31,6 +31,10 @@ public:
 	UFUNCTION(BlueprintCallable)
 	void DecreaseHP(float Damage);
 
+	bool CheckDeathStatus();
+
+	bool CheckShouldEvade();
+
 	void DecreaseStamina(float Amount);
 
 	void ShowBloodEffect(FVector Location, FRotator Rotation);
@@ -105,9 +109,13 @@ private:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Stat", meta = (AllowPrivateAccess = "true"))
 	float MaxStamina;
 
-	/** 데미지 누적량 (한번에 들어오는 피해가 >= MaxHP's 30% 일 경우, 회피) */
+	/** 데미지 누적량 */
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Stat", meta = (AllowPrivateAccess = "true"))
 	float DamageAccumulation;
+
+	/** 회피 임계치. 전체 체력의 얼마만큼 데미지를 입어야 회피를 할 지 결정하기 위한 변수 */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Stat", meta = (UIMin = "0", UIMax = "1", AllowPrivateAccess ="true"))
+	float EvadeThreshold;
 
 	FTimerHandle ResetDamageAccumulationTimer;
 
@@ -118,10 +126,6 @@ private:
 	/** 최대 스턴게이지 (<= StunGage일 경우, 그로기 상태) */
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Stat", meta = (AllowPrivateAccess = "true"))
 	float StunGaugeLimit;
-
-	/** 데미지를 받는 객체인지 */
-	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "State", meta = (AllowPrivateAccess = "true"))
-	bool bIsDamagable;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "State", meta = (AllowPrivateAccess = "true"))
 	EDamagableType DamagableType;

@@ -117,7 +117,7 @@ void AWeapon::Interact(AActor* InteractActor)
 	DeliverMontages.Emplace(FString("RetreatMontage"), MontageInfo.m_RetreatMontage);
 
 	InteractOwner->GetWeaponComponent()->SaveAcquiredWeaponInfo(this);
-	InteractOwner->GetStatComponent()->SetMontages(DeliverMontages);
+	InteractOwner->TransferReactionMontages(DeliverMontages);
 }
 
 void AWeapon::TakeUp(ACharacter* NewOwner)

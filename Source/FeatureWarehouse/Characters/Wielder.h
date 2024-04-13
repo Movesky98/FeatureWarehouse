@@ -92,6 +92,8 @@ protected:
 	UFUNCTION()
 	void OnGetDamaged(bool IsRetreat);
 	
+	void OnHitEnded() override;
+
 	UFUNCTION()
 	void ChangeToRetreatMode();
 

@@ -2,6 +2,7 @@
 
 
 #include "WielderAnimInstance.h"
+#include "Characters/WeaponWielder.h"
 
 #include "GameFramework/Character.h"
 #include "GameFramework/CharacterMovementComponent.h"
@@ -29,6 +30,141 @@ void UWielderAnimInstance::NativeUpdateAnimation(float DeltaSeconds)
 		bIsCrouch = MovementComponent->IsCrouching();
 		bIsFalling = MovementComponent->IsFalling();
 		bShouldMove = (MovementComponent->GetCurrentAcceleration() != FVector::ZeroVector) && (Speed > 3.0f);
+	}
+}
+
+void UWielderAnimInstance::SetReactionMontages(TMap<FString, UAnimMontage*> AnimMontages)
+{
+	for (auto& AnimMontage : AnimMontages)
+	{
+		FString MontageString = AnimMontage.Key;
+
+		if (MontageString.Equals(FString("GetDamagedMontage")))
+		{
+			HitMontage = IsValid(AnimMontage.Value) ? AnimMontage.Value : nullptr;
+			continue;
+		}
+
+		if (MontageString.Equals(FString("DeathMontage")))
+		{
+			DeathMontage = IsValid(AnimMontage.Value) ? AnimMontage.Value : nullptr;
+			continue;
+		}
+
+		if (MontageString.Equals(FString("KnockdownMontage")))
+		{
+
+			continue;
+		}
+
+		if (MontageString.Equals(FString("RetreatMontage")))
+		{
+			RetreatMontage = IsValid(AnimMontage.Value) ? AnimMontage.Value : nullptr;
+			continue;
+		}
+	}
+}
+
+void UWielderAnimInstance::PlayDeathMontage()
+{
+	if (DeathMontage)
+	{
+		bool bPlayedSuccessfully = false;
+		const float MontageLength = Montage_Play(DeathMontage);
+
+		bPlayedSuccessfully = MontageLength > 0.f;
+
+		if (bPlayedSuccessfully)
+		{
+			FOnMontageEnded EndDelegate;
+			EndDelegate.BindUObject(this, &UWielderAnimInstance::OnDeath);
+			Montage_SetEndDelegate(EndDelegate, DeathMontage);
+		}
+	}
+	else
+	{
+		AWeaponWielder* Wielder = Cast<AWeaponWielder>(TryGetPawnOwner());
+		if (Wielder)
+		{
+			Wielder->Die();
+		}
+	}
+}
+
+void UWielderAnimInstance::PlayHitMontage()
+{
+	if (HitMontage)
+	{
+		bool bPlayedSuccessfully = false;
+		const float MontageLength = Montage_Play(HitMontage);
+
+		bPlayedSuccessfully = MontageLength > 0.f;
+
+		if (bPlayedSuccessfully)
+		{
+			FOnMontageEnded EndDelegate;
+			EndDelegate.BindUObject(this, &UWielderAnimInstance::OnHitEnded);
+			Montage_SetEndDelegate(EndDelegate, HitMontage);
+		}
+	}
+	else
+	{
+		if (OnHitEnd.IsBound()) OnHitEnd.Execute();
+	}
+}
+
+void UWielderAnimInstance::PlayRetreatMontage()
+{
+	if (RetreatMontage)
+	{
+		if (Montage_IsPlaying(RetreatMontage)) return;
+
+		bool bPlayedSuccessfully = false;
+		const float MontageLength = Montage_Play(RetreatMontage);
+
+		bPlayedSuccessfully = MontageLength > 0.f;
+
+		if (bPlayedSuccessfully)
+		{
+			FOnMontageEnded EndDelegate;
+			EndDelegate.BindUObject(this, &UWielderAnimInstance::OnRetreatEnded);
+			Montage_SetEndDelegate(EndDelegate, RetreatMontage);
+		}
+	}
+	else
+	{
+		if (OnRetreatEnd.IsBound()) OnRetreatEnd.Execute();
+	}
+}
+
+void UWielderAnimInstance::OnDeath(UAnimMontage* Montage, bool bInterrupted)
+{
+	if (DeathMontage != Montage) return;
+
+	AWeaponWielder* WeaponWielder = Cast<AWeaponWielder>(TryGetPawnOwner());
+	if (IsValid(WeaponWielder))
+	{
+		WeaponWielder->Die();
+	}
+}
+
+void UWielderAnimInstance::OnHitEnded(UAnimMontage* Montage, bool bInterrupted)
+{
+	if (HitMontage != Montage) return;
+
+	if (!Montage_IsPlaying(HitMontage))
+	{
+		if (OnHitEnd.IsBound()) OnHitEnd.Execute();
+	}
+}
+
+void UWielderAnimInstance::OnRetreatEnded(UAnimMontage* Montage, bool bInterrupted)
+{
+	if (RetreatMontage != Montage) return;
+
+	if (!Montage_IsPlaying(RetreatMontage))
+	{
+		if (OnRetreatEnd.IsBound()) OnRetreatEnd.Execute();
 	}
 }
 

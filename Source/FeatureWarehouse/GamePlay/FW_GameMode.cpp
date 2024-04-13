@@ -66,6 +66,10 @@ void AFW_GameMode::CheckCharacterDead(AActor* Actor)
 	else
 	{
 		// Increase player's enemy kill.
-		EnemyKills++;
+		AWeaponWielder* Wielder = Cast<AWeaponWielder>(Actor);
+		if (Wielder->GetKilledByWielder() == Player)
+		{
+			EnemyKills++;
+		}
 	}
 }
