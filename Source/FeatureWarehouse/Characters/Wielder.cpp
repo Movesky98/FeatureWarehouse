@@ -52,6 +52,8 @@ AWielder::AWielder()
 
 	AIControllerClass = AWielderController::StaticClass();
 	AutoPossessAI = EAutoPossessAI::PlacedInWorldOrSpawned;
+
+	bIsClockWiseRotation = true;
 }
 
 void AWielder::PostInitializeComponents()
@@ -520,6 +522,7 @@ bool AWielder::IsRecognizedSomething()
 void AWielder::Monitoring()
 {
 	bIsStartMonitoring = true;
+	bIsClockWiseRotation = FMath::RandBool();
 
 	AWielderController* WielderController = Cast<AWielderController>(GetController());
 	if (IsValid(WielderController))
@@ -559,7 +562,8 @@ FVector AWielder::CirclingAroundTheEnemy()
 	AActor* Enemy = GetSeeingPawn();
 	if (!IsValid(Enemy)) return GetActorLocation();
 
-	FVector GoalDirection = GetActorRightVector();
+	// 시계 방향으로 돌건지
+	FVector GoalDirection = bIsClockWiseRotation ? GetActorRightVector() : -GetActorRightVector();
 
 	// 적과의 거리가 모니터링 거리 기준보다 가깝다면
 	if (GetDistanceTo(Enemy) < MonitoringDistance)
@@ -596,8 +600,8 @@ FVector AWielder::CirclingAroundTheEnemy()
 		// 아닐 경우 플레이어에게 천천히 접근
 		MoveLocation = GetActorLocation() + GetActorForwardVector() * 100.0f;
 
-		DrawDebugLine(GetWorld(), GetActorLocation(), MoveLocation, FColor::Green, true, -1, 0, 3);
-		DrawDebugSolidBox(GetWorld(), MoveLocation, FVector(5.0f), FColor::Purple);
+		/*DrawDebugLine(GetWorld(), GetActorLocation(), MoveLocation, FColor::Green, true, -1, 0, 3);
+		DrawDebugSolidBox(GetWorld(), MoveLocation, FVector(5.0f), FColor::Purple);*/
 
 		UWorld* World = GetWorld();
 		if (!ensure(World != nullptr)) return GetActorLocation();

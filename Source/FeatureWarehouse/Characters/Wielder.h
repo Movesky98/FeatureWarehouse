@@ -128,7 +128,10 @@ protected:
 	/** 모니터링 타이머 시간 */
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Monitor")
 	float MonitoringTimerDuration;
-	
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Monitor")
+	bool bIsClockWiseRotation;
+
 	/** 모니터링을 시작했는지 */
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Monitor")
 	bool bIsStartMonitoring;
