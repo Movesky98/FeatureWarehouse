@@ -13,7 +13,7 @@
 #include "NiagaraComponent.h"
 
 #include "Projectile.h"
-#include "Characters/WeaponWielder.h"
+#include "Characters/WielderBase.h"
 #include "GamePlay/FW_PlayerController.h"
 #include "Enums/StateOfViews.h"
 #include "Enums/UseTypeOfWeapon.h"
@@ -115,10 +115,10 @@ void AGun::Fire(EStateOfViews CurView, FVector HitLocation)
 		break;
 	}
 
-	AWeaponWielder* WeaponWielder = Cast<AWeaponWielder>(GetWeaponOwner());
-	if (WeaponWielder)
+	AWielderBase* WielderBase = Cast<AWielderBase>(GetWeaponOwner());
+	if (WielderBase)
 	{
-		WeaponWielder->SetActionState(EActionState::EAS_Idle);
+		WielderBase->SetActionState(EActionState::EAS_Idle);
 	}
 }
 

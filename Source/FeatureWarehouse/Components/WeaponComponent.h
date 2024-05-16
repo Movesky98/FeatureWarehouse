@@ -77,7 +77,7 @@ private:
 	class UWielderAnimInstance* WielderAnim;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "State", meta = (AllowPrivateAccess = "true"))
-	class AWeaponWielder* WeaponWielder;
+	class AWielderBase* WielderBase;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "State", meta = (AllowPrivateAccess = "true"))
 	EEquipState EquipState;

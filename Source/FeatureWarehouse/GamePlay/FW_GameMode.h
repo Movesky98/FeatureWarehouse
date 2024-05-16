@@ -6,7 +6,7 @@
 #include "GameFramework/GameModeBase.h"
 #include "FW_GameMode.generated.h"
 
-class AWeaponWielder;
+class AWielderBase;
 class UGameEndMenu;
 
 UCLASS()
@@ -18,7 +18,7 @@ public:
 	// Sets default values for this actor's properties
 	AFW_GameMode();
 
-	void BindCharacterDeathEvent(class AWeaponWielder* Character);
+	void BindCharacterDeathEvent(class AWielderBase* Character);
 
 	void HandlerGameOver();
 
@@ -33,7 +33,7 @@ private:
 	bool bIsPlayerDead;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "State", meta = (AllowPrivateAccess = "true"))
-	TArray<AWeaponWielder*> Wielders;
+	TArray<AWielderBase*> Wielders;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "State", meta = (AllowPrivateAccess = "true"))
 	int EnemyCount;

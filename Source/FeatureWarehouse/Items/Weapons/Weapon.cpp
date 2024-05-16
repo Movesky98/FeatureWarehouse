@@ -8,7 +8,7 @@
 #include "Enums/StateOfViews.h"
 #include "Enums/Direction.h"
 
-#include "Characters/WeaponWielder.h"
+#include "Characters/WielderBase.h"
 #include "AnimInstance/WielderAnimInstance.h"
 
 #include "Components/SphereComponent.h"
@@ -43,7 +43,7 @@ void AWeapon::BindMontage()
 {
 	if (!GetWeaponOwner()) return;
 
-	AWeaponWielder* Wielder = Cast<AWeaponWielder>(GetWeaponOwner());
+	AWielderBase* Wielder = Cast<AWielderBase>(GetWeaponOwner());
 	if (!Wielder) return;
 
 	UWielderAnimInstance* WielderAnim = Cast<UWielderAnimInstance>(Wielder->GetMesh()->GetAnimInstance());
@@ -58,7 +58,7 @@ void AWeapon::UnbindMontage()
 {
 	if (!GetWeaponOwner()) return;
 
-	AWeaponWielder* Wielder = Cast<AWeaponWielder>(GetWeaponOwner());
+	AWielderBase* Wielder = Cast<AWielderBase>(GetWeaponOwner());
 	if (!Wielder) return;
 
 	UWielderAnimInstance* WielderAnim = Cast<UWielderAnimInstance>(Wielder->GetMesh()->GetAnimInstance());
@@ -80,11 +80,11 @@ void AWeapon::OnEquipEnded(class UAnimMontage* Montage, bool bInterrupted)
 		bIsEquip = true;
 
 		// Notify To WeaponOwner.
-		AWeaponWielder* WeaponWielder = Cast<AWeaponWielder>(GetWeaponOwner());
+		AWielderBase* WielderBase = Cast<AWielderBase>(GetWeaponOwner());
 
-		ensureMsgf(WeaponWielder != nullptr, TEXT("ERROR :: Weapon's Owner is not WeaponWielder."));
+		ensureMsgf(WielderBase != nullptr, TEXT("ERROR :: Weapon's Owner is not WielderBase."));
 
-		WeaponWielder->OnEquipEnded();
+		WielderBase->OnEquipEnded();
 	}
 }
 
@@ -96,17 +96,17 @@ void AWeapon::OnUnequipEnded(class UAnimMontage* Montage, bool bInterrupted)
 		UnbindMontage();
 
 		// Notify To WeaponOwner.
-		AWeaponWielder* WeaponWielder = Cast<AWeaponWielder>(GetWeaponOwner());
+		AWielderBase* WielderBase = Cast<AWielderBase>(GetWeaponOwner());
 
-		ensureMsgf(WeaponWielder != nullptr, TEXT("ERROR :: Weapon's Owner is not WeaponWielder."));
+		ensureMsgf(WielderBase != nullptr, TEXT("ERROR :: Weapon's Owner is not WielderBase."));
 
-		WeaponWielder->OnUnequipEnded();
+		WielderBase->OnUnequipEnded();
 	}
 }
 
 void AWeapon::Interact(AActor* InteractActor)
 {
-	AWeaponWielder* InteractOwner = Cast<AWeaponWielder>(InteractActor);
+	AWielderBase* InteractOwner = Cast<AWielderBase>(InteractActor);
 
 	if (!IsValid(InteractOwner)) return;
 	TMap<FString, UAnimMontage*> DeliverMontages;

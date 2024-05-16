@@ -2,7 +2,7 @@
 
 
 #include "WielderAnimInstance.h"
-#include "Characters/WeaponWielder.h"
+#include "Characters/WielderBase.h"
 
 #include "GameFramework/Character.h"
 #include "GameFramework/CharacterMovementComponent.h"
@@ -83,7 +83,7 @@ void UWielderAnimInstance::PlayDeathMontage()
 	}
 	else
 	{
-		AWeaponWielder* Wielder = Cast<AWeaponWielder>(TryGetPawnOwner());
+		AWielderBase* Wielder = Cast<AWielderBase>(TryGetPawnOwner());
 		if (Wielder)
 		{
 			Wielder->Die();
@@ -141,10 +141,10 @@ void UWielderAnimInstance::OnDeath(UAnimMontage* Montage, bool bInterrupted)
 {
 	if (DeathMontage != Montage) return;
 
-	AWeaponWielder* WeaponWielder = Cast<AWeaponWielder>(TryGetPawnOwner());
-	if (IsValid(WeaponWielder))
+	AWielderBase* WielderBase = Cast<AWielderBase>(TryGetPawnOwner());
+	if (IsValid(WielderBase))
 	{
-		WeaponWielder->Die();
+		WielderBase->Die();
 	}
 }
 

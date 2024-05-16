@@ -44,7 +44,7 @@ protected:
 	class UBoxComponent* BoxComponent;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "State")
-	TArray<class AWeaponWielder*> Wielders;
+	TArray<class AWielderBase*> Wielders;
 
 	int WielderCount;
 

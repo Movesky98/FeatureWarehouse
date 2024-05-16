@@ -3,7 +3,7 @@
 
 #include "WeaponComponent.h"
 
-#include "Characters/WeaponWielder.h"
+#include "Characters/WielderBase.h"
 #include "Characters/PlayerCharacter.h"
 
 #include "AnimInstance/PlayerAnimInstance.h"
@@ -30,22 +30,22 @@ void UWeaponComponent::BeginPlay()
 {
 	Super::BeginPlay();
 
-	WeaponWielder = Cast<AWeaponWielder>(GetOwner());
+	WielderBase = Cast<AWielderBase>(GetOwner());
 
-	if (WeaponWielder)
+	if (WielderBase)
 	{
-		WielderAnim = Cast<UWielderAnimInstance>(WeaponWielder->GetMesh()->GetAnimInstance());
+		WielderAnim = Cast<UWielderAnimInstance>(WielderBase->GetMesh()->GetAnimInstance());
 	}
 }
 
 void UWeaponComponent::EquipMainWeapon()
 {
 	if (!IsValid(MainWeapon)) return;
-	if (WeaponWielder->CurWeapon() == MainWeapon) return;
+	if (WielderBase->CurWeapon() == MainWeapon) return;
 
 	EquipState = EEquipState::MainWeapon;
 
-	WeaponWielder->SetWeapon(MainWeapon);
+	WielderBase->SetWeapon(MainWeapon);
 	
 	UE_LOG(LogTemp, Warning, TEXT("WeaponComponent :: Called EquipMainWeapon."));
 
@@ -54,11 +54,11 @@ void UWeaponComponent::EquipMainWeapon()
 
 void UWeaponComponent::EquipSubWeapon()
 {
-	if (!IsValid(SubWeapon) || WeaponWielder->CurWeapon() == SubWeapon) return;
+	if (!IsValid(SubWeapon) || WielderBase->CurWeapon() == SubWeapon) return;
 
 	EquipState = EEquipState::SubWeapon;
 
-	WeaponWielder->SetWeapon(SubWeapon);
+	WielderBase->SetWeapon(SubWeapon);
 
 	UE_LOG(LogTemp, Warning, TEXT("WeaponComponent :: Called EquipSubWeapon."));
 
@@ -73,10 +73,10 @@ void UWeaponComponent::EquipOtherWeapon()
 
 void UWeaponComponent::Unequip()
 {
-	if (!IsValid(WeaponWielder->CurWeapon()) && EquipState == EEquipState::None) return;
+	if (!IsValid(WielderBase->CurWeapon()) && EquipState == EEquipState::None) return;
 
-	WeaponWielder->CurWeapon()->Unequip();
-	WeaponWielder->SetWeapon(nullptr);
+	WielderBase->CurWeapon()->Unequip();
+	WielderBase->SetWeapon(nullptr);
 	NotifyToAnimInstance();
 	EquipState = EEquipState::None;
 }
@@ -150,7 +150,7 @@ void UWeaponComponent::SaveMainWeaponInfo(AWeapon* Weapon)
 	MainWeapon = Weapon;
 	if (EquipState == EEquipState::MainWeapon)
 	{
-		WeaponWielder->SetWeapon(MainWeapon);
+		WielderBase->SetWeapon(MainWeapon);
 	}
 
 	NotifyHasWeaponToAnim();
@@ -175,7 +175,7 @@ void UWeaponComponent::SaveSubWeaponInfo(AWeapon* Weapon)
 
 	if (EquipState == EEquipState::SubWeapon)
 	{
-		WeaponWielder->SetWeapon(SubWeapon);
+		WielderBase->SetWeapon(SubWeapon);
 	}
 
 	NotifyHasWeaponToAnim();
@@ -185,17 +185,17 @@ void UWeaponComponent::NotifyToAnimInstance()
 {
 	if (!IsValid(WielderAnim)) return;
 
-	WeaponWielder->IsA<APlayerCharacter>() ? 
+	WielderBase->IsA<APlayerCharacter>() ? 
 		UpdateWeaponInfoToPlayerAnimInstance() :
 		UpdateWeaponInfoToWielderAnimInstance();
 
 	// 총의 경우 (애니메이션이 없음. 생기면 코드 수정하기)
-	if (!WeaponWielder->CurWeapon()) return;
+	if (!WielderBase->CurWeapon()) return;
 
-	if (WeaponWielder->CurWeapon()->GetWeaponType() == ETypeOfWeapon::Gun)
+	if (WielderBase->CurWeapon()->GetWeaponType() == ETypeOfWeapon::Gun)
 	{
-		 WeaponWielder->SetActionState(EActionState::EAS_Idle);
-		 WeaponWielder->OnEquipEnded();
+		 WielderBase->SetActionState(EActionState::EAS_Idle);
+		 WielderBase->OnEquipEnded();
 	}
 }
 
@@ -204,13 +204,13 @@ void UWeaponComponent::UpdateWeaponInfoToPlayerAnimInstance()
 	UPlayerAnimInstance* PlayerAnim = Cast<UPlayerAnimInstance>(WielderAnim);
 	if (!IsValid(PlayerAnim)) return;
 
-	if (!IsValid(WeaponWielder->CurWeapon()))
+	if (!IsValid(WielderBase->CurWeapon()))
 	{
 		PlayerAnim->SetHasWeapon(false);
 		return;
 	}
 
-	AWeapon* Weapon = WeaponWielder->CurWeapon();
+	AWeapon* Weapon = WielderBase->CurWeapon();
 
 	Weapon->Equip();
 	Weapon->BindMontage();
@@ -247,9 +247,9 @@ void UWeaponComponent::UpdateWeaponInfoToPlayerAnimInstance()
 
 void UWeaponComponent::UpdateWeaponInfoToWielderAnimInstance()
 {
-	if (!IsValid(WeaponWielder->CurWeapon())) return;
+	if (!IsValid(WielderBase->CurWeapon())) return;
 	
-	AWeapon* Weapon = WeaponWielder->CurWeapon();
+	AWeapon* Weapon = WielderBase->CurWeapon();
 
 	Weapon->Equip();
 	Weapon->BindMontage();
@@ -288,9 +288,9 @@ void UWeaponComponent::NotifyHasWeaponToAnim()
 // 근접 무기를 들고 점프공격을 하다가 땅에 닿았을 때 실행되는 함수.
 void UWeaponComponent::JumpAttackLanding()
 {
-	if (!IsValid(WeaponWielder->CurWeapon())) return;
+	if (!IsValid(WielderBase->CurWeapon())) return;
 
-	AMelee* Melee = Cast<AMelee>(WeaponWielder->CurWeapon());
+	AMelee* Melee = Cast<AMelee>(WielderBase->CurWeapon());
 	if (IsValid(Melee))
 	{
 		Melee->JumpAttackLanding();
@@ -300,13 +300,13 @@ void UWeaponComponent::JumpAttackLanding()
 // 무기를 스왑할 때 사용하는 함수
 void UWeaponComponent::Swap()
 {
-	WeaponWielder->SetActionState(EActionState::EAS_Swapping);
-	WeaponWielder->CurWeapon()->Unequip();
+	WielderBase->SetActionState(EActionState::EAS_Swapping);
+	WielderBase->CurWeapon()->Unequip();
 }
 
 void UWeaponComponent::RemoveOwnerWeapon()
 {
-	WeaponWielder->SetWeapon(nullptr);
+	WielderBase->SetWeapon(nullptr);
 
 	if (MainWeapon)
 	{

@@ -4,7 +4,7 @@
 #include "GameOverRegion.h"
 #include "FW_GameMode.h"
 
-#include "Characters/WeaponWielder.h"
+#include "Characters/WielderBase.h"
 
 #include "Components/BoxComponent.h"
 
@@ -48,7 +48,7 @@ void AGameOverRegion::BeginPlay()
 
 void AGameOverRegion::DecreaseWielderCount(AActor* Actor)
 {
-	AWeaponWielder* Wielder = Cast<AWeaponWielder>(Actor);
+	AWielderBase* Wielder = Cast<AWielderBase>(Actor);
 	if (!Wielder) return;
 
 	if (Wielders.Find(Wielder) != INDEX_NONE)

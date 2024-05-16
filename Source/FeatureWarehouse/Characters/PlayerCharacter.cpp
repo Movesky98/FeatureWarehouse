@@ -1013,7 +1013,7 @@ void APlayerCharacter::TryLockTarget()
 		{
 			if (Hit.GetActor())
 			{
-				LockOnTarget = Cast<AWeaponWielder>(Hit.GetActor());
+				LockOnTarget = Cast<AWielderBase>(Hit.GetActor());
 				bIsTargetLocked = true;
 
 				AWielder* Wielder = Cast<AWielder>(LockOnTarget);
@@ -1112,7 +1112,7 @@ void APlayerCharacter::FindNearbyLockTarget(float DeltaYaw, float DeltaPitch)
 					Wielder->SetVisibleLockOnImage(false);
 				}
 
-				LockOnTarget = Cast<AWeaponWielder>(Hit.GetActor());
+				LockOnTarget = Cast<AWielderBase>(Hit.GetActor());
 
 				Wielder = Cast<AWielder>(LockOnTarget);
 				if (Wielder)

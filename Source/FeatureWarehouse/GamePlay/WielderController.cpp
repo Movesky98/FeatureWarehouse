@@ -107,15 +107,15 @@ void AWielderController::OnTargetDetected(AActor* Actor, FAIStimulus Stimulus)
 		bIsIdentifiedEnemy = true;
 
 		// 감지된 Wielder를 저장
-		AWeaponWielder* WeaponWielder = Cast<AWeaponWielder>(Actor);
-		if (WeaponWielder)
+		AWielderBase* WielderBase = Cast<AWielderBase>(Actor);
+		if (WielderBase)
 		{
-			Wielder->AddDetectedWielder(WeaponWielder);
+			Wielder->AddDetectedWielder(WielderBase);
 		}
 
 		// 현재 바라보고 있는 폰이 있으면 아무것도 하지않음.
 		if (GetSeeingPawn()) return;
-		if (WeaponWielder->GetGenericTeamId() == Wielder->GetGenericTeamId()) return;
+		if (WielderBase->GetGenericTeamId() == Wielder->GetGenericTeamId()) return;
 
 		// 적이 이미 접근하였으며, AI가 적을 인식한 경우
 		if (Wielder->IsEnemyApproached())
@@ -332,7 +332,7 @@ void AWielderController::FindNewTarget()
 	AWielder* Wielder = Cast<AWielder>(GetPawn());
 	if (!IsValid(Wielder)) return;
 
-	TArray<AWeaponWielder*> DetectedWielders;
+	TArray<AWielderBase*> DetectedWielders;
 	DetectedWielders = Wielder->GetDetectedWielders();
 
 	for (auto DetectedWielder : DetectedWielders)

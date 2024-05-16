@@ -172,10 +172,10 @@ void AWielder::OnRecognizeRangeEndOverlap(class UPrimitiveComponent* SelfComp, c
 		// [타게팅하고 있는 액터 != 콜리전에 접근한 액터]면 아무것도 하지 않음.
 		if (GetSeeingPawn() && GetSeeingPawn() != OtherActor)
 		{
-			AWeaponWielder* WeaponWielder = Cast<AWeaponWielder>(OtherActor);
-			if (WeaponWielder)
+			AWielderBase* WielderBase = Cast<AWielderBase>(OtherActor);
+			if (WielderBase)
 			{
-				RemoveDetectedWielder(WeaponWielder);
+				RemoveDetectedWielder(WielderBase);
 			}
 
 			return;
@@ -255,7 +255,7 @@ void AWielder::OnAttackRangeEndOverlap(class UPrimitiveComponent* SelfComp, clas
 	}
 }
 
-void AWielder::AddDetectedWielder(AWeaponWielder* DetectedWielder)
+void AWielder::AddDetectedWielder(AWielderBase* DetectedWielder)
 {
 	if (DetectedWielder)
 	{
@@ -264,7 +264,7 @@ void AWielder::AddDetectedWielder(AWeaponWielder* DetectedWielder)
 	}
 }
 
-void AWielder::RemoveDetectedWielder(AWeaponWielder* DetectedWielder)
+void AWielder::RemoveDetectedWielder(AWielderBase* DetectedWielder)
 {
 	if (DetectedWielder)
 	{
@@ -273,7 +273,7 @@ void AWielder::RemoveDetectedWielder(AWeaponWielder* DetectedWielder)
 	}
 }
 
-bool AWielder::CheckEnemyWielder(AWeaponWielder* DetectedWielder)
+bool AWielder::CheckEnemyWielder(AWielderBase* DetectedWielder)
 {
 	return Faction != DetectedWielder->GetFaction() ? true : false;
 }
@@ -284,8 +284,8 @@ void AWielder::OnReceivePointDamageEvent(AActor* DamagedActor, float Damage, ACo
 {	
 	if (bIsDead) return;
 
-	AWeaponWielder* WeaponWielder = Cast<AWeaponWielder>(InstigatedBy->GetPawn());
-	if (WeaponWielder && WeaponWielder->GetGenericTeamId() == TeamId) return;
+	AWielderBase* WielderBase = Cast<AWielderBase>(InstigatedBy->GetPawn());
+	if (WielderBase && WielderBase->GetGenericTeamId() == TeamId) return;
 
 	UWielderAnimInstance* WielderAnim = Cast<UWielderAnimInstance>(GetMesh()->GetAnimInstance());
 	if (!WielderAnim) return;
@@ -299,7 +299,7 @@ void AWielder::OnReceivePointDamageEvent(AActor* DamagedActor, float Damage, ACo
 	if (IsDead)
 	{
 		bIsDead = true;
-		KilledByWielder = Cast<AWeaponWielder>(InstigatedBy->GetPawn());
+		KilledByWielder = Cast<AWielderBase>(InstigatedBy->GetPawn());
 
 		WielderAnim->PlayDeathMontage();
 

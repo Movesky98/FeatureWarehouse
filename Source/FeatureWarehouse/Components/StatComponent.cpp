@@ -2,7 +2,7 @@
 
 
 #include "StatComponent.h"
-#include "Characters/WeaponWielder.h"
+#include "Characters/WielderBase.h"
 #include "AnimInstance/WielderAnimInstance.h"
 
 #include "Enums/ActionState.h"
@@ -34,11 +34,11 @@ void UStatComponent::BeginPlay()
 {
 	Super::BeginPlay();
 
-	/*AWeaponWielder* WeaponWielder = Cast<AWeaponWielder>(GetOwner());
+	/*AWielderBase* WielderBase = Cast<AWielderBase>(GetOwner());
 
-	if (!IsValid(WeaponWielder)) return;
+	if (!IsValid(WielderBase)) return;
 
-	UWielderAnimInstance* AnimInstance = Cast<UWielderAnimInstance>(WeaponWielder->GetMesh()->GetAnimInstance());
+	UWielderAnimInstance* AnimInstance = Cast<UWielderAnimInstance>(WielderBase->GetMesh()->GetAnimInstance());
 	if (AnimInstance)
 	{
 		AnimInstance->OnMontageEnded.AddDynamic(this, &UStatComponent::OnGetDamagedEnded);
@@ -47,11 +47,11 @@ void UStatComponent::BeginPlay()
 
 void UStatComponent::OnDeathEnded(UAnimMontage* Montage, bool bInterrupted)
 {
-	AWeaponWielder* WeaponWielder = Cast<AWeaponWielder>(GetOwner());
+	AWielderBase* WielderBase = Cast<AWielderBase>(GetOwner());
 
-	if (IsValid(WeaponWielder))
+	if (IsValid(WielderBase))
 	{
-		WeaponWielder->Die();
+		WielderBase->Die();
 	}
 }
 
@@ -59,15 +59,15 @@ void UStatComponent::OnGetDamagedEnded(UAnimMontage* Montage, bool bInterrupted)
 {
 	if (Montage != GetDamagedMontage) return;
 	
-	AWeaponWielder* WeaponWielder = Cast<AWeaponWielder>(GetOwner());
-	if (!IsValid(WeaponWielder)) return;
+	AWielderBase* WielderBase = Cast<AWielderBase>(GetOwner());
+	if (!IsValid(WielderBase)) return;
 
-	UAnimInstance* Anim = WeaponWielder->GetMesh()->GetAnimInstance();
+	UAnimInstance* Anim = WielderBase->GetMesh()->GetAnimInstance();
 
 	// 피격 몽타주가 실행되지 않을 때에 상태 변경
 	if (Anim && !Anim->Montage_IsPlaying(GetDamagedMontage))
 	{
-		WeaponWielder->SetActionState(EActionState::EAS_Idle);
+		WielderBase->SetActionState(EActionState::EAS_Idle);
 
 		if (!OnGetDamaged.IsBound()) return;
 
@@ -131,7 +131,7 @@ bool UStatComponent::CheckDeathStatus()
 	else
 	{
 		// 피격 몽타주가 없으면 바로 상태 변경
-		// IsValid(GetDamagedMontage) ? PlayMontage(GetDamagedMontage) : WeaponWielder->SetActionState(EActionState::EAS_Idle);
+		// IsValid(GetDamagedMontage) ? PlayMontage(GetDamagedMontage) : WielderBase->SetActionState(EActionState::EAS_Idle);
 
 		return false;
 	}
@@ -153,7 +153,7 @@ void UStatComponent::DecreaseStamina(float Amount)
 		CurrentStamina = 0.0f;
 		bIsExhaustedStamina = true;
 
-		AWeaponWielder* WielderOwner = Cast<AWeaponWielder>(GetOwner());
+		AWielderBase* WielderOwner = Cast<AWielderBase>(GetOwner());
 		if(WielderOwner) WielderOwner->SetActionState(EActionState::EAS_Exhausting);
 
 		if (bIsStartRecoveryStaminaWaitTimer) StopRecoveryStamina();
@@ -226,7 +226,7 @@ void UStatComponent::RecoveryStamina()
 			// Stamina가 반을 넘었다면, 지친 상태를 해제하고 다음 액션을 취할 수 있도록 Idle로 바꿔줌.
 			bIsExhaustedStamina = false;
 
-			AWeaponWielder* WielderOwner = Cast<AWeaponWielder>(GetOwner());
+			AWielderBase* WielderOwner = Cast<AWielderBase>(GetOwner());
 			if(WielderOwner) WielderOwner->SetActionState(EActionState::EAS_Idle);
 		}
 	}
@@ -251,13 +251,13 @@ void UStatComponent::ShowBloodEffect(FVector Location, FRotator Rotation)
 
 void UStatComponent::PlayDeathMontage()
 {
-	AWeaponWielder* WeaponWielder = Cast<AWeaponWielder>(GetOwner());
-	if (!WeaponWielder) return;
+	AWielderBase* WielderBase = Cast<AWielderBase>(GetOwner());
+	if (!WielderBase) return;
 
-	UAnimInstance* OwnerAnim = WeaponWielder->GetMesh()->GetAnimInstance();
+	UAnimInstance* OwnerAnim = WielderBase->GetMesh()->GetAnimInstance();
 	if (OwnerAnim)
 	{
-		UE_LOG(LogTemp, Warning, TEXT("Play %s's DeathMontage."), *UKismetSystemLibrary::GetDisplayName(WeaponWielder));
+		UE_LOG(LogTemp, Warning, TEXT("Play %s's DeathMontage."), *UKismetSystemLibrary::GetDisplayName(WielderBase));
 		bool bPlayedSuccessfully = false;
 		const float MontageLength = OwnerAnim->Montage_Play(DeathMontage);
 
@@ -265,7 +265,7 @@ void UStatComponent::PlayDeathMontage()
 
 		if (bPlayedSuccessfully)
 		{
-			UE_LOG(LogTemp, Warning, TEXT("Bind the function when %s's DeathMontage is ended."), *UKismetSystemLibrary::GetDisplayName(WeaponWielder));
+			UE_LOG(LogTemp, Warning, TEXT("Bind the function when %s's DeathMontage is ended."), *UKismetSystemLibrary::GetDisplayName(WielderBase));
 			FOnMontageEnded EndDelegate;
 			EndDelegate.BindUObject(this, &UStatComponent::OnDeathEnded);
 			OwnerAnim->Montage_SetEndDelegate(EndDelegate, DeathMontage);
@@ -275,9 +275,9 @@ void UStatComponent::PlayDeathMontage()
 
 void UStatComponent::PlayMontage(UAnimMontage* PlayMontage)
 {
-	AWeaponWielder* WeaponWielder = Cast<AWeaponWielder>(GetOwner());
+	AWielderBase* WielderBase = Cast<AWielderBase>(GetOwner());
 
-	UAnimInstance* OwnerAnim = WeaponWielder->GetMesh()->GetAnimInstance();
+	UAnimInstance* OwnerAnim = WielderBase->GetMesh()->GetAnimInstance();
 	if (OwnerAnim)
 	{
 		// 재생되고 있는 몽타주 중지.

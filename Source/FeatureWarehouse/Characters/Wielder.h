@@ -3,7 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "WeaponWielder.h"
+#include "WielderBase.h"
 #include "Wielder.generated.h"
 
 enum class EStateOfEnemy :uint8;
@@ -25,7 +25,7 @@ enum class ETypeOfWielder : uint8
  * 
  */
 UCLASS()
-class FEATUREWAREHOUSE_API AWielder : public AWeaponWielder
+class FEATUREWAREHOUSE_API AWielder : public AWielderBase
 {
 	GENERATED_BODY()
 public:
@@ -65,11 +65,11 @@ public:
 
 	void SetVisibleLockOnImage(bool IsVisisble);
 
-	void AddDetectedWielder(AWeaponWielder* DetectedWielder);
+	void AddDetectedWielder(AWielderBase* DetectedWielder);
 
-	void RemoveDetectedWielder(AWeaponWielder* DetectedWielder);
+	void RemoveDetectedWielder(AWielderBase* DetectedWielder);
 
-	bool CheckEnemyWielder(AWeaponWielder* DetectedWielder);
+	bool CheckEnemyWielder(AWielderBase* DetectedWielder);
 
 protected:
 	virtual void BeginPlay() override;
@@ -216,7 +216,7 @@ protected:
 
 	/** 감지된 Wielder들 */
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Range")
-	TArray<AWeaponWielder*> DetectedWielders;
+	TArray<AWielderBase*> DetectedWielders;
 
 	// Initial Settings
 	/** 시작과 동시에 패트롤을 진행할 것인지 여부 */
@@ -248,5 +248,5 @@ public:
 	FORCEINLINE float GetRecognizeRange() { return RecognizeRange; }
 	FORCEINLINE float GetAttackRange() { return AttackRange; }
 
-	FORCEINLINE TArray<AWeaponWielder*> GetDetectedWielders() { return DetectedWielders; }
+	FORCEINLINE TArray<AWielderBase*> GetDetectedWielders() { return DetectedWielders; }
 };

@@ -6,7 +6,7 @@
 
 #include "Widgets/GameEndMenu.h"
 
-#include "Characters/WeaponWielder.h"
+#include "Characters/WielderBase.h"
 #include "Characters/PlayerCharacter.h"
 
 #include "Kismet/GameplayStatics.h"
@@ -25,7 +25,7 @@ void AFW_GameMode::BeginPlay()
 
 }
 
-void AFW_GameMode::BindCharacterDeathEvent(AWeaponWielder* Character)
+void AFW_GameMode::BindCharacterDeathEvent(AWielderBase* Character)
 {
 	Character->OnKilled.AddUObject(this, &AFW_GameMode::CheckCharacterDead);
 
@@ -66,7 +66,7 @@ void AFW_GameMode::CheckCharacterDead(AActor* Actor)
 	else
 	{
 		// Increase player's enemy kill.
-		AWeaponWielder* Wielder = Cast<AWeaponWielder>(Actor);
+		AWielderBase* Wielder = Cast<AWielderBase>(Actor);
 		if (Wielder->GetKilledByWielder() == Player)
 		{
 			EnemyKills++;

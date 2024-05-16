@@ -3,7 +3,7 @@
 
 #include "Melee.h"
 
-#include "Characters/WeaponWielder.h"
+#include "Characters/WielderBase.h"
 #include "Characters/PlayerCharacter.h"
 #include "AnimInstance/WielderAnimInstance.h"
 
@@ -91,7 +91,7 @@ void AMelee::BindMontage()
 {
 	if (!GetWeaponOwner()) return;
 
-	AWeaponWielder* Wielder = Cast<AWeaponWielder>(GetWeaponOwner());
+	AWielderBase* Wielder = Cast<AWielderBase>(GetWeaponOwner());
 	if (!Wielder) return;
 
 	UWielderAnimInstance* WielderAnim = Cast<UWielderAnimInstance>(Wielder->GetMesh()->GetAnimInstance());
@@ -122,7 +122,7 @@ void AMelee::UnbindMontage()
 {
 	if (!GetWeaponOwner()) return;
 
-	AWeaponWielder* Wielder = Cast<AWeaponWielder>(GetWeaponOwner());
+	AWielderBase* Wielder = Cast<AWielderBase>(GetWeaponOwner());
 	if (!Wielder) return;
 
 	UWielderAnimInstance* WielderAnim = Cast<UWielderAnimInstance>(Wielder->GetMesh()->GetAnimInstance());
@@ -152,7 +152,7 @@ void AMelee::Attack()
 		if (!GetWeaponOwner())
 			return;
 
-		AWeaponWielder* Wielder = Cast<AWeaponWielder>(GetWeaponOwner());
+		AWielderBase* Wielder = Cast<AWielderBase>(GetWeaponOwner());
 		if (!Wielder) return;
 
 		UWielderAnimInstance* WielderAnim = Cast<UWielderAnimInstance>(Wielder->GetMesh()->GetAnimInstance());
@@ -174,7 +174,7 @@ void AMelee::Attack()
 		// First attack.
 		SetIsAttacking(true);
 
-		AWeaponWielder* Wielder = Cast<AWeaponWielder>(GetWeaponOwner());
+		AWielderBase* Wielder = Cast<AWielderBase>(GetWeaponOwner());
 
 		if (Wielder)
 		{
@@ -200,7 +200,7 @@ void AMelee::Attack(EStateOfViews CurView, FVector HitLocation)
 		if (!GetWeaponOwner()) 
 			return;
 
-		AWeaponWielder* Wielder = Cast<AWeaponWielder>(GetWeaponOwner());
+		AWielderBase* Wielder = Cast<AWielderBase>(GetWeaponOwner());
 		if (!Wielder) return;
 
 		UWielderAnimInstance* WielderAnim = Cast<UWielderAnimInstance>(Wielder->GetMesh()->GetAnimInstance());
@@ -223,7 +223,7 @@ void AMelee::Attack(EStateOfViews CurView, FVector HitLocation)
 		// First attack.
 		SetIsAttacking(true);
 
-		AWeaponWielder* Wielder = Cast<AWeaponWielder>(GetWeaponOwner());
+		AWielderBase* Wielder = Cast<AWielderBase>(GetWeaponOwner());
 		
 		if (Wielder)
 		{
@@ -247,7 +247,7 @@ void AMelee::OnAttackEnded(class UAnimMontage* Montage, bool bInterrupted)
 {
 	if (!IsAttackMontage(Montage)) return;
 
-	AWeaponWielder* Wielder = Cast<AWeaponWielder>(GetWeaponOwner());
+	AWielderBase* Wielder = Cast<AWielderBase>(GetWeaponOwner());
 	if (!IsValid(Wielder)) return;
 
 	// 기본 공격 몽타주일 때
@@ -402,7 +402,7 @@ void AMelee::DrawAttackLineTrace(const FVector& LineStart, const FVector& LineEn
 
 UAnimMontage* AMelee::FindAppropriateAttackAnimationWithParam(float& Change_Damage, int Index, float& Stamina, class USoundCue*& Sound)
 {
-	AWeaponWielder* Wielder = Cast<AWeaponWielder>(GetWeaponOwner());
+	AWielderBase* Wielder = Cast<AWielderBase>(GetWeaponOwner());
 	if (!IsValid(Wielder)) return nullptr;
 
 	UAnimMontage* ReturnMontage = nullptr;
@@ -451,7 +451,7 @@ UAnimMontage* AMelee::FindAppropriateAttackAnimationWithParam(float& Change_Dama
 
 void AMelee::JumpAttackLanding()
 {
-	AWeaponWielder* Wielder = Cast<AWeaponWielder>(GetWeaponOwner());
+	AWielderBase* Wielder = Cast<AWielderBase>(GetWeaponOwner());
 	if (!IsValid(Wielder)) return;
 
 	UWielderAnimInstance* WielderAnim = Cast<UWielderAnimInstance>(Wielder->GetMesh()->GetAnimInstance());

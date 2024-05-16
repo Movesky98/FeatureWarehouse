@@ -3,7 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "Characters/WeaponWielder.h"
+#include "Characters/WielderBase.h"
 #include "InputAction.h"
 #include "PlayerCharacter.generated.h"
 
@@ -15,7 +15,7 @@ class UWeaponComponent;
 class UStatComponent;
 
 UCLASS()
-class FEATUREWAREHOUSE_API APlayerCharacter : public AWeaponWielder
+class FEATUREWAREHOUSE_API APlayerCharacter : public AWielderBase
 {
 	GENERATED_BODY()
 public:
@@ -111,7 +111,7 @@ protected:
 	bool bIsTargetLocked;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "LockOn")
-	AWeaponWielder* LockOnTarget;
+	AWielderBase* LockOnTarget;
 
 	FTimerHandle LockOnTimer;
 
