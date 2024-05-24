@@ -54,6 +54,8 @@ AWielder::AWielder()
 	AutoPossessAI = EAutoPossessAI::PlacedInWorldOrSpawned;
 
 	bIsClockWiseRotation = true;
+
+	PerceptionState = EPerceptionState::EPT_NONE;
 }
 
 void AWielder::PostInitializeComponents()
@@ -73,7 +75,6 @@ void AWielder::PostInitializeComponents()
 	AttackRangeComponent->OnComponentBeginOverlap.AddDynamic(this, &AWielder::OnAttackRangeBeginOverlap);
 	AttackRangeComponent->OnComponentEndOverlap.AddDynamic(this, &AWielder::OnAttackRangeEndOverlap);
 
-	// StatComponent->OnGetDamaged.BindUFunction(this, FName("OnGetDamaged"));
 
 	StatBarComponent->Init();
 	StatBarComponent->HideUI();

@@ -7,6 +7,7 @@
 #include "Characters/PlayerCharacter.h"
 #include "AnimInstance/WielderAnimInstance.h"
 
+#include "Components/BoxComponent.h"
 #include "Components/WeaponComponent.h"
 #include "Components/StatComponent.h"
 
@@ -18,11 +19,12 @@
 #include "Enums/ActionState.h"
 
 #include "Animation/AnimMontage.h"
+#include "Perception/AISenseConfig_Hearing.h"
+
 #include "Kismet/KismetSystemLibrary.h"
 #include "Kismet/KismetMathLibrary.h"
 #include "Kismet/GameplayStatics.h"
 
-#include "Components/BoxComponent.h"
 #include "DrawDebugHelpers.h"
 
 AMelee::AMelee()
@@ -115,6 +117,7 @@ void AMelee::PlaySlashSound()
 	if (!bIsHitSomething)
 	{
 		UGameplayStatics::PlaySoundAtLocation(GetWorld(), SlashSound, GetActorLocation(), 0.4f);
+		UAISense_Hearing::ReportNoiseEvent(GetWorld(), GetActorLocation(), 1.0f, GetWeaponOwner(), 0.0f, FName("Slash"));
 	}
 }
 
@@ -391,7 +394,10 @@ void AMelee::DrawAttackLineTrace(const FVector& LineStart, const FVector& LineEn
 		TSubclassOf<UDamageType> DamageType;
 
 		if (HitSound)
+		{
 			UGameplayStatics::PlaySoundAtLocation(GetWorld(), HitSound, Hit.ImpactPoint);
+			UAISense_Hearing::ReportNoiseEvent(GetWorld(), GetActorLocation(), 1.0f, GetWeaponOwner(), 0.0f, FName("MeleeHit"));
+		}
 
 		UGameplayStatics::ApplyPointDamage(Hit.GetActor(), Damage, Hit.ImpactNormal, Hit, GetWeaponOwner()->GetController(), this, DamageType);
 

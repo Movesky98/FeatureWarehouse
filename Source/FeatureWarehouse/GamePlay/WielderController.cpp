@@ -13,6 +13,7 @@
 
 #include "Perception/AIPerceptionComponent.h"
 #include "Perception/AISenseConfig_Sight.h"
+#include "Perception/AISenseConfig_Hearing.h"
 #include "Kismet/KismetSystemLibrary.h"
 
 AWielderController::AWielderController()
@@ -29,7 +30,14 @@ AWielderController::AWielderController()
 	Sight->DetectionByAffiliation.bDetectFriendlies = true;
 	Sight->DetectionByAffiliation.bDetectNeutrals = true;
 
+	Hearing = CreateDefaultSubobject<UAISenseConfig_Hearing>(TEXT("Hearing Config"));
+	Hearing->HearingRange = 2500.0f;
+	Hearing->DetectionByAffiliation.bDetectEnemies = true;
+	Hearing->DetectionByAffiliation.bDetectFriendlies = false;
+	Hearing->DetectionByAffiliation.bDetectNeutrals = false;
+
 	AIPerception->ConfigureSense(*Sight);
+	AIPerception->ConfigureSense(*Hearing);
 }
 
 void AWielderController::OnPossess(APawn* InPawn)
@@ -37,6 +45,7 @@ void AWielderController::OnPossess(APawn* InPawn)
 	Super::OnPossess(InPawn);
 
 	AWielder* Wielder = Cast<AWielder>(InPawn);
+	
 
 	if (IsValid(Wielder))
 	{
@@ -97,8 +106,8 @@ void AWielderController::BeginPlay()
 
 }
 
-void AWielderController::OnTargetDetected(AActor* Actor, FAIStimulus Stimulus)
-{	
+void AWielderController::ProcessSight(AActor* Actor, FAIStimulus Stimulus)
+{
 	AWielder* Wielder = Cast<AWielder>(GetPawn());
 	if (!IsValid(Wielder)) return;
 
@@ -154,6 +163,35 @@ void AWielderController::OnTargetDetected(AActor* Actor, FAIStimulus Stimulus)
 		{
 			// NotifyGoToHomePos();
 		}
+	}
+}
+
+void AWielderController::ProcessHearing(AActor* Actor, FAIStimulus Stimulus)
+{
+	AWielder* Wielder = Cast<AWielder>(GetPawn());
+	if (!IsValid(Wielder) || GetSeeingPawn()) return;
+
+	if (Stimulus.WasSuccessfullySensed())
+	{
+		UE_LOG(LogTemp, Warning, TEXT("AI Perception | Hearing was successfully sensed."));
+		Wielder->CheckEquipWeapon();
+		NotifyPerceiveSomething(Actor->GetActorLocation());
+	}
+}
+
+void AWielderController::OnTargetDetected(AActor* Actor, FAIStimulus Stimulus)
+{	
+	const UAISenseConfig* AISenseConfig =  AIPerception->GetSenseConfig(Stimulus.Type);
+
+	FString SenseType = AISenseConfig->GetSenseName();
+	
+	if (SenseType == TEXT("Sight"))
+	{
+		ProcessSight(Actor, Stimulus);
+	}
+	else if (SenseType == TEXT("Hearing"))
+	{
+		ProcessHearing(Actor, Stimulus);
 	}
 }
 

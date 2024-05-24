@@ -10,6 +10,8 @@
 #include "Kismet/KismetSystemLibrary.h"
 #include "Kismet/GameplayStatics.h"
 
+#include "Perception/AISenseConfig_Hearing.h"
+
 ASwordShield::ASwordShield()
 {
 	Shield = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("Shield"));
@@ -184,7 +186,10 @@ void ASwordShield::DrawAttackTrace(const FVector& LineStart, const FVector& Line
 		TSubclassOf<UDamageType> DamageType;
 
 		if (HitSound)
+		{
 			UGameplayStatics::PlaySoundAtLocation(GetWorld(), HitSound, Hit.ImpactPoint);
+			UAISense_Hearing::ReportNoiseEvent(GetWorld(), GetActorLocation(), 1.0f, GetWeaponOwner(), 0.0f, FName("MeleeHit"));
+		}
 
 		UGameplayStatics::ApplyPointDamage(Hit.GetActor(), Damage, Hit.ImpactNormal, Hit, GetWeaponOwner()->GetController(), this, DamageType);
 

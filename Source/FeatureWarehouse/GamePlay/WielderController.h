@@ -19,6 +19,37 @@ class FEATUREWAREHOUSE_API AWielderController : public AAIController
 public:
 	AWielderController();
 
+protected:
+	virtual void BeginPlay() override;
+
+	virtual void PostInitializeComponents() override;
+
+	virtual void OnPossess(APawn* InPawn) override;
+
+#pragma region Perception
+public:
+	UFUNCTION()
+	void ProcessSight(AActor* Actor, FAIStimulus Stimulus);
+
+	UFUNCTION()
+	void ProcessHearing(AActor* Actor, FAIStimulus Stimulus);
+
+protected:
+	/* 타겟을 인지했을 때 실행되는 함수 */
+	UFUNCTION() void OnTargetDetected(AActor* Actor, FAIStimulus Stimulus);
+
+private:
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "AI", meta = (AllowPrivateAccess = "true"))
+	class UAIPerceptionComponent* AIPerception;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Perception", meta = (AllowPrivateAccess = "true"))
+	class UAISenseConfig_Sight* Sight;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Perception", meta = (AllowPrivateAccess = "true"))
+	class UAISenseConfig_Hearing* Hearing;
+#pragma endregion
+
+public:
 	void NotifyUnderAttack(bool IsUnderAttack);
 
 	/* 무언가를 인지했을 때 Behavior Tree에 알리는 함수. */
@@ -90,28 +121,12 @@ public:
 	/* In-Battle 상태일 때, Behavior Tree에 Monitor 상태에 들어감을 알리는 함수 */
 	void NotifyMonitoring();
 
-protected:
-	virtual void BeginPlay() override;
-
-	virtual void PostInitializeComponents() override;
-
-	virtual void OnPossess(APawn* InPawn) override;
-
-	/* 타겟을 인지했을 때 실행되는 함수 */
-	UFUNCTION() void OnTargetDetected(AActor* Actor, FAIStimulus Stimulus);
-
 private:
-	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "AI", meta = (AllowPrivateAccess = "true"))
-	class UAIPerceptionComponent* AIPerception;
-
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "AI", meta = (AllowPrivateAccess = "true"))
 	UBehaviorTree* BT_Wielder;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "AI", meta = (AllowPrivateAccess = "true"))
 	UBlackboardData* BD_Wielder;
-
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Perception", meta = (AllowPrivateAccess = "true"))
-	class UAISenseConfig_Sight* Sight;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Perception", meta = (AllowPrivateAccess = "true"))
 	bool bIsIdentifiedEnemy;

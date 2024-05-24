@@ -13,6 +13,15 @@ class UStatBarComponent;
 class ULockOnComponent;
 
 UENUM(BlueprintType)
+enum class EPerceptionState : uint8
+{
+	EPS_NONE = 0 UMETA(DisplayName = "NONE"),
+	EPS_InRecognizedRange = 1 UMETA(DisplayName = "InRecognizedRange"),
+	EPS_InDetectedRange = 2 UMETA(DisplayName = "InDetectedRange"),
+	EPS_InAttackRange = 3 UMETA(DisplayName = "InAttackRange")
+};
+
+UENUM(BlueprintType)
 enum class ETypeOfWielder : uint8
 {
 	ETW_NONE = 0 UMETA(DisplayName = "NONE"),
@@ -169,7 +178,8 @@ protected:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Weapon")
 	bool bIsEquipWeapon;
 
-	////////////////////////////////////////////////////////////////////    Range    ////////////////////////////////////////////////////////////////////
+#pragma region Range
+protected:
 	// Functions
 	UFUNCTION()
 	void OnRecognizeRangeBeginOverlap(class UPrimitiveComponent* SelfComp, class AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
@@ -190,6 +200,10 @@ protected:
 	void OnAttackRangeEndOverlap(class UPrimitiveComponent* SelfComp, class AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex);
 
 	// Variables
+	/** Wielder의 인지 상태 **/
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Range")
+	EPerceptionState PerceptionState;
+
 	/** 인지 범위 */
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Range")
 	float RecognizeRange;
@@ -235,6 +249,18 @@ protected:
 	/** 전투에 들어갔을 때 공격 시작 범위 */
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Range")
 	class USphereComponent* AttackRangeComponent;
+
+public:
+	UFUNCTION(BlueprintGetter, Category = "Range|Perception")
+	EPerceptionState GetPerceptionState() { return PerceptionState; }
+
+	UFUNCTION(BlueprintSetter, Category = "Range|Perception")
+	void SetPerceptionState(EPerceptionState NewPerceptionState) 
+	{
+		PerceptionState = NewPerceptionState;
+	}
+
+#pragma endregion
 
 public:
 	// Getter and Setter
