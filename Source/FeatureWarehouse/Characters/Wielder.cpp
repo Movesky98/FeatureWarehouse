@@ -28,10 +28,10 @@
 
 AWielder::AWielder()
 {
-	RecognizeRangeComponent = CreateDefaultSubobject<USphereComponent>(TEXT("RecognizeRange"));
-	RecognizeRangeComponent->SetupAttachment(RootComponent);
-	RecognizeRangeComponent->SetCollisionProfileName(FName("Trigger"));
-	RecognizeRangeComponent->ShapeColor = FColor::Purple;
+	UncertainDetectionRangeComponent = CreateDefaultSubobject<USphereComponent>(TEXT("UncertainDetectionRange"));
+	UncertainDetectionRangeComponent->SetupAttachment(RootComponent);
+	UncertainDetectionRangeComponent->SetCollisionProfileName(FName("Trigger"));
+	UncertainDetectionRangeComponent->ShapeColor = FColor::Purple;
 
 	DetectionRangeComponent = CreateDefaultSubobject<USphereComponent>(TEXT("DetectionRange"));
 	DetectionRangeComponent->SetupAttachment(RootComponent);
@@ -55,19 +55,19 @@ AWielder::AWielder()
 
 	bIsClockWiseRotation = true;
 
-	PerceptionState = EPerceptionState::EPT_NONE;
+	TargetPerceptionState = EPerceptionState::EPS_NONE;
 }
 
 void AWielder::PostInitializeComponents()
 {
 	Super::PostInitializeComponents();
 
-	RecognizeRangeComponent->SetSphereRadius(RecognizeRange);
+	UncertainDetectionRangeComponent->SetSphereRadius(UncertainDetectionRange);
 	DetectionRangeComponent->SetSphereRadius(DetectionRange);
 	AttackRangeComponent->SetSphereRadius(AttackRange);
 
-	RecognizeRangeComponent->OnComponentBeginOverlap.AddDynamic(this, &AWielder::OnRecognizeRangeBeginOverlap);
-	RecognizeRangeComponent->OnComponentEndOverlap.AddDynamic(this, &AWielder::OnRecognizeRangeEndOverlap);
+	UncertainDetectionRangeComponent->OnComponentBeginOverlap.AddDynamic(this, &AWielder::OnUncertainDetectionRangeBeginOverlap);
+	UncertainDetectionRangeComponent->OnComponentEndOverlap.AddDynamic(this, &AWielder::OnUncertainDetectionRangeEndOverlap);
 
 	DetectionRangeComponent->OnComponentBeginOverlap.AddDynamic(this, &AWielder::OnDetectionRangeBeginOverlap);
 	DetectionRangeComponent->OnComponentEndOverlap.AddDynamic(this, &AWielder::OnDetectionRangeEndOverlap);
@@ -77,7 +77,6 @@ void AWielder::PostInitializeComponents()
 
 
 	StatBarComponent->Init();
-	StatBarComponent->HideUI();
 
 	LockOnComponent->Init();
 
@@ -121,7 +120,7 @@ void AWielder::BeginPlay()
 			bIsEquipWeapon = true;
 		}
 	}
-
+	HideStatBar();
 	NotifyToGameMode();
 }
 
@@ -146,133 +145,166 @@ void AWielder::DesignateEnemy(AActor* Enemy)
 		WielderController->DesignateEnemy(Enemy);
 	}
 }
-
-void AWielder::OnRecognizeRangeBeginOverlap(class UPrimitiveComponent* SelfComp, class AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
+#pragma region Detection
+void AWielder::OnUncertainDetectionRangeBeginOverlap(class UPrimitiveComponent* SelfComp, class AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
-	if (OtherActor)
+	if (!OtherActor || OtherActor == this) return;
+
+	// WielderBase 클래스인지 체크.
+	AWielderBase* WielderBase = Cast<AWielderBase>(OtherActor);
+	if (!IsValid(WielderBase)) return;
+
+	// [타게팅하고 있는 액터 != 콜리전에 접근한 액터]면 아무것도 하지 않음.
+	if (GetSeeingPawn() && GetSeeingPawn() != OtherActor) return;
+
+	UpdateDetectionRange(WielderBase, EPerceptionState::EPS_InRecognizedRange);
+
+	AWielderController* WielderController = Cast<AWielderController>(GetController());
+
+	// 컨트롤러가 존재하고, 인식되어 Wielder의 감지 영역 내에 있는 경우.
+	if (IsValid(WielderController) && PerceivedWielders.Contains(WielderBase))
 	{
-		// [타게팅하고 있는 액터 != 콜리전에 접근한 액터]면 아무것도 하지 않음.
-		if (GetSeeingPawn() && GetSeeingPawn() != OtherActor) return;
-
-		bIsRecognizedSomething = true;
-
-		AWielderController* WielderController = Cast<AWielderController>(GetController());
-
-		// 이미 컨트롤러가 플레이어를 식별하고 인식 범위에 들어왔을 경우.
-		if (IsValid(WielderController) && WielderController->IsIdentifiedEnemy())
-		{
-			WielderController->NotifyPerceiveSomething(OtherActor->GetActorLocation());
-		}
+		UE_LOG(LogTemp, Warning, TEXT("Wielder :: Start Patrol!"));
+		WielderController->HandleEnemyState(EStateOfEnemy::Patrol, WielderBase->GetActorLocation());
 	}
 }
 
-void AWielder::OnRecognizeRangeEndOverlap(class UPrimitiveComponent* SelfComp, class AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex)
+void AWielder::OnUncertainDetectionRangeEndOverlap(class UPrimitiveComponent* SelfComp, class AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex)
 {
-	if (OtherActor)
+	// WielderBase 클래스인지 체크.
+	AWielderBase* WielderBase = Cast<AWielderBase>(OtherActor);
+	if (!IsValid(WielderBase)) return;
+
+	UpdateDetectionRange(WielderBase, EPerceptionState::EPS_NONE);
+
+	// [타게팅하고 있는 액터 != 콜리전에 접근한 액터]면 아무것도 하지 않음.
+	if (GetSeeingPawn() && GetSeeingPawn() == OtherActor)
 	{
-		// [타게팅하고 있는 액터 != 콜리전에 접근한 액터]면 아무것도 하지 않음.
-		if (GetSeeingPawn() && GetSeeingPawn() != OtherActor)
-		{
-			AWielderBase* WielderBase = Cast<AWielderBase>(OtherActor);
-			if (WielderBase)
-			{
-				RemoveDetectedWielder(WielderBase);
-			}
-
-			return;
-		}
-
-		bIsRecognizedSomething = false;
+		// TO DO
+		// 1. Remove WielderBase from InRangeWielders.
+		// 2. Remove WielderBase from PerceivedWielders.
+		// 3. if WielderBase is target, reserve the ClearTarget function.
+		
+		// RemoveDetectedWielder(WielderBase);
+		return;
 	}
 }
 
 void AWielder::OnDetectionRangeBeginOverlap(class UPrimitiveComponent* SelfComp, class AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
-	if (OtherActor)
+	UE_LOG(LogTemp, Warning, TEXT("Wielder :: Detection Range Overlap is called!"));
+	if (!OtherActor || OtherActor == this) return;
+
+	AWielderBase* WielderBase = Cast<AWielderBase>(OtherActor);
+	if (!IsValid(WielderBase)) return;
+
+	UpdateDetectionRange(WielderBase, EPerceptionState::EPS_InDetectedRange);
+
+	// [타게팅하고 있는 액터 != 콜리전에 접근한 액터]면 아무것도 하지 않음.
+	if (GetSeeingPawn() && GetSeeingPawn() != OtherActor) return;
+
+	AWielderController* WielderController = Cast<AWielderController>(GetController());
+	if (!IsValid(WielderController)) return;
+
+	// 이미 식별된 Wielder라면
+	if (PerceivedWielders.Contains(WielderBase))
 	{
-		// [타게팅하고 있는 액터 != 콜리전에 접근한 액터]면 아무것도 하지 않음.
-		if (GetSeeingPawn() && GetSeeingPawn() != OtherActor) return;
-		
-		bIsEnemyApproached = true;
+		WielderController->HandleEnemyState(EStateOfEnemy::In_Battle, FVector(0.0f), WielderBase);
+		ShowStatBar();
 
-		AWielderController* WielderController = Cast<AWielderController>(GetController());
-
-		if (IsValid(WielderController) && WielderController->IsIdentifiedEnemy())
-		{
-			WielderController->NotifyEngageInBattle(OtherActor);
-			ShowStatBar();
-		}
+		return;
 	}
 }
 
 void AWielder::OnDetectionRangeEndOverlap(class UPrimitiveComponent* SelfComp, class AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex)
 {
-	if (OtherActor)
-	{
-		// [타게팅하고 있는 액터 != 콜리전에 접근한 액터]면 아무것도 하지 않음.
-		if (GetSeeingPawn() && GetSeeingPawn() != OtherActor) return;
+	AWielderBase* WielderBase = Cast<AWielderBase>(OtherActor);
+	if (!WielderBase) return;
 
-		bIsEnemyApproached = false;
-	}
+	UpdateDetectionRange(WielderBase, EPerceptionState::EPS_InRecognizedRange);
 }
 
 void AWielder::OnAttackRangeBeginOverlap(class UPrimitiveComponent* SelfComp, class AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
-	if (OtherActor)
-	{
-		// [타게팅하고 있는 액터 != 콜리전에 접근한 액터]면 아무것도 하지 않음.
-		if (GetSeeingPawn() && GetSeeingPawn() != OtherActor) return;
+	if (!OtherActor || OtherActor == this) return;
 
-		AWielderController* WielderController = Cast<AWielderController>(GetController());
+	AWielderBase* WielderBase = Cast<AWielderBase>(OtherActor);
+	if (!WielderBase) return;
 
-		if (CurState != EStateOfEnemy::In_Battle)
-		{
-			ShowStatBar();
-		}
+	UpdateDetectionRange(WielderBase, EPerceptionState::EPS_InAttackRange);
 
-		if (GetSeeingPawn() == OtherActor)
-		{
-			BattleState = EBattleState::Attacking;
-			WielderController->NotifyBattleState(BattleState);
-			WielderController->NotifyEnemyInAttackRange(true);
-		}
-	}
+	// [타게팅하고 있는 액터 != 콜리전에 접근한 액터]면 아무것도 하지 않음.
+	if (GetSeeingPawn() && GetSeeingPawn() != OtherActor) return;
+
+	AWielderController* WielderController = Cast<AWielderController>(GetController());
+	if (!IsValid(WielderController)) return;
+
+	//if (CurState != EStateOfEnemy::In_Battle)
+	//{
+	//	ShowStatBar();
+	//}
+
+	WielderController->HandleBattleState(EBattleState::Attacking, true);
 }
 
 void AWielder::OnAttackRangeEndOverlap(class UPrimitiveComponent* SelfComp, class AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex)
 {
-	if (OtherActor)
+	AWielderBase* WielderBase = Cast<AWielderBase>(OtherActor);
+	if (!WielderBase) return;
+
+	UpdateDetectionRange(WielderBase, EPerceptionState::EPS_InDetectedRange);
+
+	// [타게팅하고 있는 액터 != 콜리전에 접근한 액터]면 아무것도 하지 않음.
+	if (GetSeeingPawn() && GetSeeingPawn() != OtherActor) return;
+
+	AWielderController* WielderController = Cast<AWielderController>(GetController());
+	if (!IsValid(WielderController)) return;
+
+	// 현재 AI의 상태가 전투상태일 때.
+	if (CurState == EStateOfEnemy::In_Battle)
 	{
-		// [타게팅하고 있는 액터 != 콜리전에 접근한 액터]면 아무것도 하지 않음.
-		if (GetSeeingPawn() && GetSeeingPawn() != OtherActor) return;
-
-		AWielderController* WielderController = Cast<AWielderController>(GetController());
-
-		// 현재 AI의 상태가 전투상태일 때.
-		if (IsValid(WielderController) && CurState == EStateOfEnemy::In_Battle)
-		{
-			WielderController->NotifyEnemyInAttackRange(false);
-		}
+		WielderController->HandleBattleState(EBattleState::Attacking, false);
 	}
 }
 
-void AWielder::AddDetectedWielder(AWielderBase* DetectedWielder)
+bool AWielder::FindPerceivedWielder(AWielderBase* Wielder)
 {
-	if (DetectedWielder)
+	return PerceivedWielders.Contains(Wielder);
+}
+
+void AWielder::UpdateDetectionRange(AWielderBase* WielderBase, EPerceptionState NewState)
+{
+	if (WielderBase)
 	{
-		if (CheckEnemyWielder(DetectedWielder))
-			DetectedWielders.AddUnique(DetectedWielder);
+		InRangeWielders.Add(WielderBase, NewState);
 	}
 }
 
-void AWielder::RemoveDetectedWielder(AWielderBase* DetectedWielder)
+void AWielder::UpdatePerceivedWielders(AWielderBase* PerceivedWielder)
 {
-	if (DetectedWielder)
+	if (PerceivedWielder)
 	{
-		if (DetectedWielders.Find(DetectedWielder))
-			DetectedWielders.Remove(DetectedWielder);
+		PerceivedWielders.Add(PerceivedWielder);
 	}
 }
+
+void AWielder::ReserveClearTarget(float Time)
+{
+
+
+}
+
+void AWielder::CancelClearTarget()
+{
+
+}
+
+void AWielder::ClearTarget()
+{
+
+}
+
+#pragma endregion
 
 bool AWielder::CheckEnemyWielder(AWielderBase* DetectedWielder)
 {
@@ -509,16 +541,6 @@ void AWielder::Unequip()
 	WeaponComponent->Unequip();
 }
 
-bool AWielder::IsEnemyApproached()
-{
-	return bIsEnemyApproached;
-}
-
-bool AWielder::IsRecognizedSomething()
-{
-	return bIsRecognizedSomething;
-}
-
 #pragma region Monitor
 void AWielder::Monitoring()
 {
@@ -547,7 +569,7 @@ void AWielder::CalculateMonitoringTime()
 		if (WielderController)
 		{
 			WielderController->ClearFocus(EAIFocusPriority::LastFocusPriority);
-			WielderController->NotifyApproaching();
+			WielderController->HandleBattleState(EBattleState::Approaching);
 		}
 	}
 	else

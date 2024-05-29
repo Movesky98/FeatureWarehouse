@@ -50,10 +50,13 @@ private:
 #pragma endregion
 
 public:
-	void NotifyUnderAttack(bool IsUnderAttack);
+	UFUNCTION(BlueprintCallable)
+	void HandleEnemyState(EStateOfEnemy State, FVector Location = FVector(0.0f, 0.0f, 0.0f), AActor* Target = nullptr);
 
-	/* 무언가를 인지했을 때 Behavior Tree에 알리는 함수. */
-	void NotifyPerceiveSomething(FVector Location);
+	UFUNCTION(BlueprintCallable)
+	void HandleBattleState(EBattleState State, bool bShouldAttack = false);
+
+	void NotifyUnderAttack(bool IsUnderAttack);
 
 	/* Patrol할 때 실행되는 함수 */
 	void NotifyPatrol();
@@ -63,9 +66,6 @@ public:
 
 	/* 적에게 접근할 때 Behavior Tree에 타겟을 알리는 함수. */
 	void NotifyApproachToEnemy(AActor* Enemy);
-
-	/* 전투 상황에 임했음을 Behavior Tree에 알리는 함수. */
-	void NotifyEngageInBattle(AActor* Enemy);
 
 	/* 무기를 착용했음을 Behavior Tree에 알리는 함수 */
 	void NotifyEquipWeapon();
@@ -121,12 +121,28 @@ public:
 	/* In-Battle 상태일 때, Behavior Tree에 Monitor 상태에 들어감을 알리는 함수 */
 	void NotifyMonitoring();
 
+protected:
+	void NotifyEnterIdle();
+
+	void NotifyEngageBattle(AActor* Target);
+	
+	/* Patrol을 시작하는 함수 */
+	void NotifyStartPatrol(FVector Location);
+
+	void NotifyStartFlee();
+
+
+	void NotifyAttack(bool bShouldAttack);
+
 private:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "AI", meta = (AllowPrivateAccess = "true"))
 	UBehaviorTree* BT_Wielder;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "AI", meta = (AllowPrivateAccess = "true"))
 	UBlackboardData* BD_Wielder;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Pawn", meta = (AllowPrivateAccess = "true"))
+	class AWielder* Wielder;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Perception", meta = (AllowPrivateAccess = "true"))
 	bool bIsIdentifiedEnemy;

@@ -43,19 +43,16 @@ public:
 	void CheckEquipWeapon();
 
 	/* 현재 타겟으로 지정된 액터를 가져오는 함수 */
-	UFUNCTION(BlueprintCallable) AActor* GetSeeingPawn();
+	UFUNCTION(BlueprintCallable) 
+	AActor* GetSeeingPawn();
 
 	/* 타겟을 지정하는 함수 */
-	UFUNCTION() void DesignateEnemy(AActor* Enemy);
-
-	/* 플레이어가 AI에게 접근했는지 */
-	UFUNCTION(BlueprintCallable) bool IsEnemyApproached();
-
-	/* 무언가를 인식했는지 */
-	UFUNCTION(BlueprintCallable) bool IsRecognizedSomething();
+	UFUNCTION() 
+	void DesignateEnemy(AActor* Enemy);
 
 	/* AI의 스피드를 설정하는 함수 */
-	UFUNCTION(BlueprintCallable) void SetMovementSpeed(float Speed);
+	UFUNCTION(BlueprintCallable) 
+	void SetMovementSpeed(float Speed);
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "State|Speed")
 	float WalkSpeed;	// 걸을 때 속도
@@ -73,10 +70,6 @@ public:
 	void HideStatBar();
 
 	void SetVisibleLockOnImage(bool IsVisisble);
-
-	void AddDetectedWielder(AWielderBase* DetectedWielder);
-
-	void RemoveDetectedWielder(AWielderBase* DetectedWielder);
 
 	bool CheckEnemyWielder(AWielderBase* DetectedWielder);
 
@@ -178,14 +171,27 @@ protected:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Weapon")
 	bool bIsEquipWeapon;
 
-#pragma region Range
+#pragma region Detection
 protected:
+	// Components
+	/* 무언가를 인식할 단계 (어떤 액터인지 모르는 단계) */
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Detection|Component")
+	class USphereComponent* UncertainDetectionRangeComponent;
+
+	/* 적을 인지할 수 있고 전투(Battle)에 들어갈 단계*/
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Detection|Component")
+	class USphereComponent* DetectionRangeComponent;
+
+	/* 전투에 들어갔을 때 공격 시작 범위 */
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Detection|Component")
+	class USphereComponent* AttackRangeComponent;
+
 	// Functions
 	UFUNCTION()
-	void OnRecognizeRangeBeginOverlap(class UPrimitiveComponent* SelfComp, class AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
+	void OnUncertainDetectionRangeBeginOverlap(class UPrimitiveComponent* SelfComp, class AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
 	
 	UFUNCTION()
-	void OnRecognizeRangeEndOverlap(class UPrimitiveComponent* SelfComp, class AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex);
+	void OnUncertainDetectionRangeEndOverlap(class UPrimitiveComponent* SelfComp, class AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex);
 
 	UFUNCTION()
 	void OnDetectionRangeBeginOverlap(class UPrimitiveComponent* SelfComp, class AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
@@ -200,65 +206,91 @@ protected:
 	void OnAttackRangeEndOverlap(class UPrimitiveComponent* SelfComp, class AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex);
 
 	// Variables
-	/** Wielder의 인지 상태 **/
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Range")
-	EPerceptionState PerceptionState;
+	/* Wielder의 타겟 인지 상태 */
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Detection|State")
+	EPerceptionState TargetPerceptionState;
 
-	/** 인지 범위 */
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Range")
-	float RecognizeRange;
+	/* Detection 범위 내 있는 Wielders */
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Detection|State")
+	TMap<AWielderBase*, EPerceptionState> InRangeWielders;
 
-	/** 탐지 범위 */
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Range")
+	/* AIPerception에 의해 식별된 Wielders */
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Detection|State")
+	TSet<AWielderBase*> PerceivedWielders;
+
+	/* 식별할 수 없는 인지 범위 거리 */
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Detection|Range")
+	float UncertainDetectionRange;
+
+	/* 식별 가능한 인지 범위 거리 */
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Detection|Range")
 	float DetectionRange;
 
-	/** 공격 시작 범위 */
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Range")
+	/* 공격 시작 범위 */
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Detection|Range")
 	float AttackRange;
 
-	/** 최소 회피 거리 */
-	UPROPERTY(EditDefaultsOnly, BLueprintReadOnly, Category = "Range")
+	/* 최소 회피 거리 */
+	UPROPERTY(EditDefaultsOnly, BLueprintReadOnly, Category = "Detection|Range")
 	float RetreatDistanceMin;
 
-	/** 무언가를 인지했는지 */
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Range")
-	bool bIsRecognizedSomething;
-
-	/** 적이 접근했는지 */
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Range")
-	bool bIsEnemyApproached;
-
-	/** 감지된 Wielder들 */
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Range")
-	TArray<AWielderBase*> DetectedWielders;
-
 	// Initial Settings
-	/** 시작과 동시에 패트롤을 진행할 것인지 여부 */
+	/* 시작과 동시에 패트롤을 진행할 것인지 여부 */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Initial Setting")
 	bool bStartWithPatrol;
 
-	// Components
-	/** 무언가를 인식할 단계 (어떤 액터인지 모르는 단계) */
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Range")
-	class USphereComponent* RecognizeRangeComponent;
+public:
+	UFUNCTION(BlueprintGetter, Category = "Detection|Perception")
+	EPerceptionState GetTargetPerceptionState() { return TargetPerceptionState; }
 
-	/** 이미 적을 인지하고 전투(Battle)에 들어가는 상태*/
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Range")
-	class USphereComponent* DetectionRangeComponent;
+	UFUNCTION(BlueprintSetter, Category = "Detection|Perception")
+	void SetTargetPerceptionState(EPerceptionState NewPerceptionState) 
+	{
+		TargetPerceptionState = NewPerceptionState;
+	}
 
-	/** 전투에 들어갔을 때 공격 시작 범위 */
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Range")
-	class USphereComponent* AttackRangeComponent;
+	UFUNCTION(BlueprintGetter, Category = "Detection|Range")
+	float GetUncertainDetectionRange() 
+	{
+		return UncertainDetectionRange;
+	}
+
+	UFUNCTION(BlueprintGetter, Category = "Detection|Range")
+	float GetDetectionRange()
+	{
+		return DetectionRange;
+	}
+
+	UFUNCTION(BlueprintGetter, Category = "Detection|Range")
+	float GetAttackRange()
+	{
+		return AttackRange;
+	}
+
+	UFUNCTION(BlueprintGetter, Category = "Detection|State")
+	TMap<AWielderBase*, EPerceptionState> GetInRangeWielders()
+	{
+		return InRangeWielders;
+	}
+
+	bool FindPerceivedWielder(AWielderBase* Wielder);
+
+	UFUNCTION(BlueprintCallable, Category = "Detection|State")
+	void UpdateDetectionRange(AWielderBase* WielderBase, EPerceptionState NewState);
+
+	UFUNCTION(BlueprintCallable, Category = "Detection|State")
+	void UpdatePerceivedWielders(AWielderBase* PerceivedWielder);
+
+	/// Targets
+protected:
+	UFUNCTION()
+	void ClearTarget();
 
 public:
-	UFUNCTION(BlueprintGetter, Category = "Range|Perception")
-	EPerceptionState GetPerceptionState() { return PerceptionState; }
+	UFUNCTION(BlueprintCallable, Category = "Detection")
+	void ReserveClearTarget(float Time);
 
-	UFUNCTION(BlueprintSetter, Category = "Range|Perception")
-	void SetPerceptionState(EPerceptionState NewPerceptionState) 
-	{
-		PerceptionState = NewPerceptionState;
-	}
+	void CancelClearTarget();
 
 #pragma endregion
 
@@ -271,8 +303,4 @@ public:
 	FORCEINLINE void SetBattleState(EBattleState State) { BattleState = State; }
 
 	FORCEINLINE ETypeOfWielder GetWielderType() { return WielderType; }
-	FORCEINLINE float GetRecognizeRange() { return RecognizeRange; }
-	FORCEINLINE float GetAttackRange() { return AttackRange; }
-
-	FORCEINLINE TArray<AWielderBase*> GetDetectedWielders() { return DetectedWielders; }
 };
