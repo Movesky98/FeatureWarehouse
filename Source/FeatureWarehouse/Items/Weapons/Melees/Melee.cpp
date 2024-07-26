@@ -8,6 +8,8 @@
 #include "AnimInstance/WielderAnimInstance.h"
 
 #include "Components/BoxComponent.h"
+#include "Components/SphereComponent.h"
+#include "Components/ItemDescriptionComponent.h"
 #include "Components/WeaponComponent.h"
 #include "Components/StatComponent.h"
 
@@ -25,10 +27,23 @@
 #include "Kismet/KismetMathLibrary.h"
 #include "Kismet/GameplayStatics.h"
 
+#include "NiagaraComponent.h"
+
 #include "DrawDebugHelpers.h"
 
 AMelee::AMelee()
 {
+	BladeMesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("BladeMesh"));
+	BladeMesh->SetCollisionProfileName(FName("NoCollision"));
+	RootComponent = BladeMesh;
+
+	SlashFX = CreateDefaultSubobject<UNiagaraComponent>(TEXT("SlashFX"));
+	SlashFX->SetupAttachment(RootComponent);
+
+	ItemCollision->SetupAttachment(RootComponent);
+	TriggerZone->SetupAttachment(RootComponent);
+	ItemDescriptionComponent->SetupAttachment(RootComponent);
+
 	InterpolateDistance = 20.0f;
 	
 	static ConstructorHelpers::FObjectFinder<UDataTable> DT_MeleeInfo(TEXT("/Game/Project/Data/DT_MeleeInfo"));
@@ -36,6 +51,12 @@ AMelee::AMelee()
 	{
 		UE_LOG(LogTemp, Warning, TEXT("Melee || Load MeleeInfo DataTable Succeeded."));
 		MeleeInfoTable = DT_MeleeInfo.Object;
+	}
+
+	static ConstructorHelpers::FObjectFinder<UNiagaraSystem> NS_Slash(TEXT("/Game/ImportAssets/WeaponSlashFX/FX/StaticMeshVersions/NS_WeaponSlash_Air_SM"));
+	if (NS_Slash.Succeeded())
+	{
+		SlashFX->SetAsset(NS_Slash.Object);
 	}
 
 	bIsEquip = false;
@@ -63,9 +84,11 @@ void AMelee::PostInitializeComponents()
 		AttackMontages.Add(MontageInfo.m_SprintAttackMontage);
 	}
 
-	FVector Start = GetSkeletalMesh()->GetSocketLocation(FName("BladeBottom"));
-	FVector End = GetSkeletalMesh()->GetSocketLocation(FName("BladeTop"));
+	FVector Start = BladeMesh->GetSocketLocation(FName("BladeBottom"));
+	FVector End = BladeMesh->GetSocketLocation(FName("BladeTop"));
 	BladeLength = (Start - End).Length();
+
+	DeactivateSlashFX();
 }
 
 void AMelee::BeginPlay()
@@ -79,6 +102,16 @@ void AMelee::EndPlay(const EEndPlayReason::Type EndPlayReason)
 	Super::EndPlay(EndPlayReason);
 
 	UnbindMontage();
+}
+
+void AMelee::ActiveOverlay()
+{
+	BladeMesh->SetOverlayMaterial(OutlineMaterial);
+}
+
+void AMelee::DeactiveOverlay()
+{
+	BladeMesh->SetOverlayMaterial(nullptr);
 }
 
 void AMelee::SaveDodgeMontages(TMap<EDirection, UAnimMontage*>& Montages)
@@ -107,8 +140,6 @@ void AMelee::BindMontage()
 		WielderAnim->OnPlaySlashSound.BindUObject(this, &AMelee::PlaySlashSound);
 		WielderAnim->OnPlayEquipSound.BindUObject(this, &AMelee::PlayEquipSound);
 		WielderAnim->OnPlayUnequipSound.BindUObject(this, &AMelee::PlayUnequipSound);
-
-		UE_LOG(LogTemp, Warning, TEXT("Weapon - %s :: BindMontage is called."), *UKismetSystemLibrary::GetDisplayName(this));
 	}
 }
 
@@ -137,8 +168,6 @@ void AMelee::UnbindMontage()
 		WielderAnim->OnPlaySlashSound.Unbind();
 		WielderAnim->OnPlayEquipSound.Unbind();
 		WielderAnim->OnPlayUnequipSound.Unbind();
-
-		UE_LOG(LogTemp, Warning, TEXT("Weapon - %s :: UnbindMontage is called."), *UKismetSystemLibrary::GetDisplayName(this));
 	}
 }
 
@@ -331,8 +360,8 @@ void AMelee::StopAttackTrace()
 
 void AMelee::AttackTrace()
 {
-	FVector Start = GetSkeletalMesh()->GetSocketLocation(FName("BladeBottom"));
-	FVector End = GetSkeletalMesh()->GetSocketLocation(FName("BladeTop"));
+	FVector Start = BladeMesh->GetSocketLocation(FName("BladeBottom"));
+	FVector End = BladeMesh->GetSocketLocation(FName("BladeTop"));
 	FVector Midpoint = (Start + End) / 2;
 
 	// Interpolate line trace when the distance is far.
@@ -465,6 +494,22 @@ void AMelee::JumpAttackLanding()
 	{
 		WielderAnim->Montage_Stop(1.0f, MontageInfo.m_JumpAttackMontage);
 		WielderAnim->Montage_Play(MontageInfo.m_JumpAttackLand);
+	}
+}
+
+void AMelee::ActivateSlashFX()
+{
+	if (SlashFX->GetAsset())
+	{
+		SlashFX->Activate();
+	}
+}
+
+void AMelee::DeactivateSlashFX()
+{
+	if (SlashFX->GetAsset())
+	{
+		SlashFX->Deactivate();
 	}
 }
 

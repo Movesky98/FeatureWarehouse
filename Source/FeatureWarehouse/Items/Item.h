@@ -18,9 +18,6 @@ public:
 	// Sets default values for this actor's properties
 	AItem();
 
-	UFUNCTION(BlueprintCallable)
-	FORCEINLINE USkeletalMeshComponent* GetSkeletalMesh() { return SkeletalMesh; }
-
 	UTexture2D* GetItemTexture();
 
 	FORCEINLINE class USphereComponent* GetTriggerZone() { return TriggerZone; }
@@ -48,15 +45,12 @@ protected:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Description")
 	class UItemDescriptionComponent* ItemDescriptionComponent;
 
-private:
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = Mesh, meta = (AllowPrivateAccess = "true"))
-	USkeletalMeshComponent* SkeletalMesh;
-
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Collision", meta = (AllowPrivateAccess = "true"))
 	class USphereComponent* ItemCollision;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Collision", meta = (AllowPrivateAccess = "true"))
 	class USphereComponent* TriggerZone;
+private:
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = State, meta = (AllowPrivateAccess = "true"))
 	ETypeOfItem ItemType;

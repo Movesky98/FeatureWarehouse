@@ -25,6 +25,15 @@ public:
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, meta = (DisplayName = "SprintAttack"))
 	UAnimMontage* m_SprintAttackMontage;
 
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, meta = (DisplayName = "Groggy Attack Hit"))
+	UAnimMontage* m_Groggy_Attack_Hit;
+
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, meta = (DisplayName = "Groggy Hit Reaction"))
+	UAnimMontage* m_Groggy_Hit_Reaction;
+
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, meta = (DisplayName = "Groggy Hit Death"))
+	UAnimMontage* m_Groggy_Hit_Death;
+
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, meta = (DisplayName = "Equip"))
 	UAnimMontage* m_EquipMontage;
 

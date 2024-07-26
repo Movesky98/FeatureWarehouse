@@ -54,8 +54,7 @@ AWielder::AWielder()
 	AutoPossessAI = EAutoPossessAI::PlacedInWorldOrSpawned;
 
 	bIsClockWiseRotation = true;
-
-	TargetPerceptionState = EPerceptionState::EPS_NONE;
+	TargetRetainTime = 2.0f;
 }
 
 void AWielder::PostInitializeComponents()
@@ -88,7 +87,7 @@ void AWielder::PostInitializeComponents()
 		AWielderController* WielderController = Cast<AWielderController>(GetController());
 		ensureMsgf(WielderController, TEXT("%s's Controller is not wielder controller class !!"), *UKismetSystemLibrary::GetDisplayName(this));
 
-		WielderController->NotifyPatrol();
+		WielderController->HandleEnemyState(EStateOfEnemy::Patrol);
 	}
 
 	UWielderAnimInstance* WielderAnim = Cast<UWielderAnimInstance>(GetMesh()->GetAnimInstance());
@@ -145,6 +144,7 @@ void AWielder::DesignateEnemy(AActor* Enemy)
 		WielderController->DesignateEnemy(Enemy);
 	}
 }
+
 #pragma region Detection
 void AWielder::OnUncertainDetectionRangeBeginOverlap(class UPrimitiveComponent* SelfComp, class AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
@@ -154,18 +154,27 @@ void AWielder::OnUncertainDetectionRangeBeginOverlap(class UPrimitiveComponent* 
 	AWielderBase* WielderBase = Cast<AWielderBase>(OtherActor);
 	if (!IsValid(WielderBase)) return;
 
-	// [타게팅하고 있는 액터 != 콜리전에 접근한 액터]면 아무것도 하지 않음.
-	if (GetSeeingPawn() && GetSeeingPawn() != OtherActor) return;
-
 	UpdateDetectionRange(WielderBase, EPerceptionState::EPS_InRecognizedRange);
 
-	AWielderController* WielderController = Cast<AWielderController>(GetController());
-
-	// 컨트롤러가 존재하고, 인식되어 Wielder의 감지 영역 내에 있는 경우.
-	if (IsValid(WielderController) && PerceivedWielders.Contains(WielderBase))
+	// 타겟 접근이 아닌 경우
+	if (!GetSeeingPawn())
 	{
-		UE_LOG(LogTemp, Warning, TEXT("Wielder :: Start Patrol!"));
-		WielderController->HandleEnemyState(EStateOfEnemy::Patrol, WielderBase->GetActorLocation());
+		AWielderController* WielderController = Cast<AWielderController>(GetController());
+
+		// 컨트롤러가 존재하고, 인식되어 Wielder의 감지리스트 내에 있는 경우.
+		if (IsValid(WielderController) && PerceivedWielders.Contains(WielderBase))
+		{
+			// Wielder의 상태를 Check로 변경하고 위치로 이동.
+			WielderController->HandleEnemyState(EStateOfEnemy::Check, WielderBase->GetActorLocation());
+		}
+		return;
+	}
+
+	// 타겟 접근인 경우
+	if (GetSeeingPawn() == OtherActor)
+	{
+		CancelClearTarget();
+		return;
 	}
 }
 
@@ -175,24 +184,29 @@ void AWielder::OnUncertainDetectionRangeEndOverlap(class UPrimitiveComponent* Se
 	AWielderBase* WielderBase = Cast<AWielderBase>(OtherActor);
 	if (!IsValid(WielderBase)) return;
 
-	UpdateDetectionRange(WielderBase, EPerceptionState::EPS_NONE);
+	// TO DO
+	// 1. Remove WielderBase from InRangeWielders.
+	// 2. Remove WielderBase from PerceivedWielders.
+	// 3. if WielderBase is target, reserve the ClearTarget function.
 
-	// [타게팅하고 있는 액터 != 콜리전에 접근한 액터]면 아무것도 하지 않음.
+	RemoveInRangeWielders(WielderBase);
+
+	if (PerceivedWielders.Contains(WielderBase))
+	{
+		RemovePerceivedWielders(WielderBase);
+	}
+
+	// Range를 벗어난 Actor가 타겟인 경우
 	if (GetSeeingPawn() && GetSeeingPawn() == OtherActor)
 	{
-		// TO DO
-		// 1. Remove WielderBase from InRangeWielders.
-		// 2. Remove WielderBase from PerceivedWielders.
-		// 3. if WielderBase is target, reserve the ClearTarget function.
-		
-		// RemoveDetectedWielder(WielderBase);
+		// ClearTarget 예약.
+		ReserveClearTarget(TargetRetainTime);
 		return;
 	}
 }
 
 void AWielder::OnDetectionRangeBeginOverlap(class UPrimitiveComponent* SelfComp, class AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
-	UE_LOG(LogTemp, Warning, TEXT("Wielder :: Detection Range Overlap is called!"));
 	if (!OtherActor || OtherActor == this) return;
 
 	AWielderBase* WielderBase = Cast<AWielderBase>(OtherActor);
@@ -239,11 +253,6 @@ void AWielder::OnAttackRangeBeginOverlap(class UPrimitiveComponent* SelfComp, cl
 	AWielderController* WielderController = Cast<AWielderController>(GetController());
 	if (!IsValid(WielderController)) return;
 
-	//if (CurState != EStateOfEnemy::In_Battle)
-	//{
-	//	ShowStatBar();
-	//}
-
 	WielderController->HandleBattleState(EBattleState::Attacking, true);
 }
 
@@ -261,7 +270,7 @@ void AWielder::OnAttackRangeEndOverlap(class UPrimitiveComponent* SelfComp, clas
 	if (!IsValid(WielderController)) return;
 
 	// 현재 AI의 상태가 전투상태일 때.
-	if (CurState == EStateOfEnemy::In_Battle)
+	if (CurState == EStateOfEnemy::In_Battle && BattleState == EBattleState::Attacking)
 	{
 		WielderController->HandleBattleState(EBattleState::Attacking, false);
 	}
@@ -274,34 +283,108 @@ bool AWielder::FindPerceivedWielder(AWielderBase* Wielder)
 
 void AWielder::UpdateDetectionRange(AWielderBase* WielderBase, EPerceptionState NewState)
 {
+	if (WielderBase && !WielderBase->IsDead())
+	{
+		BindToDeathEvent(WielderBase);
+		InRangeWielders.Add(WielderBase, NewState);
+	}
+}
+
+void AWielder::RemoveInRangeWielders(AWielderBase* WielderBase)
+{
 	if (WielderBase)
 	{
-		InRangeWielders.Add(WielderBase, NewState);
+		UnbindFromDeathEvent(WielderBase);
+		InRangeWielders.Remove(WielderBase);
 	}
 }
 
 void AWielder::UpdatePerceivedWielders(AWielderBase* PerceivedWielder)
 {
-	if (PerceivedWielder)
+	if (PerceivedWielder && !PerceivedWielder->IsDead())
 	{
 		PerceivedWielders.Add(PerceivedWielder);
 	}
 }
 
+void AWielder::RemovePerceivedWielders(AWielderBase* PerceivedWielder)
+{
+	if (PerceivedWielder)
+	{
+		PerceivedWielders.Remove(PerceivedWielder);
+	}
+}
+
+void AWielder::BindToDeathEvent(AWielderBase* WielderBase)
+{
+	if (!InRangeHandles.Contains(WielderBase))
+	{
+		FDelegateHandle DelegateHandle = WielderBase->OnKilled.AddUObject(this, &AWielder::ManageWielderDeathInRange);
+		InRangeHandles.Add(WielderBase, DelegateHandle);
+	}
+}
+
+void AWielder::UnbindFromDeathEvent(AWielderBase* WielderBase)
+{
+	if (FDelegateHandle* Handle = InRangeHandles.Find(WielderBase))
+	{
+		WielderBase->OnKilled.Remove(*Handle);
+		InRangeHandles.Remove(WielderBase);
+	}
+}
+
+void AWielder::ManageWielderDeathInRange(AActor* Actor)
+{
+	AWielderBase* WielderBase = Cast<AWielderBase>(Actor);
+	if (!WielderBase) return;
+
+	RemoveInRangeWielders(WielderBase);
+	RemovePerceivedWielders(WielderBase);
+
+	if (BattleState == EBattleState::None) return;
+
+	UE_LOG(LogTemp, Warning, TEXT("Wielder || %s's Target is %s, and dead actor is %s"),
+		*UKismetSystemLibrary::GetDisplayName(this),
+		*UKismetSystemLibrary::GetDisplayName(GetSeeingPawn()),
+		*UKismetSystemLibrary::GetDisplayName(Actor));
+
+	if (!GetSeeingPawn() || GetSeeingPawn() == Actor)
+		RequestFindNewTarget();
+}
+
+void AWielder::RequestFindNewTarget()
+{
+	AWielderController* WielderController = Cast<AWielderController>(GetController());
+	if (!WielderController) return;
+
+	WielderController->FindNewTarget();
+}
+
 void AWielder::ReserveClearTarget(float Time)
 {
-
-
+	if (Time >= 0)
+	{
+		GetWorldTimerManager().SetTimer(ClearTargetHandle, this, &AWielder::ClearTarget, Time);
+	}
+	else
+	{
+		UE_LOG(LogStats, Error, TEXT("AWielder || Please change the clear target time. it should not be a negative number."));
+	}
 }
 
 void AWielder::CancelClearTarget()
 {
-
+	GetWorldTimerManager().ClearTimer(ClearTargetHandle);
 }
 
 void AWielder::ClearTarget()
 {
-
+	AWielderController* WielderController = Cast<AWielderController>(GetController());
+	if (WielderController)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("Wielder || ClearTarget!"));
+		WielderController->ClearTarget();
+	}
 }
 
 #pragma endregion
@@ -412,7 +495,7 @@ void AWielder::ChangeToRetreatMode()
 	AWielderController* WielderController = Cast<AWielderController>(GetController());
 	if (IsValid(WielderController))
 	{
-		WielderController->NotifyRetreat();
+		WielderController->HandleBattleState(EBattleState::Retreating);
 	}
 }
 
@@ -430,6 +513,7 @@ void AWielder::RetreatFromEnemy()
 	// 타겟이 회피 최소 거리보다 가까이 있을 경우 실행
 	if (GetDistanceTo(GetSeeingPawn()) <= RetreatDistanceMin)
 	{
+		UE_LOG(LogTemp, Warning, TEXT("Wielder || Target is %s, and The Distance with Target is %f / Retreat Distance Min is %f"), *UKismetSystemLibrary::GetDisplayName(GetSeeingPawn()), GetDistanceTo(GetSeeingPawn()), RetreatDistanceMin);
 		WielderAnim->PlayRetreatMontage();
 	}
 	else
@@ -550,7 +634,7 @@ void AWielder::Monitoring()
 	AWielderController* WielderController = Cast<AWielderController>(GetController());
 	if (IsValid(WielderController))
 	{
-		WielderController->NotifyMonitoring();
+		WielderController->HandleBattleState(EBattleState::Monitoring);
 		WielderController->SetFocus(WielderController->GetSeeingPawn());
 	}
 
@@ -670,6 +754,13 @@ void AWielder::SetMovementSpeed(float Speed)
 
 void AWielder::Die()
 {
+	for (auto& InRangeHandle : InRangeHandles)
+	{
+		InRangeHandle.Key->OnKilled.Remove(InRangeHandle.Value);
+	}
+
+	InRangeHandles.Empty();
+
 	if (OnKilled.IsBound())
 	{
 		OnKilled.Broadcast(this);

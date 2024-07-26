@@ -3,6 +3,8 @@
 
 #include "SwordShield.h"
 
+#include "Enums/TypeOfMelee.h"
+
 #include "GameFramework/Character.h"
 #include "Components/SphereComponent.h"
 #include "Components/SkeletalMeshComponent.h"
@@ -10,14 +12,31 @@
 #include "Kismet/KismetSystemLibrary.h"
 #include "Kismet/GameplayStatics.h"
 
+#include "NiagaraComponent.h"
 #include "Perception/AISenseConfig_Hearing.h"
 
 ASwordShield::ASwordShield()
 {
-	Shield = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("Shield"));
-	Shield->SetupAttachment(RootComponent);
-	Shield->SetCollisionProfileName(FName("NoCollision"));
+	ShieldMesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("ShieldMesh"));
+	ShieldMesh->SetupAttachment(RootComponent);
+	ShieldMesh->SetCollisionProfileName(FName("NoCollision"));
+
+	SetMeleeType(ETypeOfMelee::SwordAndShield);
 }
+
+void ASwordShield::PostInitializeComponents()
+{
+	Super::PostInitializeComponents();
+
+	SlashFX->SetRelativeLocation(FVector(-77.5f, 0.0f, 122.5f));
+
+	// Set SlashFX's User Parameters.
+	SlashFX->SetNiagaraVariableFloat(FString("Elemental_Lifetime"), 0.0f);
+	SlashFX->SetNiagaraVariableFloat(FString("Slash_Lifetime"), 0.8f);
+	SlashFX->SetNiagaraVariableFloat(FString("Slash_Noise"), 2.0f);
+	SlashFX->SetNiagaraVariableFloat(FString("Slash_Width"), 80.0f);
+}
+
 
 void ASwordShield::TakeUp(ACharacter* NewOwner)
 {
@@ -28,7 +47,7 @@ void ASwordShield::TakeUp(ACharacter* NewOwner)
 	SetActorRotation(FRotator(0.0f, 0.0f, 0.0f));
 	SetActorScale3D(FVector(1.0f));
 
-	Shield->SetRelativeLocation(FVector(0.0f));
+	ShieldMesh->SetRelativeLocation(FVector(0.0f));
 
 	SetWeaponOwner(NewOwner);
 }
@@ -45,7 +64,7 @@ void ASwordShield::ThrowAway(FVector Location)
 
 	SetActorLocation(Location);
 	SetActorRotation(FRotator(0.0f, 0.0f, 0.0f));
-	Shield->SetRelativeLocation(FVector(-76.0f, 43.0f, 33.0f));
+	ShieldMesh->SetRelativeLocation(FVector(-76.0f, 43.0f, 33.0f));
 
 	SetActorScale3D(FVector(0.4f));
 }
@@ -54,14 +73,14 @@ void ASwordShield::Attach()
 {
 	if (GetWeaponOwner())
 	{
-		GetSkeletalMesh()->AttachToComponent(GetWeaponOwner()->GetMesh(), FAttachmentTransformRules::KeepRelativeTransform, Name_SwordUnequip);
-		Shield->AttachToComponent(GetWeaponOwner()->GetMesh(), FAttachmentTransformRules::KeepRelativeTransform, Name_ShieldUnequip);
+		BladeMesh->AttachToComponent(GetWeaponOwner()->GetMesh(), FAttachmentTransformRules::KeepRelativeTransform, Name_SwordUnequip);
+		ShieldMesh->AttachToComponent(GetWeaponOwner()->GetMesh(), FAttachmentTransformRules::KeepRelativeTransform, Name_ShieldUnequip);
 	}
 }
 
 void ASwordShield::Detach()
 {
-	Shield->AttachToComponent(GetSkeletalMesh(), FAttachmentTransformRules::KeepRelativeTransform);
+	ShieldMesh->AttachToComponent(BladeMesh, FAttachmentTransformRules::KeepRelativeTransform);
 }
 
 void ASwordShield::HoldMeleeWeapon()
@@ -74,17 +93,18 @@ void ASwordShield::HoldMeleeWeapon()
 		if (AnimInstance->Montage_IsPlaying(MontageInfo.m_EquipMontage))
 		{
 			// 무기 장착
-			GetSkeletalMesh()->AttachToComponent(GetWeaponOwner()->GetMesh(), FAttachmentTransformRules::KeepRelativeTransform, Name_SwordEquip);
-			Shield->AttachToComponent(GetWeaponOwner()->GetMesh(), FAttachmentTransformRules::KeepRelativeTransform, Name_ShieldEquip);
+			BladeMesh->AttachToComponent(GetWeaponOwner()->GetMesh(), FAttachmentTransformRules::KeepRelativeTransform, Name_SwordEquip);
+			ShieldMesh->AttachToComponent(GetWeaponOwner()->GetMesh(), FAttachmentTransformRules::KeepRelativeTransform, Name_ShieldEquip);
 		}
 		else
 		{
 			// 무기 장착 해제
-			GetSkeletalMesh()->AttachToComponent(GetWeaponOwner()->GetMesh(), FAttachmentTransformRules::KeepRelativeTransform, Name_SwordUnequip);
-			Shield->AttachToComponent(GetWeaponOwner()->GetMesh(), FAttachmentTransformRules::KeepRelativeTransform, Name_ShieldUnequip);
+			BladeMesh->AttachToComponent(GetWeaponOwner()->GetMesh(), FAttachmentTransformRules::KeepRelativeTransform, Name_SwordUnequip);
+			ShieldMesh->AttachToComponent(GetWeaponOwner()->GetMesh(), FAttachmentTransformRules::KeepRelativeTransform, Name_ShieldUnequip);
 		}
 	}
 }
+
 
 void ASwordShield::AttackTrace()
 {
@@ -94,16 +114,16 @@ void ASwordShield::AttackTrace()
 
 	if (IsShieldAttack)
 	{
-		FVector Start = Shield->GetSocketLocation(FName("ShieldBottom"));
-		FVector End = Shield->GetSocketLocation(FName("ShieldTop"));
+		FVector Start = ShieldMesh->GetSocketLocation(FName("ShieldBottom"));
+		FVector End = ShieldMesh->GetSocketLocation(FName("ShieldTop"));
 		
 		DrawAttackTrace(Start, End, IsShieldAttack);
 		return;
 	}
 	else
 	{
-		FVector Start = GetSkeletalMesh()->GetSocketLocation(FName("BladeBottom"));
-		FVector End = GetSkeletalMesh()->GetSocketLocation(FName("BladeTop"));
+		FVector Start = BladeMesh->GetSocketLocation(FName("BladeBottom"));
+		FVector End = BladeMesh->GetSocketLocation(FName("BladeTop"));
 		FVector Midpoint = (Start + End) / 2;
 
 		// Interpolate line trace when the distance is far.
@@ -199,12 +219,12 @@ void ASwordShield::DrawAttackTrace(const FVector& LineStart, const FVector& Line
 
 void ASwordShield::ActiveOverlay()
 {
-	GetSkeletalMesh()->SetOverlayMaterial(OutlineMaterial);
-	Shield->SetOverlayMaterial(OutlineMaterial);
+	BladeMesh->SetOverlayMaterial(OutlineMaterial);
+	ShieldMesh->SetOverlayMaterial(OutlineMaterial);
 }
 
 void ASwordShield::DeactiveOverlay()
 {
-	GetSkeletalMesh()->SetOverlayMaterial(nullptr);
-	Shield->SetOverlayMaterial(nullptr);
+	BladeMesh->SetOverlayMaterial(nullptr);
+	ShieldMesh->SetOverlayMaterial(nullptr);
 }

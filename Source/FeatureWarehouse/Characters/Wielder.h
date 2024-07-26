@@ -206,13 +206,12 @@ protected:
 	void OnAttackRangeEndOverlap(class UPrimitiveComponent* SelfComp, class AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex);
 
 	// Variables
-	/* Wielder의 타겟 인지 상태 */
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Detection|State")
-	EPerceptionState TargetPerceptionState;
-
 	/* Detection 범위 내 있는 Wielders */
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Detection|State")
 	TMap<AWielderBase*, EPerceptionState> InRangeWielders;
+
+	/* Wielder의 콜리전 범위 내에 있는 델리게이트를 관리하기 위한 변수 */
+	TMap<AWielderBase*, FDelegateHandle> InRangeHandles;
 
 	/* AIPerception에 의해 식별된 Wielders */
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Detection|State")
@@ -229,7 +228,7 @@ protected:
 	/* 공격 시작 범위 */
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Detection|Range")
 	float AttackRange;
-
+	
 	/* 최소 회피 거리 */
 	UPROPERTY(EditDefaultsOnly, BLueprintReadOnly, Category = "Detection|Range")
 	float RetreatDistanceMin;
@@ -240,17 +239,8 @@ protected:
 	bool bStartWithPatrol;
 
 public:
-	UFUNCTION(BlueprintGetter, Category = "Detection|Perception")
-	EPerceptionState GetTargetPerceptionState() { return TargetPerceptionState; }
-
-	UFUNCTION(BlueprintSetter, Category = "Detection|Perception")
-	void SetTargetPerceptionState(EPerceptionState NewPerceptionState) 
-	{
-		TargetPerceptionState = NewPerceptionState;
-	}
-
 	UFUNCTION(BlueprintGetter, Category = "Detection|Range")
-	float GetUncertainDetectionRange() 
+	float GetUncertainDetectionRange()
 	{
 		return UncertainDetectionRange;
 	}
@@ -268,6 +258,12 @@ public:
 	}
 
 	UFUNCTION(BlueprintGetter, Category = "Detection|State")
+	TSet<AWielderBase*> GetPerceivedWielders()
+	{
+		return PerceivedWielders;
+	}
+
+	UFUNCTION(BlueprintGetter, Category = "Detection|State")
 	TMap<AWielderBase*, EPerceptionState> GetInRangeWielders()
 	{
 		return InRangeWielders;
@@ -276,15 +272,39 @@ public:
 	bool FindPerceivedWielder(AWielderBase* Wielder);
 
 	UFUNCTION(BlueprintCallable, Category = "Detection|State")
-	void UpdateDetectionRange(AWielderBase* WielderBase, EPerceptionState NewState);
+	void UpdateDetectionRange(AWielderBase* WielderBase, EPerceptionState NewState = EPerceptionState::EPS_NONE);
+
+	UFUNCTION(BlueprintCallable, Category = "Detection|State")
+	void RemoveInRangeWielders(AWielderBase* WielderBase);
 
 	UFUNCTION(BlueprintCallable, Category = "Detection|State")
 	void UpdatePerceivedWielders(AWielderBase* PerceivedWielder);
 
+	UFUNCTION(BlueprintCallable, Category = "Detection|State")
+	void RemovePerceivedWielders(AWielderBase* PerceivedWielder);
+
+	/// Delegates
+protected:
+	void BindToDeathEvent(AWielderBase* WielderBase);
+
+	void UnbindFromDeathEvent(AWielderBase* WielderBase);
+
 	/// Targets
 protected:
+	/* 범위 내에 있는 Wielder가 사망했을 때 처리하는 함수 */
+	UFUNCTION()
+	void ManageWielderDeathInRange(AActor* Actor);
+
+	void RequestFindNewTarget();
+
 	UFUNCTION()
 	void ClearTarget();
+
+	/* 범위를 벗어났을 때, 타겟이 유지되는 시간. */
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Detection|Target")
+	float TargetRetainTime;
+
+	FTimerHandle ClearTargetHandle;
 
 public:
 	UFUNCTION(BlueprintCallable, Category = "Detection")

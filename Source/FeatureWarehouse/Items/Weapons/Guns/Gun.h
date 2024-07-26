@@ -76,6 +76,9 @@ protected:
 	void Unequip() override;
 
 private:
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = Mesh, meta = (AllowPrivateAccess = "true"))
+	USkeletalMeshComponent* SkeletalMesh;
+
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = Components, meta = (AllowPrivateAccess = "true"))
 	class UArrowComponent* MuzzleArrow;
 
@@ -106,6 +109,9 @@ private:
 public:
 	FORCEINLINE ETypeOfGun GetGunType() { return GunType; }
 	FORCEINLINE void SetGunType(ETypeOfGun Type) { GunType = Type; }
+
+	UFUNCTION(BlueprintGetter)
+	FORCEINLINE USkeletalMeshComponent* GetSkeletalMesh() { return SkeletalMesh; }
 
 #pragma endregion
 };

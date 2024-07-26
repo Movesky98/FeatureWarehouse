@@ -113,7 +113,7 @@ void AWielderController::ProcessSight(AActor* Actor, FAIStimulus Stimulus)
 	if (!IsValid(Wielder)) return;
 
 	AWielderBase* WielderBase = Cast<AWielderBase>(Actor);
-	if (!IsValid(WielderBase)) return;
+	if (!IsValid(WielderBase) || WielderBase->IsDead()) return;
 
 	if (Stimulus.WasSuccessfullySensed())
 	{
@@ -128,6 +128,7 @@ void AWielderController::ProcessSight(AActor* Actor, FAIStimulus Stimulus)
 		if (WielderBase->GetGenericTeamId() == Wielder->GetGenericTeamId()) return;
 
 		EPerceptionState* PerceptionState = Wielder->GetInRangeWielders().Find(WielderBase);
+		if (!PerceptionState) return;
 
 		// 적이 이미 접근하였으며, AI가 적을 인식한 경우
 		switch (*PerceptionState)
@@ -140,7 +141,7 @@ void AWielderController::ProcessSight(AActor* Actor, FAIStimulus Stimulus)
 		case EPerceptionState::EPS_InRecognizedRange:
 			Wielder->CheckEquipWeapon();
 			Wielder->ShowStatBar();
-			HandleEnemyState(EStateOfEnemy::Patrol, Actor->GetActorLocation());
+			HandleEnemyState(EStateOfEnemy::Check, Actor->GetActorLocation());
 			break;
 		default:
 			break;
@@ -148,11 +149,10 @@ void AWielderController::ProcessSight(AActor* Actor, FAIStimulus Stimulus)
 	}
 	else
 	{
-		// 플레이어가 인식되었다가 시야에서 벗어난 경우.
-		bIsIdentifiedEnemy = false;
-
 		// 현재 바라보고 있는 폰이 아니면 아무것도 안함.
 		if (GetSeeingPawn() != Actor) return;
+
+		// 시야를 벗어난 경우 처리 필요.
 
 		/*EPerceptionState* PerceptionState = Wielder->GetInRangeWielders().Find(WielderBase);
 
@@ -176,7 +176,7 @@ void AWielderController::ProcessHearing(AActor* Actor, FAIStimulus Stimulus)
 	if (Stimulus.WasSuccessfullySensed())
 	{
 		Wielder->CheckEquipWeapon();
-		NotifyStartPatrol(Actor->GetActorLocation());
+		HandleEnemyState(EStateOfEnemy::Check, Actor->GetActorLocation());
 	}
 }
 
@@ -202,7 +202,8 @@ void AWielderController::OnTargetDetected(AActor* Actor, FAIStimulus Stimulus)
 void AWielderController::HandleEnemyState(EStateOfEnemy State, FVector Location, AActor* Target)
 {
 	if (!IsValid(Wielder)) return;
-	
+
+	ResetPreviousEnemyState(Wielder->GetCurState());
 	Wielder->SetCurState(State);
 
 	switch (State)
@@ -211,7 +212,10 @@ void AWielderController::HandleEnemyState(EStateOfEnemy State, FVector Location,
 		NotifyEnterIdle();
 		break;
 	case EStateOfEnemy::Patrol:
-		NotifyStartPatrol(Location);
+		NotifyStartPatrol();
+		break;
+	case EStateOfEnemy::Check:
+		NotifyStartCheck(Location);
 		break;
 	case EStateOfEnemy::In_Battle:
 		NotifyEngageBattle(Target);
@@ -224,9 +228,30 @@ void AWielderController::HandleEnemyState(EStateOfEnemy State, FVector Location,
 	}
 }
 
+void AWielderController::ResetPreviousEnemyState(EStateOfEnemy State)
+{
+	switch (State)
+	{
+	case EStateOfEnemy::Check:
+		Wielder->SetMovementSpeed(Wielder->WalkSpeed);
+		break;
+	case EStateOfEnemy::In_Battle:
+		HandleBattleState(EBattleState::None);
+		Blackboard->SetValueAsEnum(FName("BattleState"), (uint8)Wielder->CurBattleState());
+		break;
+	default:
+		break;
+	}
+}
+
 void AWielderController::NotifyEnterIdle()
 {
-	
+	Wielder->SetMovementSpeed(Wielder->WalkSpeed);
+
+	// Need to Clear In_Battle State.
+	Blackboard->SetValueAsEnum(FName("CurState"), (uint8)Wielder->GetCurState());
+
+	UE_LOG(LogTemp, Warning, TEXT("AWielder || Change EnemyState to Idle"));
 }
 
 void AWielderController::NotifyEngageBattle(AActor* Target)
@@ -240,14 +265,19 @@ void AWielderController::NotifyEngageBattle(AActor* Target)
 	Wielder->GetDistanceTo(Target) > 600.0f ? Wielder->Monitoring() : NotifyApproaching();
 }
 
-void AWielderController::NotifyStartPatrol(FVector Location)
+void AWielderController::NotifyStartPatrol()
+{
+	Wielder->SetMovementSpeed(Wielder->WalkSpeed);
+
+	Blackboard->SetValueAsEnum(FName("CurState"), (uint8)Wielder->GetCurState());
+}
+
+void AWielderController::NotifyStartCheck(FVector Location)
 {
 	Wielder->SetMovementSpeed(Wielder->CreepSpeed);
 
 	Blackboard->SetValueAsEnum(FName("CurState"), (uint8)Wielder->GetCurState());
-	Blackboard->SetValueAsBool(FName("IsRecognizedSomething"), true);
 	SetMovePosToBlackboard(Location);
-	Blackboard->SetValueAsBool(FName("IsDetection"), true);
 }
 
 void AWielderController::NotifyStartFlee()
@@ -259,10 +289,16 @@ void AWielderController::NotifyStartFlee()
 #pragma region BattleStates
 void AWielderController::HandleBattleState(EBattleState State, bool bShouldAttack)
 {
+	if (!IsValid(Wielder)) return;
+
+	ResetPreviousBattleState(Wielder->CurBattleState());
+
 	Wielder->SetBattleState(State);
 
 	switch (State)
 	{
+	case EBattleState::None:
+		break;
 	case EBattleState::Monitoring:
 		NotifyMonitoring();
 		break;
@@ -274,6 +310,26 @@ void AWielderController::HandleBattleState(EBattleState State, bool bShouldAttac
 		break;
 	case EBattleState::Retreating:
 		NotifyRetreat();
+		break;
+	default:
+		break;
+	}
+}
+
+void AWielderController::ResetPreviousBattleState(EBattleState State)
+{
+	switch (State)
+	{
+	case EBattleState::Monitoring:
+		Wielder->SetMovementSpeed(Wielder->WalkSpeed);
+		break;
+	case EBattleState::Approaching:
+		Wielder->SetMovementSpeed(Wielder->WalkSpeed);
+		break;
+	case EBattleState::Attacking:
+		Wielder->SetMovementSpeed(Wielder->WalkSpeed);
+		break;
+	case EBattleState::Retreating:
 		break;
 	default:
 		break;
@@ -334,10 +390,11 @@ void AWielderController::NotifyAttack(bool bShouldAttack)
 {
 	NotifyBattleState(Wielder->CurBattleState());
 
+	Wielder->SetMovementSpeed(Wielder->SprintSpeed);
 	Blackboard->SetValueAsBool(FName("IsInAttackRange"), bShouldAttack);
 }
-
 #pragma endregion
+
 
 void AWielderController::NotifyEquipWeapon()
 {
@@ -361,9 +418,13 @@ void AWielderController::SetHomePosToBlackboard(FVector HomePos)
 
 void AWielderController::DesignateEnemy(AActor* Enemy)
 { 
-	if (GetSeeingPawn() != Enemy)
+	if (GetSeeingPawn() == Enemy) return;
+
+	Blackboard->SetValueAsObject(BlackboardEnemyKey, Enemy);
+
+	if (Enemy)
 	{
-		Blackboard->SetValueAsObject(BlackboardEnemyKey, Enemy); 
+		Wielder->GetDistanceTo(Enemy) <= Wielder->GetAttackRange() ? HandleBattleState(EBattleState::Attacking, true) : HandleBattleState(EBattleState::Attacking, false);
 	}
 }
 
@@ -398,15 +459,12 @@ void AWielderController::NotifyEnemyInAttackRange(bool IsInRange)
 	Blackboard->SetValueAsBool(FName("IsInAttackRange"), IsInRange);
 }
 
+
 void AWielderController::NotifyGoToHomePos()
 {
 	if (!IsValid(Wielder)) return;
 
 	Wielder->SetCurState(EStateOfEnemy::Idle);
-	Wielder->SetMovementSpeed(Wielder->WalkSpeed);
-		
-	// Need to Clear In_Battle State.
-	Blackboard->SetValueAsEnum(FName("CurState"), (uint8)Wielder->GetCurState());
 }
 
 void AWielderController::NotifyUnderAttack(bool IsUnderAttack)
@@ -416,26 +474,86 @@ void AWielderController::NotifyUnderAttack(bool IsUnderAttack)
 
 void AWielderController::FindNewTarget()
 {
-	if (!GetSeeingPawn()) return;
+	AWielderBase* CurrentTarget = Cast<AWielderBase>(GetSeeingPawn());
+	if (IsValid(CurrentTarget) && !CurrentTarget->IsDead()) return;
 
+	TMap<AWielderBase*, EPerceptionState> InRangeWielders = Wielder->GetInRangeWielders();
+	TSet<AWielderBase*> PerceivedWielders = Wielder->GetPerceivedWielders();
+	AWielderBase* NewTarget = nullptr;
 
-	/*TArray<AWielderBase*> DetectedWielders;
-	DetectedWielders = Wielder->GetInRangeWielders();
-
-	for (auto DetectedWielder : DetectedWielders)
+	if (PerceivedWielders.Num())
 	{
-		if (IsValid(DetectedWielder))
+		EPerceptionState Max = EPerceptionState::EPS_InRecognizedRange;
+		
+		for (auto& PerceivedWielder : PerceivedWielders)
 		{
-			if (DetectedWielder->GetGenericTeamId() == Wielder->GetGenericTeamId())
-				continue;
+			if (PerceivedWielder->GetGenericTeamId() == Wielder->GetGenericTeamId()) continue;
 
-			Wielder->GetDistanceTo(DetectedWielder) <= Wielder->GetAttackRange() ? NotifyEnemyInAttackRange(true) : NotifyEnemyInAttackRange(false);
-			DesignateEnemy(DetectedWielder);
-			return;
+			EPerceptionState* State = InRangeWielders.Find(PerceivedWielder);
+			if (!State) continue;
+			
+			if (*State >= Max && *State != EPerceptionState::EPS_NONE)
+			{
+				Max = *State;
+				NewTarget = PerceivedWielder;
+			}
 		}
-	}*/
 
-	// NotifyGoToHomePos();
+	}
+
+	else if (InRangeWielders.Num())
+	{
+		EPerceptionState Max = EPerceptionState::EPS_InRecognizedRange;
+		TArray<AWielderBase*> Wielders;
+
+		for (TPair<AWielderBase*, EPerceptionState> InRangeWielder : InRangeWielders)
+		{
+			if (InRangeWielder.Value < Max)
+			{
+				// UncertainDetection, Detection, Attack Range 중
+				// 보다 가까운 범위에 있는 Wielder가 식별되면 RangeWielder를 비우고 해당 범위로 재설정.
+				Max = InRangeWielder.Value;
+				Wielders.Empty();
+
+				Wielders.Add(InRangeWielder.Key);
+			}
+			else if(InRangeWielder.Value == Max)
+			{
+				Wielders.Add(InRangeWielder.Key);
+			}
+		}
+
+		if (Wielders.Num())
+		{
+			// 특정 범위 내에 Wielder들 중 가장 가까운 Wielder 선택
+			NewTarget = Wielders[0];
+			float DistanceMin = Wielder->GetDistanceTo(Wielders[0]);
+
+			for (int i = 1; i < Wielders.Num(); i++)
+			{
+				if (Wielder->GetDistanceTo(Wielders[i]) < DistanceMin)
+				{
+					DistanceMin = Wielder->GetDistanceTo(Wielders[i]);
+					NewTarget = Wielders[i];
+				}
+			}
+		}
+	}
+
+	if (NewTarget)
+	{
+		DesignateEnemy(NewTarget);
+		return;
+	}
+
+	HandleEnemyState(EStateOfEnemy::Idle);
+}
+
+void AWielderController::ClearTarget()
+{
+	Blackboard->SetValueAsObject(FName("EnemyActor"), nullptr);
+
+	FindNewTarget();
 }
 
 void AWielderController::NotifyDead()

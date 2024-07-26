@@ -13,8 +13,12 @@ UCLASS()
 class FEATUREWAREHOUSE_API AHalberd : public AMelee
 {
 	GENERATED_BODY()
+public:
+	AHalberd();
 
 protected:
+	virtual void PostInitializeComponents() override;
+
 	void Equip() override;
 
 	void Unequip() override;

@@ -3,9 +3,31 @@
 
 #include "Halberd.h"
 
+#include "Enums/TypeOfMelee.h"
+
 #include "AnimInstance/PlayerAnimInstance.h"
 #include "GameFramework/Character.h"
 
+#include "NiagaraComponent.h"
+
+
+AHalberd::AHalberd()
+{
+	SetMeleeType(ETypeOfMelee::Halberd);
+}
+
+void AHalberd::PostInitializeComponents()
+{
+	Super::PostInitializeComponents();
+
+	SlashFX->SetRelativeLocation(FVector(67.0f, 37.0f, 0.0f));
+
+	// Set SlashFX's User Parameters.
+	SlashFX->SetNiagaraVariableFloat(FString("Elemental_Lifetime"), 0.0f);
+	SlashFX->SetNiagaraVariableFloat(FString("Slash_Lifetime"), 1.0f);
+	SlashFX->SetNiagaraVariableFloat(FString("Slash_Noise"), 3.0f);
+	SlashFX->SetNiagaraVariableFloat(FString("Slash_Width"), 120.0f);
+}
 
 void AHalberd::Equip()
 {

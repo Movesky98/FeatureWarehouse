@@ -22,6 +22,8 @@ public:
 	void Unequip() override;
 
 protected:
+	virtual void PostInitializeComponents() override;
+
 	void Attach() override;
 
 	void Detach() override;
@@ -33,8 +35,8 @@ protected:
 	void DeactiveOverlay() override;
 
 private:
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Mesh", meta = (AllowPrivateAccess = "true"))
-	USkeletalMeshComponent* Scabbard;
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Component", meta = (AllowPrivateAccess ="true"))
+	UStaticMeshComponent* ScabbardMesh;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Socket|Unequip", meta = (AllowPrivateAccess = "true"))
 	FName Blade_UnequipSocketName;

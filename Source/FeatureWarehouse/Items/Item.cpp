@@ -15,23 +15,16 @@ AItem::AItem()
  	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = false;
 
-	SkeletalMesh = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("SkeletalMesh"));
-	RootComponent = SkeletalMesh;
-	SkeletalMesh->SetCollisionProfileName(FName("NoCollision"));
-
 	ItemCollision = CreateDefaultSubobject<USphereComponent>(TEXT("ItemCollision"));
-	ItemCollision->SetupAttachment(RootComponent);
 	ItemCollision->SetCollisionProfileName(FName("Item"));
 	ItemCollision->ShapeColor = FColor::Red;
 
 	TriggerZone = CreateDefaultSubobject<USphereComponent>(TEXT("TriggerZone"));
-	TriggerZone->SetupAttachment(RootComponent);
 	TriggerZone->SetCollisionProfileName(FName("PlayerTrigger"));
 	TriggerZone->ShapeColor = FColor::Green;
 	TriggerZone->InitSphereRadius(300.0f);
 
 	ItemDescriptionComponent = CreateDefaultSubobject<UItemDescriptionComponent>(TEXT("ItemDescriptionComponent"));
-	ItemDescriptionComponent->SetupAttachment(RootComponent);
 
 	static ConstructorHelpers::FObjectFinder<UMaterialInterface> MI_ItemOutline(TEXT("/Game/Project/Materials/MI_Item_Outline"));
 	if (MI_ItemOutline.Succeeded())
@@ -82,10 +75,10 @@ UTexture2D* AItem::GetItemTexture()
 
 void AItem::ActiveOverlay()
 {
-	SkeletalMesh->SetOverlayMaterial(OutlineMaterial);
+	
 }
 
 void AItem::DeactiveOverlay()
 {
-	SkeletalMesh->SetOverlayMaterial(nullptr);
+
 }

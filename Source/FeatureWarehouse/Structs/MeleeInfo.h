@@ -32,6 +32,9 @@ public:
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, meta = (DisplayName = "JumpAttackInfo"))
 	FMeleeAttackInfo m_JumpAttackInfo;
 
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, meta = (DisplayName = "GroggyAttackInfo"))
+	FMeleeAttackInfo m_GroggyAttackInfo;
+
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, meta = (DisplayName = "MontageInfo"))
 	FMeleeMontageInfo m_MontageInfo;
 };

@@ -33,12 +33,23 @@ public:
 
 	void JumpAttackLanding();
 
+	UFUNCTION(BlueprintCallable)
+	void ActivateSlashFX();
+
+	UFUNCTION(BlueprintCallable)
+	void DeactivateSlashFX();
+	
+
 protected:
 	virtual void PostInitializeComponents() override;
 
 	virtual void BeginPlay() override;
 
 	virtual void EndPlay(const EEndPlayReason::Type EndPlayReason) override;
+
+	void ActiveOverlay() override;
+
+	void DeactiveOverlay() override;
 
 	void SaveDodgeMontages(TMap<EDirection, UAnimMontage*>& Montages) override;
 
@@ -101,6 +112,12 @@ protected:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Attack")
 	bool bIsHitSomething;
 
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Component", meta = (AllowPrivateAccess = "true"))
+	class UStaticMeshComponent* BladeMesh;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Component", meta = (AllowPrivateAccess = "true"))
+	class UNiagaraComponent* SlashFX;
+
 private:
 	// Functions
 	UFUNCTION()
@@ -125,6 +142,9 @@ private:
 	TArray<UAnimMontage*> AttackMontages;
 
 public:
+	UFUNCTION(BlueprintGetter)
+	class UStaticMeshComponent* GetBladeMesh() { return BladeMesh; }
+
 	FORCEINLINE ETypeOfMelee GetMeleeType() { return MeleeType; }
 	FORCEINLINE void SetMeleeType(ETypeOfMelee Type) { MeleeType = Type; }
 };

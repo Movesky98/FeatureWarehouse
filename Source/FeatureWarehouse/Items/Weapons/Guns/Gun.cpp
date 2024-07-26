@@ -4,6 +4,9 @@
 #include "Gun.h"
 
 #include "Components/ArrowComponent.h"
+#include "Components/SphereComponent.h"
+#include "Components/ItemDescriptionComponent.h"
+
 #include "Camera/CameraComponent.h"
 #include "Kismet/KismetSystemLibrary.h"
 #include "Kismet/KismetMathLibrary.h"
@@ -25,6 +28,14 @@
 
 AGun::AGun()
 {
+	SkeletalMesh = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("SkeletalMesh"));
+	RootComponent = SkeletalMesh;
+	SkeletalMesh->SetCollisionProfileName(FName("NoCollision"));
+
+	ItemCollision->SetupAttachment(RootComponent);
+	TriggerZone->SetupAttachment(RootComponent);
+	ItemDescriptionComponent->SetupAttachment(RootComponent);
+
 	MuzzleArrow = CreateDefaultSubobject<UArrowComponent>(TEXT("MuzzleArrow"));
 	MuzzleArrow->SetupAttachment(GetSkeletalMesh());
 
