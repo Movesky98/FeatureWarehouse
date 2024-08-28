@@ -74,7 +74,6 @@ void AWielder::PostInitializeComponents()
 	AttackRangeComponent->OnComponentBeginOverlap.AddDynamic(this, &AWielder::OnAttackRangeBeginOverlap);
 	AttackRangeComponent->OnComponentEndOverlap.AddDynamic(this, &AWielder::OnAttackRangeEndOverlap);
 
-
 	StatBarComponent->Init();
 
 	LockOnComponent->Init();
