@@ -1,2 +1,5 @@
 # FeatureWarehouse
-This Repository is the project that Implement various features (Such as views in various genre, shooter features in FPS game, Character's attack combo feature in RPG game etc...) in Unreal Engine 5.1.
+
+언리얼 엔진 5.1을 사용하여, 다양한 기능들을 구현해보기 위한 프로젝트 리포지토리입니다.
+
+현재는 소울류 게임의 전투 시스템을 모방하여 만들고 있습니다.
