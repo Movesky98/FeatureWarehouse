@@ -43,6 +43,8 @@ public:
 
 	virtual void Die();
 
+	virtual bool CheckDamagable();
+
 protected:
 	virtual void PostInitializeComponents() override;
 	
@@ -58,7 +60,7 @@ protected:
 
 	UFUNCTION()
 	virtual void OnHitEnded();
-	
+
 	virtual void StopAttack();
 
 	virtual void HeavyAttack();

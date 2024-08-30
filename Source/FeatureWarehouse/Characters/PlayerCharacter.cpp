@@ -899,15 +899,18 @@ void APlayerCharacter::Dodge()
 	ActionState = EActionState::EAS_Dodging;
 	StatComponent->SetDamagableType(EDamagableType::EDT_EVADING);
 
-	float Direction = WielderAnim->GetDirection();
+	FVector InputVector = GetLastMovementInputVector();
+	float Direction = CalculateMoveDirection(InputVector, GetActorRotation());
+	LastDodgeDirection = Direction;
+
 	UAnimMontage* DodgeMontage = nullptr;
 
 	// 나누기 위한 기준 각도
 	float AngleDivider = 22.5f;
-	bool IsNegative = Direction < 0 ? true : false;
+	bool IsNegative = LastDodgeDirection < 0 ? true : false;
 
 	// 몫
-	int Quotient = (IsNegative ? -Direction / AngleDivider : Direction / AngleDivider);
+	int Quotient = (IsNegative ? -LastDodgeDirection / AngleDivider : LastDodgeDirection / AngleDivider);
 
 	switch (Quotient)
 	{
@@ -955,6 +958,20 @@ void APlayerCharacter::Dodge()
 
 		WielderAnim->Montage_SetEndDelegate(DodgeEndDelegate, DodgeMontage);
 	}
+}
+
+float APlayerCharacter::CalculateMoveDirection(FVector InputVector, FRotator ActorRotation)
+{
+	FVector Forward = ActorRotation.Vector();
+	FVector Right = FQuat(ActorRotation).GetAxisY();
+
+	float ForwardValue = FVector::DotProduct(Forward, InputVector);
+	float RightValue = FVector::DotProduct(Right, InputVector);
+
+	GEngine->AddOnScreenDebugMessage(-1, 3.0f, FColor::Green, FString("Forward Value : ") + FString::SanitizeFloat(ForwardValue));
+	GEngine->AddOnScreenDebugMessage(-1, 3.0f, FColor::Green, FString("Right Value : ") + FString::SanitizeFloat(RightValue));
+
+	return FMath::RadiansToDegrees(FMath::Atan2(RightValue, ForwardValue));
 }
 
 void APlayerCharacter::OnDodgeEnded(UAnimMontage* Montage, bool bInterrupted)
@@ -1125,6 +1142,35 @@ void APlayerCharacter::FindNearbyLockTarget(float DeltaYaw, float DeltaPitch)
 				return;
 			}
 		}
+	}
+}
+
+void APlayerCharacter::OnReceivePointDamageEvent(AActor* DamagedActor, float Damage, AController* InstigatedBy, 
+	FVector HitLocation, UPrimitiveComponent* FHitComponent, FName BoneName, 
+	FVector ShotFromDirection, const UDamageType* DamageType, AActor* DamageCauser)
+{
+	UWielderAnimInstance* WielderAnim = Cast<UWielderAnimInstance>(GetMesh()->GetAnimInstance());
+	if (!WielderAnim) return;
+
+	ActionState = EActionState::EAS_GetDamaged;
+
+	StatComponent->DecreaseHP(Damage);
+
+	bool IsDead = StatComponent->CheckDeathStatus();
+
+	if (IsDead)
+	{
+		bIsDead = true;
+		KilledByWielder = Cast<AWielderBase>(InstigatedBy->GetPawn());
+
+		WielderAnim->PlayDeathMontage();
+	}
+	else
+	{
+		WielderAnim->PlayHitMontage();
+
+		FRotator ImpactRotation = UKismetMathLibrary::MakeRotFromZ(ShotFromDirection);
+		StatComponent->ShowBloodEffect(HitLocation, ImpactRotation);
 	}
 }
 

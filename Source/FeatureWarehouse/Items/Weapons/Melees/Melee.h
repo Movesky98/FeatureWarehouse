@@ -38,7 +38,6 @@ public:
 
 	UFUNCTION(BlueprintCallable)
 	void DeactivateSlashFX();
-	
 
 protected:
 	virtual void PostInitializeComponents() override;

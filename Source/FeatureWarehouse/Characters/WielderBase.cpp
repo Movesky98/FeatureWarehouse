@@ -85,11 +85,11 @@ void AWielderBase::OnReceivePointDamageEvent(AActor* DamagedActor, float Damage,
 	FVector HitLocation, UPrimitiveComponent* FHitComponent, FName BoneName, 
 	FVector ShotFromDirection, const UDamageType* DamageType, AActor* DamageCauser)
 {
-	if (bIsDead) return;
 	UWielderAnimInstance* WielderAnim = Cast<UWielderAnimInstance>(GetMesh()->GetAnimInstance());
 	if (!WielderAnim) return;
 
 	ActionState = EActionState::EAS_GetDamaged;
+
 	StatComponent->DecreaseHP(Damage);
 
 	bool IsDead = StatComponent->CheckDeathStatus();
@@ -194,6 +194,14 @@ void AWielderBase::Die()
 	GetMesh()->SetSimulatePhysics(true);
 
 	SetLifeSpan(3.0f);
+}
+
+bool AWielderBase::CheckDamagable()
+{
+	if (ActionState == EActionState::EAS_Dodging || bIsDead)
+		return false;
+
+	return true;
 }
 
 bool AWielderBase::CheckTakeAction(EActionState SpecificAction, bool bCanTakeContinuously)

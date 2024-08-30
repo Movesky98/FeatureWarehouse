@@ -396,6 +396,17 @@ void AMelee::AttackTrace()
 	DrawAttackLineTrace(Start, End);
 }
 
+/**
+* @brief
+* Draw the Melee weapon's AttackLineTrace.
+* 
+* @details 
+* This function draws the Melee's attack line.
+* Check HitActor. if Someone is hit by this line, then process hits.
+* 
+* @warning 
+* If you overrided this function, should to add CheckDamagable() function.
+*/
 void AMelee::DrawAttackLineTrace(const FVector& LineStart, const FVector& LineEnd)
 {
 	FHitResult Hit;
@@ -414,12 +425,15 @@ void AMelee::DrawAttackLineTrace(const FVector& LineStart, const FVector& LineEn
 
 	if (IsHit)
 	{
-		bIsHitSomething = true;
-		
-		APawn* HitPawn = Cast<APawn>(Hit.GetActor());
+		AWielderBase* HitPawn = Cast<AWielderBase>(Hit.GetActor());
 		if (!IsValid(HitPawn)) return;
 
+		if (!HitPawn->CheckDamagable()) return;
+
+		bIsHitSomething = true;
+
 		IgnoreActor.Add(Hit.GetActor());
+
 		TSubclassOf<UDamageType> DamageType;
 
 		if (HitSound)

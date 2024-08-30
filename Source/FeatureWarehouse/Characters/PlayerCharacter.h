@@ -43,6 +43,10 @@ protected:
 
 	virtual void OnMovementModeChanged(EMovementMode PrevMovementMode, uint8 PreviousCustomMode) override;
 
+	void OnReceivePointDamageEvent(AActor* DamagedActor, float Damage, AController* InstigatedBy,
+		FVector HitLocation, UPrimitiveComponent* FHitComponent, FName BoneName,
+		FVector ShotFromDirection, const UDamageType* DamageType, AActor* DamageCauser) override;
+
 	void Die() override;
 
 	UFUNCTION()
@@ -96,6 +100,11 @@ protected:
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Dodge")
 	float DodgeStaminaCost;
+
+	float CalculateMoveDirection(FVector InputVector, FRotator ActorRotation);
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Dodge")
+	float LastDodgeDirection;
 
 	FVector DrawCameraLineTrace();
 
