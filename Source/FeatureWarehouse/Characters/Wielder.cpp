@@ -509,28 +509,81 @@ void AWielder::RetreatFromEnemy()
 
 	if (!IsValid(GetSeeingPawn())) return;
 
-	// 타겟이 회피 최소 거리보다 가까이 있을 경우 실행
-	if (GetDistanceTo(GetSeeingPawn()) <= RetreatDistanceMin)
+	UWorld* World = GetWorld();
+	if (World)
 	{
-		UE_LOG(LogTemp, Warning, TEXT("Wielder || Target is %s, and The Distance with Target is %f / Retreat Distance Min is %f"), *UKismetSystemLibrary::GetDisplayName(GetSeeingPawn()), GetDistanceTo(GetSeeingPawn()), RetreatDistanceMin);
-		WielderAnim->PlayRetreatMontage();
-	}
-	else
-	{
-		// Change BattleState to Approaching or monitoring
-		bool IsApproach = FMath::RandBool();
+		FVector Start = GetActorLocation();
+		FVector End = GetActorLocation() - 100.0f * GetActorForwardVector();
+		float Radius = GetCapsuleComponent()->GetScaledCapsuleRadius();
+		float Height = GetCapsuleComponent()->GetScaledCapsuleHalfHeight();
+		ETraceTypeQuery TraceType = ETraceTypeQuery::TraceTypeQuery1;
+		TArray<AActor*> IgnoreActors;
+		IgnoreActors.Add(this);
 
-		if (IsApproach)
+		FHitResult Result;
+
+		bool IsHit = UKismetSystemLibrary::CapsuleTraceSingle(
+			World,
+			Start,
+			End,
+			Radius,
+			Height,
+			TraceType,
+			true,
+			IgnoreActors,
+			EDrawDebugTrace::None,
+			Result,
+			true
+		);
+
+		if (IsHit)
 		{
-			AWielderController* WielderController = Cast<AWielderController>(GetController());
-			if (IsValid(WielderController))
+			FString HitActorName = UKismetSystemLibrary::GetDisplayName(Result.GetActor());
+
+			GEngine->AddOnScreenDebugMessage(-1, 3.0f, FColor::Green, HitActorName);
+
+			// Change BattleState to Approaching or monitoring
+			bool IsApproach = FMath::RandBool();
+
+			if (IsApproach)
 			{
-				WielderController->NotifyApproachToEnemy(GetSeeingPawn());
+				AWielderController* WielderController = Cast<AWielderController>(GetController());
+				if (IsValid(WielderController))
+				{
+					WielderController->NotifyApproachToEnemy(GetSeeingPawn());
+				}
+			}
+			else
+			{
+				Monitoring();
 			}
 		}
 		else
 		{
-			Monitoring();
+			// 타겟이 회피 최소 거리보다 가까이 있을 경우 실행
+			if (GetDistanceTo(GetSeeingPawn()) <= RetreatDistanceMin)
+			{
+				UE_LOG(LogTemp, Warning, TEXT("Wielder || Target is %s, and The Distance with Target is %f / Retreat Distance Min is %f"), *UKismetSystemLibrary::GetDisplayName(GetSeeingPawn()), GetDistanceTo(GetSeeingPawn()), RetreatDistanceMin);
+				WielderAnim->PlayRetreatMontage();
+			}
+			else
+			{
+				// Change BattleState to Approaching or monitoring
+				bool IsApproach = FMath::RandBool();
+
+				if (IsApproach)
+				{
+					AWielderController* WielderController = Cast<AWielderController>(GetController());
+					if (IsValid(WielderController))
+					{
+						WielderController->NotifyApproachToEnemy(GetSeeingPawn());
+					}
+				}
+				else
+				{
+					Monitoring();
+				}
+			}
 		}
 	}
 }

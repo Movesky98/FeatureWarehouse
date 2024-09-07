@@ -968,9 +968,6 @@ float APlayerCharacter::CalculateMoveDirection(FVector InputVector, FRotator Act
 	float ForwardValue = FVector::DotProduct(Forward, InputVector);
 	float RightValue = FVector::DotProduct(Right, InputVector);
 
-	GEngine->AddOnScreenDebugMessage(-1, 3.0f, FColor::Green, FString("Forward Value : ") + FString::SanitizeFloat(ForwardValue));
-	GEngine->AddOnScreenDebugMessage(-1, 3.0f, FColor::Green, FString("Right Value : ") + FString::SanitizeFloat(RightValue));
-
 	return FMath::RadiansToDegrees(FMath::Atan2(RightValue, ForwardValue));
 }
 
