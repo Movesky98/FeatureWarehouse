@@ -9,6 +9,7 @@
 #include "Components/WeaponComponent.h"
 
 #include "GameFramework/CharacterMovementComponent.h"
+#include "KismetAnimationLibrary.h"
 
 UPlayerAnimInstance::UPlayerAnimInstance()
 {
@@ -35,7 +36,7 @@ void UPlayerAnimInstance::NativeUpdateAnimation(float DeltaSeconds)
 	if (Player)
 	{
 		Speed = MovementComponent->Velocity.Length();
-		Direction = CalculateDirection(MovementComponent->Velocity, Player->GetActorRotation());
+		Direction = UKismetAnimationLibrary::CalculateDirection(MovementComponent->Velocity, Player->GetActorRotation());
 		bIsCrouch = MovementComponent->IsCrouching();
 		bIsFalling = MovementComponent->IsFalling();
 		bShouldMove = (MovementComponent->GetCurrentAcceleration() != FVector::ZeroVector) && (Speed > 3.0f);

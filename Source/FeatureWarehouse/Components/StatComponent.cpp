@@ -25,7 +25,8 @@ UStatComponent::UStatComponent()
 	}
 
 	StunGauge = 0.0f;
-	DamagableType = EDamagableType::EDT_VULNERABLE;
+	DamageableType = EDamageableType::EDT_NORMAL;
+	DamageImmunityType = EDamageImmunityType::EDIT_None;
 	EvadeThreshold = 0.3f;
 }
 
@@ -112,7 +113,7 @@ void UStatComponent::SetMontages(TMap<FString, UAnimMontage*> AnimMontages)
 void UStatComponent::DecreaseHP(float Damage)
 {
 	// 데미지를 받을 수 있는 상태가 아니라면 HP를 깎지 않음.
-	if (DamagableType != EDamagableType::EDT_VULNERABLE) return;
+	if (DamageImmunityType != EDamageImmunityType::EDIT_None) return;
 
 	CurrentHP -= Damage;
 
@@ -289,8 +290,17 @@ void UStatComponent::PlayMontage(UAnimMontage* PlayMontage)
 	}
 }
 
-void UStatComponent::SetDamagableType(EDamagableType Type)
+
+#pragma region DamageType
+void UStatComponent::SetDamageableType(EDamageableType Type)
 {
-	if(DamagableType != EDamagableType::EDT_INVINCIBLE)
-		DamagableType = Type;
+	DamageableType = Type;
 }
+
+void UStatComponent::SetDamageImmunityType(EDamageImmunityType Type)
+{
+	if (DamageImmunityType != EDamageImmunityType::EDIT_INVINCIBLE)
+		DamageImmunityType = Type;
+}
+
+#pragma endregion DamageType

@@ -5,6 +5,7 @@
 #include "Characters/Enemy.h"
 
 #include "GameFramework/CharacterMovementComponent.h"
+#include "KismetAnimationLibrary.h"
 
 USkullAnimInstance::USkullAnimInstance()
 {
@@ -27,7 +28,7 @@ void USkullAnimInstance::NativeUpdateAnimation(float DeltaSeconds)
 	if (Enemy)
 	{
 		Speed = MovementComponent->Velocity.Length();
-		Direction = CalculateDirection(MovementComponent->Velocity, Enemy->GetActorRotation());
+		Direction = UKismetAnimationLibrary::CalculateDirection(MovementComponent->Velocity, Enemy->GetActorRotation());
 		bShouldMove = (Speed > 3.0f) && (MovementComponent->GetCurrentAcceleration() != FVector::ZeroVector);
 		bIsCrouch = MovementComponent->IsCrouching();
 		bIsFalling = MovementComponent->IsFalling();

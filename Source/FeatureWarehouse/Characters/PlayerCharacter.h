@@ -73,12 +73,6 @@ protected:
 
 	void EquipSecondWeapon() override;
 
-	UFUNCTION(BlueprintCallable)
-	void Attack() override;
-
-	UFUNCTION(BlueprintCallable)
-	void StopAttack() override;
-
 	UFUNCTION()
 	void ZoomIn();
 
@@ -94,8 +88,23 @@ protected:
 	UFUNCTION()
 	void Aiming();
 
+#pragma region Attack
+protected:
+	UFUNCTION(BlueprintCallable)
+	void Attack() override;
+
+	UFUNCTION(BlueprintCallable)
+	void StopAttack() override;
+
+	UFUNCTION()
+	void BackStab();
+
 	void HeavyAttack() override;
 
+	
+#pragma endregion Attack
+
+protected:
 	void Dodge();
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Dodge")
@@ -109,6 +118,7 @@ protected:
 	FVector DrawCameraLineTrace();
 
 #pragma region LockOn
+protected:
 	UFUNCTION()
 	void LockTarget();
 

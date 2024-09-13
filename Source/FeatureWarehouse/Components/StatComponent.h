@@ -11,12 +11,23 @@ DECLARE_DELEGATE(FOnExhaustedStaminaDelegate);
 
 class UParticleSystem;
 
+// 데미지를 받는 방식
 UENUM(BlueprintType)
-enum class EDamagableType :uint8
+enum class EDamageableType :uint8
 {
-	EDT_INVINCIBLE UMETA(DisplayName = "INVINCIBLE"),		// 무적 상태
-	EDT_VULNERABLE UMETA(DisplayName = "VULNERABLE"),		// 데미지를 받을 수 있는 상태
-	EDT_EVADING UMETA(DisplayName = "EVADING")				// 회피 중인 상태
+	EDT_NORMAL UMETA(DisplayName = "INVINCIBLE"),				// 데미지를 받는 상태
+	EDT_CRITICALLY_HITTABLE UMETA(DisplayName = "DAMAGABLE"),	// 치명타를 받을 수 있는 상태
+	EDT_STUN UMETA(DisplayName = "EVADING"),					// 스턴 상태
+	EDT_GROGGY UMETA(DisplayName = "CRITICALLY_HITTABLE")		// 그로기 상태
+};
+
+// 데미지 면역 Enum
+UENUM(BlueprintType)
+enum class EDamageImmunityType :uint8
+{
+	EDIT_None UMETA(DisplayName = "NORMAL"),					// 일반 상태 (특수 상황 없음)
+	EDIT_INVINCIBLE UMETA(DisplayName = "INVINCIBLE"),			// 무적 상태
+	EDIT_EVADING UMETA(DisplayName = "EVADING")					// 회피 상태
 };
 
 UCLASS(Blueprintable, BlueprintType, ClassGroup = (Custom), meta = (BlueprintSpawnableComponent))
@@ -44,8 +55,6 @@ public:
 	void StopRecoveryStamina();
 
 	void SetMontages(TMap<FString, UAnimMontage*> AnimMontages);
-
-	void SetDamagableType(EDamagableType Type);
 
 	FOnGetDamagedDelegate OnGetDamaged;
 
@@ -127,9 +136,6 @@ private:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Stat", meta = (AllowPrivateAccess = "true"))
 	float StunGaugeLimit;
 
-	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "State", meta = (AllowPrivateAccess = "true"))
-	EDamagableType DamagableType;
-
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "State", meta = (AllowPrivateAccess = "true"))
 	UParticleSystem* BloodParticle;
 
@@ -141,6 +147,28 @@ private:
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Montage", meta = (AllowPrivateAccess = "true"))
 	class UAnimMontage* RetreatMontage;
+
+#pragma region DamageType
+private:
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "State", meta = (AllowPrivateAccess = "true"))
+	EDamageableType DamageableType;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "State", meta = (AllowPrivateAccess = "true"))
+	EDamageImmunityType DamageImmunityType;
+
+public:
+	void SetDamageableType(EDamageableType Type);
+
+	FORCEINLINE EDamageableType GetDamageableType() { return DamageableType; }
+
+	void SetDamageImmunityType(EDamageImmunityType Type);
+
+	FORCEINLINE EDamageImmunityType GetDamageImmunityType() { return DamageImmunityType; }
+
+
+
+
+#pragma endregion DamageType
 
 #pragma region GetterSetter
 public:
@@ -163,8 +191,5 @@ public:
 	FORCEINLINE void SetCurrentStamina(float NewCurrentStamina) { CurrentStamina = NewCurrentStamina; }
 
 	FORCEINLINE class UAnimMontage* GetBackstepMontage() { return RetreatMontage; }
-
-	FORCEINLINE EDamagableType GetDamagableType() { return DamagableType; }
-	
 #pragma endregion
 };

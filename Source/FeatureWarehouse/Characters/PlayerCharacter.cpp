@@ -541,12 +541,9 @@ AActor* APlayerCharacter::FindInteractableActor(const FVector Start, const FVect
 		ETraceTypeQuery::TraceTypeQuery3, 
 		false, 
 		IgnoreActors, 
-		EDrawDebugTrace::ForDuration, 
+		EDrawDebugTrace::None, 
 		Hit, 
-		true,
-		FLinearColor::Red,
-		FLinearColor::Green,
-		3.0f
+		true
 	);
 
 	if (IsSuccess)
@@ -635,7 +632,7 @@ void APlayerCharacter::Attack()
 		return;
 	}
 
-	EquipWeapon->Attack(PlayerController->GetPerspective());
+	EquipWeapon->Attack();
 }
 
 void APlayerCharacter::HeavyAttack()
@@ -656,7 +653,7 @@ void APlayerCharacter::HeavyAttack()
 		return;
 	}
 
-	EquipWeapon->Attack(PlayerController->GetPerspective());
+	EquipWeapon->Attack();
 }
 
 void APlayerCharacter::StopAttack()
@@ -664,6 +661,16 @@ void APlayerCharacter::StopAttack()
 	if (!EquipWeapon) return;
 
 	EquipWeapon->StopAttack();
+}
+
+void APlayerCharacter::BackStab()
+{
+	// 적 WielderBase에 Trigger Volume을 추가한 후 bCanCriticalHit 요소를 건들여준다면?
+	// bCanCriticalHit의 여부에 따라, Stab인지 그냥 Attack인지 구별할 수 있을 것 같음.
+	// bCanCriticalHit이면, Stab. Trace를 이용해 적 위치 파악
+	// bCanCriticalHit이 아니라면, 그냥 공격.
+
+	
 }
 
 void APlayerCharacter::PlayMontage(UAnimMontage* Montage)
@@ -897,7 +904,7 @@ void APlayerCharacter::Dodge()
 
 	// Change ActionState to Dodging.
 	ActionState = EActionState::EAS_Dodging;
-	StatComponent->SetDamagableType(EDamagableType::EDT_EVADING);
+	StatComponent->SetDamageImmunityType(EDamageImmunityType::EDIT_EVADING);
 
 	FVector InputVector = GetLastMovementInputVector();
 	float Direction = CalculateMoveDirection(InputVector, GetActorRotation());
@@ -974,7 +981,7 @@ float APlayerCharacter::CalculateMoveDirection(FVector InputVector, FRotator Act
 void APlayerCharacter::OnDodgeEnded(UAnimMontage* Montage, bool bInterrupted)
 {
 	ActionState = EActionState::EAS_Idle;
-	StatComponent->SetDamagableType(EDamagableType::EDT_VULNERABLE);
+	StatComponent->SetDamageImmunityType(EDamageImmunityType::EDIT_None);
 }
 
 void APlayerCharacter::TryLockTarget()
@@ -1135,7 +1142,6 @@ void APlayerCharacter::FindNearbyLockTarget(float DeltaYaw, float DeltaPitch)
 				}
 
 				bIsLockChanged = true;
-				DrawDebugString(GetWorld(), FVector(0.0f, 0.0f, 150.0f), FString("Lock On!"), LockOnTarget, FColor::Red, 1.0f);
 				return;
 			}
 		}

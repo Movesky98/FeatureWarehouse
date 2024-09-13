@@ -43,6 +43,7 @@ public:
 
 	virtual void Die();
 
+	/* 데미지를 받을 수 있는 지 체크 */
 	virtual bool CheckDamagable();
 
 protected:
@@ -60,10 +61,6 @@ protected:
 
 	UFUNCTION()
 	virtual void OnHitEnded();
-
-	virtual void StopAttack();
-
-	virtual void HeavyAttack();
 
 	UFUNCTION(BlueprintCallable)
 	virtual void EquipFirstWeapon();
@@ -117,6 +114,34 @@ protected:
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Montage|Dodge")
 	TMap<EDirection, UAnimMontage*> DodgeMontages;
+
+#pragma region Attack
+public:
+	UFUNCTION(BlueprintCallable)
+	bool IsCriticallyHittable();
+
+protected:
+	virtual void StopAttack();
+
+	virtual void HeavyAttack();
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Component")
+	class UBoxComponent* CriticalTriggerVolume;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Attack|State")
+	TArray<AWielderBase*> OverlappingWieldersInCritiacalVolume;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Attack|State")
+	bool bCanCriticalHit;
+	
+	UFUNCTION()
+	virtual void CriticalTriggerVolumeBeginOverlap(class UPrimitiveComponent* SelfComp, class AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
+
+	UFUNCTION()
+	virtual void CriticalTriggerVolumeEndOverlap(class UPrimitiveComponent* SelfComp, class AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex);
+
+#pragma endregion Attack
+
 #pragma region GetterSetter
 public:
 	// Equip Weapon

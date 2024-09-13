@@ -323,4 +323,7 @@ public:
 	FORCEINLINE void SetBattleState(EBattleState State) { BattleState = State; }
 
 	FORCEINLINE ETypeOfWielder GetWielderType() { return WielderType; }
+
+	UFUNCTION()
+	void DrawPerceptionArea();
 };

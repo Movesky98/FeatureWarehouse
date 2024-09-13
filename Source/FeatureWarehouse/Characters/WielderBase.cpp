@@ -14,6 +14,7 @@
 #include "Components/StatComponent.h"
 #include "Components/WeaponComponent.h"
 #include "Components/CapsuleComponent.h"
+#include "Components/BoxComponent.h"
 #include "NiagaraComponent.h"
 
 #include "GameFramework/CharacterMovementComponent.h"
@@ -30,6 +31,11 @@ AWielderBase::AWielderBase()
 
 	AfterImageComponent = CreateDefaultSubobject<UNiagaraComponent>(TEXT("AfterImageComponent"));
 	AfterImageComponent->SetupAttachment(RootComponent);
+
+	CriticalTriggerVolume = CreateDefaultSubobject<UBoxComponent>(TEXT("CriticalTriggerVolume"));
+	CriticalTriggerVolume->SetupAttachment(RootComponent);
+	CriticalTriggerVolume->SetRelativeScale3D(FVector(2.75f, 1.35f, 3.25f));
+	CriticalTriggerVolume->SetCollisionProfileName(FName("Trigger"));
 
 	static ConstructorHelpers::FObjectFinder<UNiagaraSystem> NS_AfterImage(TEXT("/Game/Project/Materials/NS_AfterImage"));
 	if (NS_AfterImage.Succeeded())
@@ -121,6 +127,11 @@ void AWielderBase::Attack()
 
 }
 
+bool AWielderBase::IsCriticallyHittable()
+{
+	return StatComponent->GetDamageableType() == EDamageableType::EDT_CRITICALLY_HITTABLE;
+}
+
 void AWielderBase::StopAttack()
 {
 
@@ -129,6 +140,25 @@ void AWielderBase::StopAttack()
 void AWielderBase::HeavyAttack()
 {
 
+}
+
+void AWielderBase::CriticalTriggerVolumeBeginOverlap(UPrimitiveComponent* SelfComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
+{
+	AWielderBase* WielderBase = Cast<AWielderBase>(OtherActor);
+	if (WielderBase)
+	{
+		OverlappingWieldersInCritiacalVolume.Add(WielderBase);
+
+	}
+}
+
+void AWielderBase::CriticalTriggerVolumeEndOverlap(UPrimitiveComponent* SelfComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex)
+{
+	AWielderBase* WielderBase = Cast<AWielderBase>(OtherActor);
+	if (WielderBase)
+	{
+		OverlappingWieldersInCritiacalVolume.Remove(WielderBase);
+	}
 }
 
 void AWielderBase::EquipFirstWeapon()
@@ -198,7 +228,7 @@ void AWielderBase::Die()
 
 bool AWielderBase::CheckDamagable()
 {
-	if (ActionState == EActionState::EAS_Dodging || bIsDead)
+	if (StatComponent->GetDamageImmunityType() != EDamageImmunityType::EDIT_None)
 		return false;
 
 	return true;

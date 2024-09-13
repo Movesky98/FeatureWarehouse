@@ -33,7 +33,7 @@ void AFW_PlayerController::BeginPlay()
 
 	if (GameInstance)
 	{
-		GEngine->AddOnScreenDebugMessage(-1, 3.0f, FColor::Green, FString("Load player menu."));
+		// Load Player Menu
 		GameInstance->LoadPlayerMenu();
 
 		PlayerMenu = GameInstance->PlayerMenu;
@@ -58,11 +58,11 @@ void AFW_PlayerController::ShowSystemMenu(const FInputActionValue& Value)
 
 	if (IsPressed)
 	{
-		GEngine->AddOnScreenDebugMessage(-1, 3.0f, FColor::Blue, FString("Show System Menu."));
 		UFW_GameInstance* GameInstance = Cast<UFW_GameInstance>(GetGameInstance());
 
 		if (GameInstance)
 		{
+			// Load system menu.
 			GameInstance->LoadSystemMenu();
 		}
 		else

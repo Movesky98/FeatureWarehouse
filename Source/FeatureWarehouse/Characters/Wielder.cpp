@@ -120,6 +120,9 @@ void AWielder::BeginPlay()
 	}
 	HideStatBar();
 	NotifyToGameMode();
+
+	/*FTimerHandle DebugTimerHandle;
+	GetWorldTimerManager().SetTimer(DebugTimerHandle, this, &AWielder::DrawPerceptionArea, 0.001f, true);*/
 }
 
 AActor* AWielder::GetSeeingPawn()
@@ -856,4 +859,11 @@ void AWielder::HideStatBar()
 void AWielder::SetVisibleLockOnImage(bool IsVisisble)
 {
 	IsVisisble ? LockOnComponent->ShowUI() : LockOnComponent->HideUI();
+}
+
+void AWielder::DrawPerceptionArea()
+{
+	DrawDebugCircle(GetWorld(), GetActorLocation(), UncertainDetectionRange, 128, FColor::Blue, false, 0.001f, 0, 10.0f, GetActorForwardVector(), GetActorRightVector());
+	DrawDebugCircle(GetWorld(), GetActorLocation(), DetectionRange, 128, FColor::Green, false, 0.001f, 0, 10.0f, GetActorForwardVector(), GetActorRightVector());
+	DrawDebugCircle(GetWorld(), GetActorLocation(), AttackRange, 128, FColor::Red, false, 0.001f, 0, 10.0f, GetActorForwardVector(), GetActorRightVector());
 }

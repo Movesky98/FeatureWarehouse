@@ -6,6 +6,7 @@
 
 #include "GameFramework/Character.h"
 #include "GameFramework/CharacterMovementComponent.h"
+#include "KismetAnimationLibrary.h"
 
 void UWielderAnimInstance::NativeInitializeAnimation()
 {
@@ -26,7 +27,7 @@ void UWielderAnimInstance::NativeUpdateAnimation(float DeltaSeconds)
 	if (Pawn)
 	{
 		Speed = MovementComponent->Velocity.Length();
-		Direction = CalculateDirection(MovementComponent->Velocity, Pawn->GetActorRotation());
+		Direction = UKismetAnimationLibrary::CalculateDirection(MovementComponent->Velocity, Pawn->GetActorRotation());
 		bIsCrouch = MovementComponent->IsCrouching();
 		bIsFalling = MovementComponent->IsFalling();
 		bShouldMove = (MovementComponent->GetCurrentAcceleration() != FVector::ZeroVector) && (Speed > 3.0f);
