@@ -8,6 +8,7 @@
 #include "WielderBase.generated.h"
 
 DECLARE_MULTICAST_DELEGATE_OneParam(FOnKilledDelegate, AActor*);
+DECLARE_MULTICAST_DELEGATE(FOnCriticalHitDelegate);
 
 enum class EMovementState :uint8;
 enum class EActionState :uint8;
@@ -32,6 +33,8 @@ public:
 	AWielderBase();
 
 	FOnKilledDelegate OnKilled;
+
+	FOnCriticalHitDelegate OnCriticalHit;
 
 	void PlayMontage(UAnimMontage* Montage);
 
@@ -115,30 +118,59 @@ protected:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Montage|Dodge")
 	TMap<EDirection, UAnimMontage*> DodgeMontages;
 
+#pragma region State
+public:
+	EActionState GetActionState()
+	{
+		return ActionState;
+	}
+
+	void HandleWielderState(EActionState State);
+
+protected:
+	void SweepWieldersInCriticalVolume();
+
+#pragma endregion State
+
+
 #pragma region Attack
 public:
 	UFUNCTION(BlueprintCallable)
 	bool IsCriticallyHittable();
 
+	UFUNCTION(BlueprintSetter)
+	void SetCanCriticalHit(bool CanCriticalHit);
+
+	void ExecuteCriticalHitOnTarget();
+
+	void ReceiveCriticalHit();
+
+	void GetCriticalHit();
+
 protected:
 	virtual void StopAttack();
 
 	virtual void HeavyAttack();
-
-	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Component")
-	class UBoxComponent* CriticalTriggerVolume;
-
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Attack|State")
-	TArray<AWielderBase*> OverlappingWieldersInCritiacalVolume;
-
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Attack|State")
-	bool bCanCriticalHit;
 	
 	UFUNCTION()
 	virtual void CriticalTriggerVolumeBeginOverlap(class UPrimitiveComponent* SelfComp, class AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
 
 	UFUNCTION()
 	virtual void CriticalTriggerVolumeEndOverlap(class UPrimitiveComponent* SelfComp, class AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex);
+
+	/* 치명타 트리거 볼륨 */
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Component")
+	class UBoxComponent* CriticalTriggerVolume;
+
+	/* 치명타 볼륨 내 Overlap된 Wielders */
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Attack|State")
+	TArray<AWielderBase*> OverlappingWieldersInCritiacalVolume;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Attack|State")
+	bool bCanCriticalHit;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Attack|State")
+	AWielderBase* CriticalHitTarget;
 
 #pragma endregion Attack
 
@@ -155,8 +187,6 @@ public:
 	// States
 	FORCEINLINE EMovementState CurMovementState() { return MovementState; }
 	FORCEINLINE void SetMovementState(EMovementState State) { MovementState = State; }
-	FORCEINLINE EActionState CurActionState() { return ActionState; }
-	FORCEINLINE void SetActionState(EActionState State) { ActionState = State; }
 
 	FORCEINLINE bool IsDead() { return bIsDead; }
 	FORCEINLINE void SetIsDead(bool IsDead) { bIsDead = IsDead; }

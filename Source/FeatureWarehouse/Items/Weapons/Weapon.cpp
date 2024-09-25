@@ -107,14 +107,16 @@ void AWeapon::OnUnequipEnded(class UAnimMontage* Montage, bool bInterrupted)
 void AWeapon::Interact(AActor* InteractActor)
 {
 	AWielderBase* InteractOwner = Cast<AWielderBase>(InteractActor);
-
 	if (!IsValid(InteractOwner)) return;
+
 	TMap<FString, UAnimMontage*> DeliverMontages;
 
 	DeliverMontages.Emplace(FString("DeathMontage"), MontageInfo.m_DeathMontage);
 	DeliverMontages.Emplace(FString("GetDamagedMontage"), MontageInfo.m_HitMontage);
 	DeliverMontages.Emplace(FString("KnockdownMontage"), nullptr);
 	DeliverMontages.Emplace(FString("RetreatMontage"), MontageInfo.m_RetreatMontage);
+	DeliverMontages.Emplace(FString("GroggyHitReactionMontage"), MontageInfo.m_Groggy_Hit_Reaction);
+	DeliverMontages.Emplace(FString("GroggyHitDeathMontage"), MontageInfo.m_Groggy_Hit_Death);
 
 	InteractOwner->GetWeaponComponent()->SaveAcquiredWeaponInfo(this);
 	InteractOwner->TransferReactionMontages(DeliverMontages);
@@ -148,6 +150,11 @@ void AWeapon::ThrowAway(FVector Location)
 }
 
 void AWeapon::Attack()
+{
+
+}
+
+void AWeapon::CriticalAttack()
 {
 
 }

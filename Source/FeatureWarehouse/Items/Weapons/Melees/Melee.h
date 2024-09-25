@@ -54,6 +54,8 @@ protected:
 
 	void Attack() override;
 
+	void CriticalAttack() override;
+
 	void Attack(EStateOfViews CurView, FVector HitLocation = FVector(0.0f)) override;
 
 	virtual bool CanAttack() override;

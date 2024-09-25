@@ -45,6 +45,8 @@ public:
 	UFUNCTION(BlueprintCallable)
 	virtual void Attack();
 
+	virtual void CriticalAttack();
+
 	virtual void SaveDodgeMontages(TMap<EDirection, UAnimMontage*>& Montages);
 
 	virtual void Attack(EStateOfViews CurView, FVector HitLocation = FVector(0.0f));

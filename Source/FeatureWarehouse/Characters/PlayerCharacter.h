@@ -7,6 +7,8 @@
 #include "InputAction.h"
 #include "PlayerCharacter.generated.h"
 
+DECLARE_DELEGATE(FOnInputLockDelegate);
+
 enum class EStateOfViews :uint8;
 enum class EMovementState :uint8;
 enum class EActionState :uint8;
@@ -100,9 +102,8 @@ protected:
 	void BackStab();
 
 	void HeavyAttack() override;
-
 	
-#pragma endregion Attack
+#pragma endregion
 
 protected:
 	void Dodge();
@@ -251,5 +252,35 @@ private:
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = InputAction, meta = (AllowPrivateAccess = "true"))
 	UInputAction* LockOnAction;
+#pragma endregion
+
+#pragma region Delegates
+public:
+	FOnInputLockDelegate OnInputLock;
+
+
+#pragma endregion
+
+#pragma region Movement
+public:
+
+protected:
+	void MoveToLocation(FVector TargetLocation);
+
+	UFUNCTION()
+	void CheckReachDestination();
+
+	void OnMoveCompleted();
+
+private:
+	/* 플레이어 캐릭터가 이동하기 위한 목표지점. */
+	FVector Destination;
+
+	/* 목표지점에 도달했는지 확인하기 위한 임계치. */
+	float AcceptanceRadius;
+
+	FTimerHandle MoveTimerHandle;
+
+
 #pragma endregion
 };

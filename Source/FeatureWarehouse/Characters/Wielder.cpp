@@ -88,6 +88,10 @@ void AWielder::PostInitializeComponents()
 
 		WielderController->HandleEnemyState(EStateOfEnemy::Patrol);
 	}
+	else
+	{
+		HandleWielderState(EActionState::EAS_Idle);
+	}
 
 	UWielderAnimInstance* WielderAnim = Cast<UWielderAnimInstance>(GetMesh()->GetAnimInstance());
 	if (WielderAnim)
@@ -118,11 +122,9 @@ void AWielder::BeginPlay()
 			bIsEquipWeapon = true;
 		}
 	}
+
 	HideStatBar();
 	NotifyToGameMode();
-
-	/*FTimerHandle DebugTimerHandle;
-	GetWorldTimerManager().SetTimer(DebugTimerHandle, this, &AWielder::DrawPerceptionArea, 0.001f, true);*/
 }
 
 AActor* AWielder::GetSeeingPawn()
@@ -469,7 +471,7 @@ void AWielder::OnGetDamaged(bool IsRetreat)
 
 void AWielder::OnHitEnded()
 {
-	ActionState = EActionState::EAS_Idle;
+	HandleWielderState(EActionState::EAS_Idle);
 
 	AWielderController* WielderController = Cast<AWielderController>(GetController());
 	if (IsValid(WielderController))
@@ -603,7 +605,7 @@ void AWielder::Attack()
 
 void AWielder::OnEquipEnded()
 {
-	ActionState = EActionState::EAS_Idle;
+	HandleWielderState(EActionState::EAS_Idle);
 
 	AWielderController* WielderController = Cast<AWielderController>(GetController());
 	if (IsValid(WielderController))
@@ -620,7 +622,7 @@ void AWielder::OnEquipEnded()
 
 void AWielder::OnUnequipEnded()
 {
-	ActionState = EActionState::EAS_Idle;
+	HandleWielderState(EActionState::EAS_Idle);
 
 	AWielderController* WielderController = Cast<AWielderController>(GetController());
 	if (IsValid(WielderController))

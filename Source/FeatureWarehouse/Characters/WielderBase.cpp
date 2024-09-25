@@ -36,6 +36,7 @@ AWielderBase::AWielderBase()
 	CriticalTriggerVolume->SetupAttachment(RootComponent);
 	CriticalTriggerVolume->SetRelativeScale3D(FVector(2.75f, 1.35f, 3.25f));
 	CriticalTriggerVolume->SetCollisionProfileName(FName("Trigger"));
+	CriticalTriggerVolume->SetActive(true);
 
 	static ConstructorHelpers::FObjectFinder<UNiagaraSystem> NS_AfterImage(TEXT("/Game/Project/Materials/NS_AfterImage"));
 	if (NS_AfterImage.Succeeded())
@@ -70,12 +71,64 @@ void AWielderBase::PostInitializeComponents()
 	{
 		WielderAnim->OnHitEnd.BindUObject(this, &AWielderBase::OnHitEnded);
 	}
+
+	CriticalTriggerVolume->OnComponentBeginOverlap.AddDynamic(this, &AWielderBase::CriticalTriggerVolumeBeginOverlap);
+	CriticalTriggerVolume->OnComponentEndOverlap.AddDynamic(this, &AWielderBase::CriticalTriggerVolumeEndOverlap);
 }
 
 void AWielderBase::BeginPlay()
 {
 	Super::BeginPlay();
 	
+}
+
+void AWielderBase::HandleWielderState(EActionState State)
+{
+	ActionState = State;
+
+	switch (ActionState)
+	{
+	case EActionState::EAS_Idle:
+		UE_LOG(LogTemp, Warning, TEXT("WielderBase :: ActionState changed to Idle."));
+		StatComponent->SetDamageableType(EDamageableType::EDT_CRITICALLY_HITTABLE);
+		SweepWieldersInCriticalVolume();
+		CriticalTriggerVolume->SetActive(true);
+		break;
+	default:
+		UE_LOG(LogTemp, Warning, TEXT("WielderBase :: ActionState changed to other state."));
+		StatComponent->SetDamageableType(EDamageableType::EDT_NORMAL);
+		CriticalTriggerVolume->SetActive(false);
+		break;
+	}
+}
+
+void AWielderBase::SweepWieldersInCriticalVolume()
+{
+	UWorld* World = GetWorld();
+	if (World)
+	{
+		TArray<FHitResult> Hits;
+		FVector Start = GetActorLocation();
+		FVector End = GetActorLocation();
+		FQuat Rot = CriticalTriggerVolume->GetComponentQuat();
+		FName ProfileName = FName("Trigger");
+		FCollisionShape CollisionShape = CriticalTriggerVolume->GetCollisionShape();
+
+		bool IsHit = World->SweepMultiByProfile(Hits, Start, End, Rot, ProfileName, CollisionShape);
+
+		if (IsHit)
+		{
+			for (FHitResult& Hit : Hits)
+			{
+				AWielderBase* Wielder = Cast<AWielderBase>(Hit.GetActor());
+				if (Wielder)
+				{
+					OverlappingWieldersInCritiacalVolume.Add(Wielder);
+					Wielder->SetCanCriticalHit(true);
+				}
+			}
+		}
+	}
 }
 
 void AWielderBase::NotifyToGameMode()
@@ -94,7 +147,7 @@ void AWielderBase::OnReceivePointDamageEvent(AActor* DamagedActor, float Damage,
 	UWielderAnimInstance* WielderAnim = Cast<UWielderAnimInstance>(GetMesh()->GetAnimInstance());
 	if (!WielderAnim) return;
 
-	ActionState = EActionState::EAS_GetDamaged;
+	HandleWielderState(EActionState::EAS_GetDamaged);
 
 	StatComponent->DecreaseHP(Damage);
 
@@ -119,7 +172,7 @@ void AWielderBase::OnReceivePointDamageEvent(AActor* DamagedActor, float Damage,
 void AWielderBase::OnHitEnded()
 {
 	UE_LOG(LogTemp, Warning, TEXT("%s || Hit Ended. Change ActionState to Idle."), *UKismetSystemLibrary::GetDisplayName(this));
-	ActionState = EActionState::EAS_Idle;
+	HandleWielderState(EActionState::EAS_Idle);
 }
 
 void AWielderBase::Attack()
@@ -130,6 +183,31 @@ void AWielderBase::Attack()
 bool AWielderBase::IsCriticallyHittable()
 {
 	return StatComponent->GetDamageableType() == EDamageableType::EDT_CRITICALLY_HITTABLE;
+}
+
+void AWielderBase::SetCanCriticalHit(bool CanCriticalHit)
+{
+	bCanCriticalHit = CanCriticalHit;
+}
+
+void AWielderBase::ExecuteCriticalHitOnTarget()
+{
+	if (!IsValid(CriticalHitTarget)) return;
+
+	CriticalHitTarget->GetCriticalHit();
+}
+
+void AWielderBase::ReceiveCriticalHit()
+{
+
+}
+
+void AWielderBase::GetCriticalHit()
+{
+	UWielderAnimInstance* WielderAnim = Cast<UWielderAnimInstance>(GetMesh()->GetAnimInstance());
+	if (!IsValid(WielderAnim)) return;
+
+	WielderAnim->PlayGetGroggyHitMontage(false);
 }
 
 void AWielderBase::StopAttack()
@@ -145,19 +223,24 @@ void AWielderBase::HeavyAttack()
 void AWielderBase::CriticalTriggerVolumeBeginOverlap(UPrimitiveComponent* SelfComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
 	AWielderBase* WielderBase = Cast<AWielderBase>(OtherActor);
-	if (WielderBase)
+	if (!WielderBase) return;
+
+	if (StatComponent->GetDamageableType() != EDamageableType::EDT_NORMAL)
 	{
 		OverlappingWieldersInCritiacalVolume.Add(WielderBase);
-
+		WielderBase->SetCanCriticalHit(true);
 	}
 }
 
 void AWielderBase::CriticalTriggerVolumeEndOverlap(UPrimitiveComponent* SelfComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex)
 {
 	AWielderBase* WielderBase = Cast<AWielderBase>(OtherActor);
-	if (WielderBase)
+	if (!WielderBase) return;
+
+	if (StatComponent->GetDamageableType() != EDamageableType::EDT_NORMAL)
 	{
 		OverlappingWieldersInCritiacalVolume.Remove(WielderBase);
+		WielderBase->SetCanCriticalHit(false);
 	}
 }
 
@@ -173,14 +256,12 @@ void AWielderBase::EquipSecondWeapon()
 
 void AWielderBase::OnEquipEnded()
 {
-	ActionState = EActionState::EAS_Idle;
-
-	
+	HandleWielderState(EActionState::EAS_Idle);
 }
 
 void AWielderBase::OnUnequipEnded()
 {
-	ActionState = EActionState::EAS_Idle;
+	HandleWielderState(EActionState::EAS_Idle);
 }
 
 void AWielderBase::Unequip()
@@ -234,12 +315,16 @@ bool AWielderBase::CheckDamagable()
 	return true;
 }
 
+/// <summary>
+/// 액션을 취할 수 있는지 체크하는 함수. 
+/// SpecificAction이 동작 가능하면, 상태를 바꾸고 해당 동작을 실행함.
+/// </summary>
 bool AWielderBase::CheckTakeAction(EActionState SpecificAction, bool bCanTakeContinuously)
 {
 	// 특정 액션을 취하고 있지 않는 경우, 실행 가능.
 	if (ActionState == EActionState::EAS_Idle)
 	{
-		ActionState = SpecificAction;
+		HandleWielderState(SpecificAction);
 		return true;
 	}
 

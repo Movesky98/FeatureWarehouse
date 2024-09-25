@@ -194,7 +194,7 @@ void UWeaponComponent::NotifyToAnimInstance()
 
 	if (WielderBase->CurWeapon()->GetWeaponType() == ETypeOfWeapon::Gun)
 	{
-		 WielderBase->SetActionState(EActionState::EAS_Idle);
+		 WielderBase->HandleWielderState(EActionState::EAS_Idle);
 		 WielderBase->OnEquipEnded();
 	}
 }
@@ -300,7 +300,7 @@ void UWeaponComponent::JumpAttackLanding()
 // 무기를 스왑할 때 사용하는 함수
 void UWeaponComponent::Swap()
 {
-	WielderBase->SetActionState(EActionState::EAS_Swapping);
+	WielderBase->HandleWielderState(EActionState::EAS_Swapping);
 	WielderBase->CurWeapon()->Unequip();
 }
 

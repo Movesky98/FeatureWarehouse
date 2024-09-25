@@ -129,7 +129,7 @@ void AGun::Fire(EStateOfViews CurView, FVector HitLocation)
 	AWielderBase* WielderBase = Cast<AWielderBase>(GetWeaponOwner());
 	if (WielderBase)
 	{
-		WielderBase->SetActionState(EActionState::EAS_Idle);
+		WielderBase->HandleWielderState(EActionState::EAS_Idle);
 	}
 }
 

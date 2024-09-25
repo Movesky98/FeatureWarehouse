@@ -46,6 +46,8 @@ public:
 
 	void PlayRetreatMontage();
 
+	void PlayGetGroggyHitMontage(bool IsDead);
+
 protected:
 	virtual void NativeInitializeAnimation() override;
 
@@ -60,6 +62,9 @@ protected:
 	UFUNCTION()
 	void OnRetreatEnded(UAnimMontage* Montage, bool bInterrupted);
 
+	UFUNCTION()
+	void OnGetGroggyHitEnded(UAnimMontage* Montage, bool bInterrupted);
+
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Montage|Reaction")
 	UAnimMontage* DeathMontage;
 
@@ -68,6 +73,12 @@ protected:
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Montage|Reaction")
 	UAnimMontage* HitMontage;
+
+	UPROPERTY(VisibleDefaultsOnly, BlueprintReadOnly, Category = "Montage|Reaction")
+	UAnimMontage* GroggyHitReactionMontage;
+
+	UPROPERTY(VisibleDefaultsOnly, BlueprintReadOnly, Category = "Montage|Reaction")
+	UAnimMontage* GroggyHitDeathMontage;
 
 	UFUNCTION()
 	void AnimNotify_NextAttackCheck();
@@ -84,6 +95,11 @@ protected:
 	UFUNCTION()
 	void AnimNotify_PlayUnequipSound();
 
+	UFUNCTION()
+	void AnimNotify_GroggyAttackPoint();
+
+	UFUNCTION()
+	void AnimNotify_KnockdownStart();
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "State")
 	float Speed;
@@ -113,4 +129,19 @@ public:
 	FORCEINLINE float GetDirection() { return Direction; }
 
 	FORCEINLINE void SetIsDead(bool IsDead) { bIsDead = IsDead; }
+
+#pragma region Execution
+public:
+	UFUNCTION()
+	void CalculateExeuctionTime();
+
+protected:
+	FTimerHandle ExecutionTimerHandle;
+
+	float ExecuteElapsedTime;
+
+	float ExecutionDuration;
+
+#pragma endregion
+
 };

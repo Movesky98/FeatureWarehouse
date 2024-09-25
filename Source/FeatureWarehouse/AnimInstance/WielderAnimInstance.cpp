@@ -63,6 +63,18 @@ void UWielderAnimInstance::SetReactionMontages(TMap<FString, UAnimMontage*> Anim
 			RetreatMontage = IsValid(AnimMontage.Value) ? AnimMontage.Value : nullptr;
 			continue;
 		}
+
+		if (MontageString.Equals(FString("GroggyHitReactionMontage")))
+		{
+			GroggyHitReactionMontage = IsValid(AnimMontage.Value) ? AnimMontage.Value : nullptr;
+			continue;
+		}
+
+		if (MontageString.Equals(FString("GroggyHitDeathMontage")))
+		{
+			GroggyHitDeathMontage = IsValid(AnimMontage.Value) ? AnimMontage.Value : nullptr;
+			continue;
+		}
 	}
 }
 
@@ -138,6 +150,38 @@ void UWielderAnimInstance::PlayRetreatMontage()
 	}
 }
 
+void UWielderAnimInstance::PlayGetGroggyHitMontage(bool IsDead)
+{
+	if (GroggyHitDeathMontage && GroggyHitReactionMontage)
+	{
+		GEngine->AddOnScreenDebugMessage(-1, 3.0f, FColor::Green, FString("There is GroggyHit Reaction Montages."));
+
+		if (IsDead)
+		{
+			return;
+		}
+
+		if (Montage_IsPlaying(GroggyHitReactionMontage)) return;
+
+		bool bPlayedSuccessfully = false;
+		const float MontageLength = Montage_Play(GroggyHitReactionMontage);
+
+		bPlayedSuccessfully = MontageLength > 0.f;
+
+		if (bPlayedSuccessfully)
+		{
+			FOnMontageEnded EndDelegate;
+			EndDelegate.BindUObject(this, &UWielderAnimInstance::OnGetGroggyHitEnded);
+			Montage_SetEndDelegate(EndDelegate, GroggyHitReactionMontage);
+		}
+	}
+
+	else
+	{
+		GEngine->AddOnScreenDebugMessage(-1, 3.0f, FColor::Green, FString("There is no GroggyHit Reaction Montages."));
+	}
+}
+
 void UWielderAnimInstance::OnDeath(UAnimMontage* Montage, bool bInterrupted)
 {
 	if (DeathMontage != Montage) return;
@@ -167,6 +211,13 @@ void UWielderAnimInstance::OnRetreatEnded(UAnimMontage* Montage, bool bInterrupt
 	{
 		if (OnRetreatEnd.IsBound()) OnRetreatEnd.Execute();
 	}
+}
+
+void UWielderAnimInstance::OnGetGroggyHitEnded(UAnimMontage* Montage, bool bInterrupted)
+{
+	// 일단 뭘 할지는 보류
+
+	GEngine->AddOnScreenDebugMessage(-1, 3.0f, FColor::Green, FString("GetGroggyHit montage is ended."));
 }
 
 void UWielderAnimInstance::AnimNotify_NextAttackCheck()
@@ -206,5 +257,41 @@ void UWielderAnimInstance::AnimNotify_PlayUnequipSound()
 	if (OnPlayUnequipSound.IsBound())
 	{
 		OnPlayUnequipSound.Execute();
+	}
+}
+
+void UWielderAnimInstance::AnimNotify_GroggyAttackPoint()
+{
+	AWielderBase* WielderOwner = Cast<AWielderBase>(TryGetPawnOwner());
+	WielderOwner->ExecuteCriticalHitOnTarget();
+}
+
+void UWielderAnimInstance::AnimNotify_KnockdownStart()
+{
+	float Duration = FMath::RandRange(1.0f, 4.0f);
+
+	ExecutionDuration = Duration;
+	ExecuteElapsedTime = 0.0f;
+
+	GetWorld()->GetTimerManager().SetTimer(ExecutionTimerHandle, this, &UWielderAnimInstance::CalculateExeuctionTime, 0.01f, true);
+}
+
+void UWielderAnimInstance::CalculateExeuctionTime()
+{
+	if (!bIsDead)
+	{
+		if (ExecuteElapsedTime < ExecutionDuration)
+		{
+			ExecuteElapsedTime += 0.01f;
+		}
+		else
+		{
+			ExecuteElapsedTime = 0.0f;
+			ExecutionDuration = 0.0f;
+
+			GetWorld()->GetTimerManager().ClearTimer(ExecutionTimerHandle);
+			
+			Montage_Stop(1.0f, GroggyHitReactionMontage);
+		}
 	}
 }

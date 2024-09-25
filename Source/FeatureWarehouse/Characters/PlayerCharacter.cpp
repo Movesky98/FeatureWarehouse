@@ -16,6 +16,7 @@
 #include "GameFramework/SpringArmComponent.h"
 #include "EnhancedInputComponent.h"
 #include "EnhancedInputSubsystems.h"
+#include "Blueprint/AIBlueprintHelperLibrary.h"
 
 #include "Weapon.h"
 #include "Guns/Gun.h"
@@ -78,6 +79,8 @@ APlayerCharacter::APlayerCharacter()
 	LockChangeDuration = 1.0f;
 
 	DodgeStaminaCost = 30.0f;
+
+	AcceptanceRadius = 50.0f;
 }
 
 void APlayerCharacter::PostInitializeComponents()
@@ -571,7 +574,7 @@ void APlayerCharacter::EquipFirstWeapon()
 		{
 			// 총의 경우 장착 해제 몽타주가 없으므로 바로 상태를 바꿔줌.
 			EquipWeapon->Unequip();
-			ActionState = EActionState::EAS_Idle;
+			HandleWielderState(EActionState::EAS_Idle);
 		}
 
 		if (EquipWeapon->HasEquipMontage())
@@ -600,7 +603,7 @@ void APlayerCharacter::EquipSecondWeapon()
 		{
 			// 총의 경우 장착 해제 몽타주가 없으므로 바로 상태를 바꿔줌.
 			EquipWeapon->Unequip();
-			ActionState = EActionState::EAS_Idle;
+			HandleWielderState(EActionState::EAS_Idle);
 		}
 
 		if (EquipWeapon->HasEquipMontage())
@@ -618,11 +621,49 @@ void APlayerCharacter::Attack()
 	if (!PlayerController) return;
 	if (!EquipWeapon) return;
 
+	if (bCanCriticalHit && ActionState != EActionState::EAS_CriticalHitting)
+	{
+		// Critical Attack.
+		UWorld* World = GetWorld();
+		if (!World) return;
+
+		FVector Start = GetActorLocation();
+		FVector End = GetActorLocation() + GetActorForwardVector() * 200.0f;
+		float Radius = GetCapsuleComponent()->GetScaledCapsuleRadius();
+		float Height = GetCapsuleComponent()->GetScaledCapsuleHalfHeight();
+		FName ProfileName = FName("Trigger");
+		TArray<AActor*> IgnoreActors;
+		IgnoreActors.Add(this);
+		TArray<FHitResult> Hits;
+
+		bool IsHit = UKismetSystemLibrary::CapsuleTraceMulti(World, Start, End, Radius, Height, ETraceTypeQuery::TraceTypeQuery15, false, IgnoreActors, EDrawDebugTrace::ForDuration, Hits, true);
+
+		if (IsHit)
+		{
+			for (FHitResult& Hit : Hits)
+			{
+				AWielderBase* Wielder = Cast<AWielderBase>(Hit.GetActor());
+				if (!Wielder || !Wielder->IsCriticallyHittable()) continue;
+
+				ActionState = EActionState::EAS_CriticalHitting;
+
+				// 입력 잠금
+				OnInputLock.ExecuteIfBound();
+				CriticalHitTarget = Wielder;
+
+				FVector TargetLocation = Wielder->GetActorLocation() - Wielder->GetActorForwardVector() * 200.0f;
+				MoveToLocation(TargetLocation);
+				break;
+			}
+
+			return;
+		}
+	}
+
 	EActionState SpecificAction = EActionState::EAS_Attacking;
 
 	bool CanTakeAction = CheckTakeAction(SpecificAction, true);
 	if (!CanTakeAction) return;
-
 
 	if (PlayerController->GetPerspective() == EStateOfViews::TDP)
 	{
@@ -866,7 +907,7 @@ void APlayerCharacter::DecreaseStamina(float Stamina)
 
 void APlayerCharacter::OnEquipEnded()
 {
-	ActionState = EActionState::EAS_Idle;
+	HandleWielderState(EActionState::EAS_Idle);
 
 	PlayerController->SwitchPlayerMenu();
 
@@ -878,13 +919,13 @@ void APlayerCharacter::OnUnequipEnded()
 {
 	if (ActionState == EActionState::EAS_Swapping)
 	{
-		ActionState = EActionState::EAS_Idle;
+		HandleWielderState(EActionState::EAS_Idle);
 		// 무기 교체를 하는 경우
 		WeaponComponent->EquipOtherWeapon();
 	}
 	else
 	{
-		ActionState = EActionState::EAS_Idle;
+		HandleWielderState(EActionState::EAS_Idle);
 		// 무기 교체가 아닐 경우
 		PlayerController->SwitchPlayerMenu();
 	}
@@ -902,8 +943,6 @@ void APlayerCharacter::Dodge()
 	bool CanTakeAction = CheckTakeAction(SpecificAction, false);
 	if (!CanTakeAction) return;
 
-	// Change ActionState to Dodging.
-	ActionState = EActionState::EAS_Dodging;
 	StatComponent->SetDamageImmunityType(EDamageImmunityType::EDIT_EVADING);
 
 	FVector InputVector = GetLastMovementInputVector();
@@ -980,7 +1019,7 @@ float APlayerCharacter::CalculateMoveDirection(FVector InputVector, FRotator Act
 
 void APlayerCharacter::OnDodgeEnded(UAnimMontage* Montage, bool bInterrupted)
 {
-	ActionState = EActionState::EAS_Idle;
+	HandleWielderState(EActionState::EAS_Idle);
 	StatComponent->SetDamageImmunityType(EDamageImmunityType::EDIT_None);
 }
 
@@ -1155,7 +1194,7 @@ void APlayerCharacter::OnReceivePointDamageEvent(AActor* DamagedActor, float Dam
 	UWielderAnimInstance* WielderAnim = Cast<UWielderAnimInstance>(GetMesh()->GetAnimInstance());
 	if (!WielderAnim) return;
 
-	ActionState = EActionState::EAS_GetDamaged;
+	HandleWielderState(EActionState::EAS_GetDamaged);
 
 	StatComponent->DecreaseHP(Damage);
 
@@ -1217,3 +1256,33 @@ void APlayerCharacter::OnMovementModeChanged(EMovementMode PrevMovementMode, uin
 	}
 }
 #pragma endregion
+
+void APlayerCharacter::MoveToLocation(FVector TargetLocation)
+{
+	if (IsValid(PlayerController))
+	{
+		Destination = TargetLocation;
+		UAIBlueprintHelperLibrary::SimpleMoveToLocation(PlayerController, Destination);
+		GetWorldTimerManager().SetTimer(MoveTimerHandle, this, &APlayerCharacter::CheckReachDestination, 0.01f, true);
+	}
+}
+
+void APlayerCharacter::CheckReachDestination()
+{
+	float DistanceToTargetLocation = FVector::Dist(GetActorLocation(), Destination);
+	if (DistanceToTargetLocation <= AcceptanceRadius)
+	{
+		Destination = FVector::Zero();
+		OnMoveCompleted();
+
+		GetWorldTimerManager().ClearTimer(MoveTimerHandle);
+	}
+}
+
+void APlayerCharacter::OnMoveCompleted()
+{
+	if (ActionState == EActionState::EAS_CriticalHitting)
+	{
+		EquipWeapon->CriticalAttack();
+	}
+}

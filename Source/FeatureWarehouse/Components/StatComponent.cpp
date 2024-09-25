@@ -68,7 +68,7 @@ void UStatComponent::OnGetDamagedEnded(UAnimMontage* Montage, bool bInterrupted)
 	// 피격 몽타주가 실행되지 않을 때에 상태 변경
 	if (Anim && !Anim->Montage_IsPlaying(GetDamagedMontage))
 	{
-		WielderBase->SetActionState(EActionState::EAS_Idle);
+		WielderBase->HandleWielderState(EActionState::EAS_Idle);
 
 		if (!OnGetDamaged.IsBound()) return;
 
@@ -132,7 +132,7 @@ bool UStatComponent::CheckDeathStatus()
 	else
 	{
 		// 피격 몽타주가 없으면 바로 상태 변경
-		// IsValid(GetDamagedMontage) ? PlayMontage(GetDamagedMontage) : WielderBase->SetActionState(EActionState::EAS_Idle);
+		// IsValid(GetDamagedMontage) ? PlayMontage(GetDamagedMontage) : WielderBase->HandleWielderState(EActionState::EAS_Idle);
 
 		return false;
 	}
@@ -155,7 +155,7 @@ void UStatComponent::DecreaseStamina(float Amount)
 		bIsExhaustedStamina = true;
 
 		AWielderBase* WielderOwner = Cast<AWielderBase>(GetOwner());
-		if(WielderOwner) WielderOwner->SetActionState(EActionState::EAS_Exhausting);
+		if(WielderOwner) WielderOwner->HandleWielderState(EActionState::EAS_Exhausting);
 
 		if (bIsStartRecoveryStaminaWaitTimer) StopRecoveryStamina();
 
@@ -228,7 +228,7 @@ void UStatComponent::RecoveryStamina()
 			bIsExhaustedStamina = false;
 
 			AWielderBase* WielderOwner = Cast<AWielderBase>(GetOwner());
-			if(WielderOwner) WielderOwner->SetActionState(EActionState::EAS_Idle);
+			if(WielderOwner) WielderOwner->HandleWielderState(EActionState::EAS_Idle);
 		}
 	}
 

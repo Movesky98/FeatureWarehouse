@@ -82,6 +82,7 @@ void AMelee::PostInitializeComponents()
 		AttackMontages.Add(MontageInfo.m_JumpAttackMontage);
 		AttackMontages.Add(MontageInfo.m_LightAttackMontage);
 		AttackMontages.Add(MontageInfo.m_SprintAttackMontage);
+		AttackMontages.Add(MontageInfo.m_Groggy_Attack_Hit);
 	}
 
 	FVector Start = BladeMesh->GetSocketLocation(FName("BladeBottom"));
@@ -219,6 +220,28 @@ void AMelee::Attack()
 	}
 }
 
+void AMelee::CriticalAttack()
+{
+	if (!bIsEquip || !GetWeaponOwner())
+		return;
+
+	AWielderBase* Wielder = Cast<AWielderBase>(GetWeaponOwner());
+	if (!Wielder) return;
+
+	UWielderAnimInstance* WielderAnim = Cast<UWielderAnimInstance>(Wielder->GetMesh()->GetAnimInstance());
+	if (WielderAnim)
+	{
+		SetIsAttacking(true);
+
+		// Play Critical Hit Montage.
+		// 몽타주는 MontageInfo로 부터 가져오기.
+		UAnimMontage* PlayMontageData = MontageInfo.m_Groggy_Attack_Hit;
+		Wielder->PlayMontage(PlayMontageData);
+
+		InvokeExpandStamina(StaminaCost);
+	}
+}
+
 void AMelee::Attack(EStateOfViews CurView, FVector HitLocation)
 {
 	if (!bIsEquip || !CanAttack())
@@ -239,10 +262,10 @@ void AMelee::Attack(EStateOfViews CurView, FVector HitLocation)
 
 		if (WielderAnim)
 		{
-			UAnimMontage* PlayMontage = FindAppropriateAttackAnimationWithParam(Damage, MontageIndex, StaminaCost, SlashSound);
-			FName SectionName = PlayMontage->GetSectionName(MontageIndex);
-			Wielder->PlayMontage(PlayMontage);
-			WielderAnim->Montage_JumpToSection(SectionName, PlayMontage);
+			UAnimMontage* PlayMontageData = FindAppropriateAttackAnimationWithParam(Damage, MontageIndex, StaminaCost, SlashSound);
+			FName SectionName = PlayMontageData->GetSectionName(MontageIndex);
+			Wielder->PlayMontage(PlayMontageData);
+			WielderAnim->Montage_JumpToSection(SectionName, PlayMontageData);
 
 			MontageIndex++;
 			CanCombo = false;
@@ -259,8 +282,8 @@ void AMelee::Attack(EStateOfViews CurView, FVector HitLocation)
 		
 		if (Wielder)
 		{
-			UAnimMontage* PlayMontage = FindAppropriateAttackAnimationWithParam(Damage, MontageIndex, StaminaCost, SlashSound);
-			Wielder->PlayMontage(PlayMontage);
+			UAnimMontage* PlayMontageData = FindAppropriateAttackAnimationWithParam(Damage, MontageIndex, StaminaCost, SlashSound);
+			Wielder->PlayMontage(PlayMontageData);
 
 			MontageIndex++;
 			InvokeExpandStamina(StaminaCost);
@@ -297,7 +320,7 @@ void AMelee::OnAttackEnded(class UAnimMontage* Montage, bool bInterrupted)
 			bIsHitSomething = false;
 			SetIsAttacking(false);
 
-			Wielder->CurActionState() == EActionState::EAS_Attacking ? Wielder->SetActionState(EActionState::EAS_Idle) : nullptr;
+			Wielder->GetActionState() == EActionState::EAS_Attacking ? Wielder->HandleWielderState(EActionState::EAS_Idle) : nullptr;
 		}
 
 		return;
@@ -317,7 +340,7 @@ void AMelee::OnAttackEnded(class UAnimMontage* Montage, bool bInterrupted)
 			CanCombo = false;
 			bIsHitSomething = false;
 			SetIsAttacking(false);
-			Wielder->CurActionState() == EActionState::EAS_HeavyAttacking ? Wielder->SetActionState(EActionState::EAS_Idle) : nullptr;
+			Wielder->GetActionState() == EActionState::EAS_HeavyAttacking ? Wielder->HandleWielderState(EActionState::EAS_Idle) : nullptr;
 		}
 
 		return;
@@ -328,7 +351,7 @@ void AMelee::OnAttackEnded(class UAnimMontage* Montage, bool bInterrupted)
 	CanCombo = false;
 	bIsHitSomething = false;
 	SetIsAttacking(false);
-	Wielder->SetActionState(EActionState::EAS_Idle);
+	Wielder->HandleWielderState(EActionState::EAS_Idle);
 }
 
 void AMelee::OnNextAttackChecked()
@@ -477,7 +500,7 @@ UAnimMontage* AMelee::FindAppropriateAttackAnimationWithParam(float& Change_Dama
 			break;
 		default:
 			// Idle, Walking 상태일 때 약공, 강공 선택.
-			if (Wielder->CurActionState() == EActionState::EAS_HeavyAttacking)
+			if (Wielder->GetActionState() == EActionState::EAS_HeavyAttacking)
 			{
 				ReturnMontage = MontageInfo.m_HeavyAttackMontage;
 				Change_Damage = HeavyAttackInfo[Index].m_Damage;
