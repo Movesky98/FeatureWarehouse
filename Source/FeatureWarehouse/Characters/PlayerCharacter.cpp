@@ -27,6 +27,7 @@
 #include "Enums/UseTypeOfWeapon.h"
 #include "Enums/MovementState.h"
 #include "Enums/ActionState.h"
+#include "Enums/PoseType.h"
 
 #include "Components/WeaponComponent.h"
 #include "Components/StatComponent.h"
@@ -273,7 +274,9 @@ void APlayerCharacter::JumpTriggered(const FInputActionValue& Value)
 		{
 			UnCrouch();
 
-			MovementState = EMovementState::EMS_Idle;
+			UWielderAnimInstance* WielderAnim = Cast<UWielderAnimInstance>(GetMesh()->GetAnimInstance());
+			if (IsValid(WielderAnim))
+				WielderAnim->SetPoseType(EPoseType::EPT_Stand);
 		}
 		else
 		{
@@ -294,13 +297,13 @@ void APlayerCharacter::CrouchTriggered(const FInputActionValue& Value)
 		{
 			UnCrouch();
 
-			MovementState = EMovementState::EMS_Idle;
+			UWielderAnimInstance* WielderAnim = Cast<UWielderAnimInstance>(GetMesh()->GetAnimInstance());
+			if (IsValid(WielderAnim))
+				WielderAnim->SetPoseType(EPoseType::EPT_Stand);
 		}
 		else
 		{
 			Crouch();
-
-			MovementState = EMovementState::EMS_Crouching;
 		}
 	}
 }
@@ -530,7 +533,6 @@ void APlayerCharacter::SetTDP()
 		SpringArm->TargetArmLength = MaxArmLength;
 	}
 }
-
 #pragma endregion
 
 AActor* APlayerCharacter::FindInteractableActor(const FVector Start, const FVector End)
@@ -1205,11 +1207,11 @@ void APlayerCharacter::OnReceivePointDamageEvent(AActor* DamagedActor, float Dam
 		bIsDead = true;
 		KilledByWielder = Cast<AWielderBase>(InstigatedBy->GetPawn());
 
-		WielderAnim->PlayDeathMontage();
+		WielderAnim->PlayReactionMontage(EMontageType::EMT_Death);
 	}
 	else
 	{
-		WielderAnim->PlayHitMontage();
+		WielderAnim->PlayReactionMontage(EMontageType::EMT_GetHit);
 
 		FRotator ImpactRotation = UKismetMathLibrary::MakeRotFromZ(ShotFromDirection);
 		StatComponent->ShowBloodEffect(HitLocation, ImpactRotation);

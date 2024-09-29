@@ -117,6 +117,8 @@ void AWeapon::Interact(AActor* InteractActor)
 	DeliverMontages.Emplace(FString("RetreatMontage"), MontageInfo.m_RetreatMontage);
 	DeliverMontages.Emplace(FString("GroggyHitReactionMontage"), MontageInfo.m_Groggy_Hit_Reaction);
 	DeliverMontages.Emplace(FString("GroggyHitDeathMontage"), MontageInfo.m_Groggy_Hit_Death);
+	DeliverMontages.Emplace(FString("GetUpFromFrontMontage"), MontageInfo.m_GetUpFromFront);
+	DeliverMontages.Emplace(FString("GetUpFromBackMontage"), MontageInfo.m_GetUpFromBack);
 
 	InteractOwner->GetWeaponComponent()->SaveAcquiredWeaponInfo(this);
 	InteractOwner->TransferReactionMontages(DeliverMontages);

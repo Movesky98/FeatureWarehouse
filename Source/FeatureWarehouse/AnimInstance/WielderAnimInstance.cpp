@@ -3,10 +3,12 @@
 
 #include "WielderAnimInstance.h"
 #include "Characters/WielderBase.h"
+#include "Enums/PoseType.h"
 
 #include "GameFramework/Character.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "KismetAnimationLibrary.h"
+#include "Kismet/KismetSystemLibrary.h"
 
 void UWielderAnimInstance::NativeInitializeAnimation()
 {
@@ -29,6 +31,7 @@ void UWielderAnimInstance::NativeUpdateAnimation(float DeltaSeconds)
 		Speed = MovementComponent->Velocity.Length();
 		Direction = UKismetAnimationLibrary::CalculateDirection(MovementComponent->Velocity, Pawn->GetActorRotation());
 		bIsCrouch = MovementComponent->IsCrouching();
+		if (bIsCrouch) PoseType = EPoseType::EPT_Crouch;
 		bIsFalling = MovementComponent->IsFalling();
 		bShouldMove = (MovementComponent->GetCurrentAcceleration() != FVector::ZeroVector) && (Speed > 3.0f);
 	}
@@ -52,12 +55,6 @@ void UWielderAnimInstance::SetReactionMontages(TMap<FString, UAnimMontage*> Anim
 			continue;
 		}
 
-		if (MontageString.Equals(FString("KnockdownMontage")))
-		{
-
-			continue;
-		}
-
 		if (MontageString.Equals(FString("RetreatMontage")))
 		{
 			RetreatMontage = IsValid(AnimMontage.Value) ? AnimMontage.Value : nullptr;
@@ -75,111 +72,85 @@ void UWielderAnimInstance::SetReactionMontages(TMap<FString, UAnimMontage*> Anim
 			GroggyHitDeathMontage = IsValid(AnimMontage.Value) ? AnimMontage.Value : nullptr;
 			continue;
 		}
+
+		if (MontageString.Equals(FString("GetUpFromFrontMontage")))
+		{
+			GetUpFromFrontMontage = IsValid(AnimMontage.Value) ? AnimMontage.Value : nullptr;
+		}
+
+		if (MontageString.Equals(FString("GetUpFromBackMontage")))
+		{
+			GetUpFromBackMontage = IsValid(AnimMontage.Value) ? AnimMontage.Value : nullptr;
+		}
 	}
 }
 
-void UWielderAnimInstance::PlayDeathMontage()
+void UWielderAnimInstance::PlayReactionMontage(EMontageType MontageType)
 {
-	if (DeathMontage)
+	// 재생할 몽타주
+	UAnimMontage* PlayMontage = nullptr;
+	void (UWielderAnimInstance:: *MontageEndFunction)(UAnimMontage*, bool) = nullptr;
+
+	switch (MontageType)
+	{
+	case EMontageType::EMT_Death:
+		PlayMontage = DeathMontage;
+		MontageEndFunction = &UWielderAnimInstance::OnDeath;
+		break;
+	case EMontageType::EMT_GetHit:
+		PlayMontage = HitMontage;
+		MontageEndFunction = &UWielderAnimInstance::OnHitEnded;
+		break;
+	case EMontageType::EMT_Retreat:
+		PlayMontage = RetreatMontage;
+		MontageEndFunction = &UWielderAnimInstance::OnRetreatEnded;
+		break;
+	case EMontageType::EMT_GroggyHitReaction:
+		PlayMontage = GroggyHitReactionMontage;
+		MontageEndFunction = &UWielderAnimInstance::OnGetGroggyHitEnded;
+		break;
+	case EMontageType::EMT_GroggyHitDeath:
+		PlayMontage = GroggyHitDeathMontage;
+		MontageEndFunction = &UWielderAnimInstance::OnGetGroggyHitEnded;
+		break;
+	case EMontageType::EMT_GetUpFromFront:
+		PlayMontage = GetUpFromFrontMontage;
+		// Set MontageEndFunction.
+		break;
+	case EMontageType::EMT_GetUpFromBack:
+		PlayMontage = GetUpFromBackMontage;
+		// Set MontageEndFunction.
+		break;
+	default:
+		break;
+	}
+
+	if (PlayMontage)
 	{
 		bool bPlayedSuccessfully = false;
-		const float MontageLength = Montage_Play(DeathMontage);
+		const float MontageLength = Montage_Play(PlayMontage);
+
+		if (!MontageEndFunction) return;
 
 		bPlayedSuccessfully = MontageLength > 0.f;
 
 		if (bPlayedSuccessfully)
 		{
 			FOnMontageEnded EndDelegate;
-			EndDelegate.BindUObject(this, &UWielderAnimInstance::OnDeath);
-			Montage_SetEndDelegate(EndDelegate, DeathMontage);
-		}
-	}
-	else
-	{
-		AWielderBase* Wielder = Cast<AWielderBase>(TryGetPawnOwner());
-		if (Wielder)
-		{
-			Wielder->Die();
+			EndDelegate.BindUObject(this, MontageEndFunction);
+			Montage_SetEndDelegate(EndDelegate, PlayMontage);
 		}
 	}
 }
 
-void UWielderAnimInstance::PlayHitMontage()
+void UWielderAnimInstance::SetPoseType(EPoseType Type)
 {
-	if (HitMontage)
-	{
-		bool bPlayedSuccessfully = false;
-		const float MontageLength = Montage_Play(HitMontage);
-
-		bPlayedSuccessfully = MontageLength > 0.f;
-
-		if (bPlayedSuccessfully)
-		{
-			FOnMontageEnded EndDelegate;
-			EndDelegate.BindUObject(this, &UWielderAnimInstance::OnHitEnded);
-			Montage_SetEndDelegate(EndDelegate, HitMontage);
-		}
-	}
-	else
-	{
-		if (OnHitEnd.IsBound()) OnHitEnd.Execute();
-	}
+	PoseType = Type;
 }
 
-void UWielderAnimInstance::PlayRetreatMontage()
+EPoseType UWielderAnimInstance::GetPoseType()
 {
-	if (RetreatMontage)
-	{
-		if (Montage_IsPlaying(RetreatMontage)) return;
-
-		bool bPlayedSuccessfully = false;
-		const float MontageLength = Montage_Play(RetreatMontage);
-
-		bPlayedSuccessfully = MontageLength > 0.f;
-
-		if (bPlayedSuccessfully)
-		{
-			FOnMontageEnded EndDelegate;
-			EndDelegate.BindUObject(this, &UWielderAnimInstance::OnRetreatEnded);
-			Montage_SetEndDelegate(EndDelegate, RetreatMontage);
-		}
-	}
-	else
-	{
-		if (OnRetreatEnd.IsBound()) OnRetreatEnd.Execute();
-	}
-}
-
-void UWielderAnimInstance::PlayGetGroggyHitMontage(bool IsDead)
-{
-	if (GroggyHitDeathMontage && GroggyHitReactionMontage)
-	{
-		GEngine->AddOnScreenDebugMessage(-1, 3.0f, FColor::Green, FString("There is GroggyHit Reaction Montages."));
-
-		if (IsDead)
-		{
-			return;
-		}
-
-		if (Montage_IsPlaying(GroggyHitReactionMontage)) return;
-
-		bool bPlayedSuccessfully = false;
-		const float MontageLength = Montage_Play(GroggyHitReactionMontage);
-
-		bPlayedSuccessfully = MontageLength > 0.f;
-
-		if (bPlayedSuccessfully)
-		{
-			FOnMontageEnded EndDelegate;
-			EndDelegate.BindUObject(this, &UWielderAnimInstance::OnGetGroggyHitEnded);
-			Montage_SetEndDelegate(EndDelegate, GroggyHitReactionMontage);
-		}
-	}
-
-	else
-	{
-		GEngine->AddOnScreenDebugMessage(-1, 3.0f, FColor::Green, FString("There is no GroggyHit Reaction Montages."));
-	}
+	return PoseType;
 }
 
 void UWielderAnimInstance::OnDeath(UAnimMontage* Montage, bool bInterrupted)
@@ -292,6 +263,9 @@ void UWielderAnimInstance::CalculateExeuctionTime()
 			GetWorld()->GetTimerManager().ClearTimer(ExecutionTimerHandle);
 			
 			Montage_Stop(1.0f, GroggyHitReactionMontage);
+
+			// 캐릭터가 다시 일어나야함.
+			PlayReactionMontage(EMontageType::EMT_GetUpFromFront);
 		}
 	}
 }

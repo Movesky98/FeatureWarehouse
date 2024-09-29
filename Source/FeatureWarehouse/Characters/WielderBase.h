@@ -8,7 +8,6 @@
 #include "WielderBase.generated.h"
 
 DECLARE_MULTICAST_DELEGATE_OneParam(FOnKilledDelegate, AActor*);
-DECLARE_MULTICAST_DELEGATE(FOnCriticalHitDelegate);
 
 enum class EMovementState :uint8;
 enum class EActionState :uint8;
@@ -32,56 +31,13 @@ class FEATUREWAREHOUSE_API AWielderBase : public ACharacter, public IGenericTeam
 public:
 	AWielderBase();
 
-	FOnKilledDelegate OnKilled;
-
-	FOnCriticalHitDelegate OnCriticalHit;
-
-	void PlayMontage(UAnimMontage* Montage);
-
-	void TransferReactionMontages(TMap<FString, UAnimMontage*> AnimMontages);
-
-	virtual void OnEquipEnded();
-
-	virtual void OnUnequipEnded();
-
-	virtual void Die();
-
-	/* 데미지를 받을 수 있는 지 체크 */
-	virtual bool CheckDamagable();
-
-protected:
+protected:	
 	virtual void PostInitializeComponents() override;
-	
+
 	virtual void BeginPlay() override;
-
-	// Functions
-	virtual void Attack();
-
-	/* Receive Point Damage Function */
-	UFUNCTION() virtual void OnReceivePointDamageEvent(AActor* DamagedActor, float Damage, AController* InstigatedBy, 
-		FVector HitLocation, UPrimitiveComponent* FHitComponent, FName BoneName,
-		FVector ShotFromDirection, const UDamageType* DamageType, AActor* DamageCauser);
-
-	UFUNCTION()
-	virtual void OnHitEnded();
-
-	UFUNCTION(BlueprintCallable)
-	virtual void EquipFirstWeapon();
-
-	UFUNCTION(BlueprintCallable)
-	virtual void EquipSecondWeapon();
-
-	UFUNCTION(BlueprintCallable)
-	virtual void Unequip();
-
-	virtual void OnMovementModeChanged(EMovementMode PrevMovementMode, uint8 PreviousCustomMode) override;
-
-	/* 액션을 취할 수 있는지 체크하는 함수. */
-	bool CheckTakeAction(EActionState SpecificAction, bool bCanTakeContinuously);
 
 	void NotifyToGameMode();
 
-	// Variables
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Component")
 	UWeaponComponent* WeaponComponent;
 
@@ -91,11 +47,74 @@ protected:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Component")
 	class UNiagaraComponent* AfterImageComponent;
 
+#pragma region Montage
+public:
+	void PlayMontage(UAnimMontage* Montage);
+
+	void TransferReactionMontages(TMap<FString, UAnimMontage*> AnimMontages);
+
+	virtual void OnEquipEnded();
+
+	virtual void OnUnequipEnded();
+
+protected:
+	UFUNCTION()
+	virtual void OnHitEnded();
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Montage|Dodge")
+	TMap<EDirection, UAnimMontage*> DodgeMontages;
+
+#pragma endregion
+
+#pragma region Weapon
+public:
+
+protected:
+	UFUNCTION(BlueprintCallable)
+	virtual void EquipFirstWeapon();
+
+	UFUNCTION(BlueprintCallable)
+	virtual void EquipSecondWeapon();
+
+	UFUNCTION(BlueprintCallable)
+	virtual void Unequip();
+
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Weapon")
 	AWeapon* EquipWeapon;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Weapon")
 	bool bHasWeapon;
+#pragma endregion
+
+#pragma region State
+public:
+	/* 캐릭터가 죽었음을 알리는 델리게이트 */
+	FOnKilledDelegate OnKilled;
+
+	virtual void Die();
+
+	/* 데미지를 받을 수 있는 지 체크 */
+	virtual bool CheckDamageable();
+
+	EActionState GetActionState()
+	{
+		return ActionState;
+	}
+
+	void HandleWielderState(EActionState State);
+
+protected:
+	virtual void OnMovementModeChanged(EMovementMode PrevMovementMode, uint8 PreviousCustomMode) override;
+
+	/* Receive Point Damage Function */
+	UFUNCTION() virtual void OnReceivePointDamageEvent(AActor* DamagedActor, float Damage, AController* InstigatedBy,
+		FVector HitLocation, UPrimitiveComponent* FHitComponent, FName BoneName,
+		FVector ShotFromDirection, const UDamageType* DamageType, AActor* DamageCauser);
+
+	/* 액션을 취할 수 있는지 체크하는 함수. */
+	bool CheckTakeAction(EActionState SpecificAction, bool bCanTakeContinuously);
+
+	void SweepWieldersInCriticalVolume();
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Character|State")
 	EMovementState MovementState;
@@ -108,27 +127,12 @@ protected:
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "State|Death")
 	AWielderBase* KilledByWielder;
-	
+
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Team")
 	EFactionType Faction;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Team")
 	FGenericTeamId TeamId;
-
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Montage|Dodge")
-	TMap<EDirection, UAnimMontage*> DodgeMontages;
-
-#pragma region State
-public:
-	EActionState GetActionState()
-	{
-		return ActionState;
-	}
-
-	void HandleWielderState(EActionState State);
-
-protected:
-	void SweepWieldersInCriticalVolume();
 
 #pragma endregion State
 
@@ -143,11 +147,11 @@ public:
 
 	void ExecuteCriticalHitOnTarget();
 
-	void ReceiveCriticalHit();
-
 	void GetCriticalHit();
 
 protected:
+	virtual void Attack();
+
 	virtual void StopAttack();
 
 	virtual void HeavyAttack();

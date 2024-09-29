@@ -47,7 +47,13 @@ public:
 	UAnimMontage* m_DeathMontage;
 
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, meta = (DisplayName = "Retreat"))
-	UAnimMontage * m_RetreatMontage;
+	UAnimMontage* m_RetreatMontage;
+
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, meta = (DisplayName = "GetUpFromFront"))
+	UAnimMontage* m_GetUpFromFront;
+
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, meta = (DisplayName = "GetUpFromBack"))
+	UAnimMontage* m_GetUpFromBack;
 
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, meta = (DisplayName = "Dodge"))
 	TMap<EDirection, UAnimMontage*> m_DodgeMontages;

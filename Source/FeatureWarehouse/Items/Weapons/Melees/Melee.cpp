@@ -428,7 +428,7 @@ void AMelee::AttackTrace()
 * Check HitActor. if Someone is hit by this line, then process hits.
 * 
 * @warning 
-* If you overrided this function, should to add CheckDamagable() function.
+* If you overrided this function, should to add CheckDamageable() function.
 */
 void AMelee::DrawAttackLineTrace(const FVector& LineStart, const FVector& LineEnd)
 {
@@ -451,7 +451,7 @@ void AMelee::DrawAttackLineTrace(const FVector& LineStart, const FVector& LineEn
 		AWielderBase* HitPawn = Cast<AWielderBase>(Hit.GetActor());
 		if (!IsValid(HitPawn)) return;
 
-		if (!HitPawn->CheckDamagable()) return;
+		if (!HitPawn->CheckDamageable()) return;
 
 		bIsHitSomething = true;
 

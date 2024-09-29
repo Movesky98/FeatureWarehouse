@@ -421,13 +421,12 @@ void AWielder::OnReceivePointDamageEvent(AActor* DamagedActor, float Damage, ACo
 		bIsDead = true;
 		KilledByWielder = Cast<AWielderBase>(InstigatedBy->GetPawn());
 
-		WielderAnim->PlayDeathMontage();
-
+		WielderAnim->PlayReactionMontage(EMontageType::EMT_Death);
 		return;
 	}
 	else
 	{
-		WielderAnim->PlayHitMontage();
+		WielderAnim->PlayReactionMontage(EMontageType::EMT_GetHit);
 
 		FRotator ImpactRotation = UKismetMathLibrary::MakeRotFromZ(ShotFromDirection);
 		StatComponent->ShowBloodEffect(HitLocation, ImpactRotation);
@@ -569,7 +568,8 @@ void AWielder::RetreatFromEnemy()
 			if (GetDistanceTo(GetSeeingPawn()) <= RetreatDistanceMin)
 			{
 				UE_LOG(LogTemp, Warning, TEXT("Wielder || Target is %s, and The Distance with Target is %f / Retreat Distance Min is %f"), *UKismetSystemLibrary::GetDisplayName(GetSeeingPawn()), GetDistanceTo(GetSeeingPawn()), RetreatDistanceMin);
-				WielderAnim->PlayRetreatMontage();
+				
+				WielderAnim->PlayReactionMontage(EMontageType::EMT_Retreat);
 			}
 			else
 			{

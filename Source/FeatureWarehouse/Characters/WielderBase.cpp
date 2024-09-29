@@ -89,13 +89,11 @@ void AWielderBase::HandleWielderState(EActionState State)
 	switch (ActionState)
 	{
 	case EActionState::EAS_Idle:
-		UE_LOG(LogTemp, Warning, TEXT("WielderBase :: ActionState changed to Idle."));
 		StatComponent->SetDamageableType(EDamageableType::EDT_CRITICALLY_HITTABLE);
 		SweepWieldersInCriticalVolume();
 		CriticalTriggerVolume->SetActive(true);
 		break;
 	default:
-		UE_LOG(LogTemp, Warning, TEXT("WielderBase :: ActionState changed to other state."));
 		StatComponent->SetDamageableType(EDamageableType::EDT_NORMAL);
 		CriticalTriggerVolume->SetActive(false);
 		break;
@@ -158,11 +156,11 @@ void AWielderBase::OnReceivePointDamageEvent(AActor* DamagedActor, float Damage,
 		bIsDead = true;
 		KilledByWielder = Cast<AWielderBase>(InstigatedBy->GetPawn());
 		
-		WielderAnim->PlayDeathMontage();
+		WielderAnim->PlayReactionMontage(EMontageType::EMT_Death);
 	}
 	else
 	{
-		WielderAnim->PlayHitMontage();
+		WielderAnim->PlayReactionMontage(EMontageType::EMT_GetHit);
 
 		FRotator ImpactRotation = UKismetMathLibrary::MakeRotFromZ(ShotFromDirection);
 		StatComponent->ShowBloodEffect(HitLocation, ImpactRotation);
@@ -197,17 +195,12 @@ void AWielderBase::ExecuteCriticalHitOnTarget()
 	CriticalHitTarget->GetCriticalHit();
 }
 
-void AWielderBase::ReceiveCriticalHit()
-{
-
-}
-
 void AWielderBase::GetCriticalHit()
 {
 	UWielderAnimInstance* WielderAnim = Cast<UWielderAnimInstance>(GetMesh()->GetAnimInstance());
 	if (!IsValid(WielderAnim)) return;
 
-	WielderAnim->PlayGetGroggyHitMontage(false);
+	WielderAnim->PlayReactionMontage(EMontageType::EMT_GroggyHitReaction);
 }
 
 void AWielderBase::StopAttack()
@@ -271,7 +264,7 @@ void AWielderBase::Unequip()
 
 void AWielderBase::OnMovementModeChanged(EMovementMode PrevMovementMode, uint8 PreviousCustomMode)
 {
-	ACharacter::OnMovementModeChanged(PrevMovementMode, PreviousCustomMode);
+	Super::OnMovementModeChanged(PrevMovementMode, PreviousCustomMode);
 
 	if (PrevMovementMode != EMovementMode::MOVE_Falling) return;
 
@@ -307,7 +300,7 @@ void AWielderBase::Die()
 	SetLifeSpan(3.0f);
 }
 
-bool AWielderBase::CheckDamagable()
+bool AWielderBase::CheckDamageable()
 {
 	if (StatComponent->GetDamageImmunityType() != EDamageImmunityType::EDIT_None)
 		return false;

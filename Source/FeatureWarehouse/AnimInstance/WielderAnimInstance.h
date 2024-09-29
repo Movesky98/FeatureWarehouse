@@ -15,6 +15,21 @@ DECLARE_DELEGATE(FOnPlaySlashSoundDelegate);
 DECLARE_DELEGATE(FOnPlayEquipSoundDelegate);
 DECLARE_DELEGATE(FOnPlayUnequipSoundDelegate);
 
+enum class EPoseType :uint8;
+
+UENUM(BlueprintType)
+enum class EMontageType :uint8
+{
+	EMT_NONE UMETA(DisplayName = "NONE"),
+	EMT_Death UMETA(DisplayName = "Death"),
+	EMT_GetHit UMETA(DisplayName = "GetHit"),
+	EMT_Retreat UMETA(DisplayName = "Retreat"),
+	EMT_GroggyHitReaction UMETA(DisplayName = "GroggyHitReaction"),
+	EMT_GroggyHitDeath UMETA(DisplayName = "GroggyHitDeath"),
+	EMT_GetUpFromFront UMETA(DisplayName = "GetUpFromFront"),
+	EMT_GetUpFromBack UMETA(DisplayName = "GetUpFromBack")
+};
+
 /**
  * 
  */
@@ -37,16 +52,16 @@ public:
 
 	FOnRetreatEndDelegate OnRetreatEnd;
 
-	/** Reaction Montages */
+	/* Reaction Montages */
 	void SetReactionMontages(TMap<FString, UAnimMontage*> AnimMontages);
 
-	void PlayDeathMontage();
+	void PlayReactionMontage(EMontageType MontageType);
 
-	void PlayHitMontage();
+	UFUNCTION(BlueprintSetter)
+	void SetPoseType(EPoseType Type);
 
-	void PlayRetreatMontage();
-
-	void PlayGetGroggyHitMontage(bool IsDead);
+	UFUNCTION(BlueprintGetter)
+	EPoseType GetPoseType();
 
 protected:
 	virtual void NativeInitializeAnimation() override;
@@ -79,6 +94,12 @@ protected:
 
 	UPROPERTY(VisibleDefaultsOnly, BlueprintReadOnly, Category = "Montage|Reaction")
 	UAnimMontage* GroggyHitDeathMontage;
+
+	UPROPERTY(VisibleDefaultsOnly, BlueprintReadOnly, Category = "Montage|Reaction")
+	UAnimMontage* GetUpFromFrontMontage;
+
+	UPROPERTY(VisibleDefaultsOnly, BlueprintReadOnly, Category = "Montage|Reaction")
+	UAnimMontage* GetUpFromBackMontage;
 
 	UFUNCTION()
 	void AnimNotify_NextAttackCheck();
@@ -121,6 +142,9 @@ protected:
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "State")
 	bool bIsDead;
+
+	UPROPERTY(VisibleDefaultsOnly, BlueprintReadWrite, Category = "State")
+	EPoseType PoseType;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Component")
 	class UCharacterMovementComponent* MovementComponent;
