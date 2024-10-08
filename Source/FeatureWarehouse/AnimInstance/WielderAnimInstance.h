@@ -11,6 +11,8 @@ DECLARE_DELEGATE(FOnNextAttackCheckDelegate);
 DECLARE_DELEGATE(FOnHitEndDelegate);
 DECLARE_DELEGATE(FOnRetreatEndDelegate);
 
+DECLARE_DELEGATE(FOnGroggyAttackPointImpactDelegate);
+
 DECLARE_DELEGATE(FOnPlaySlashSoundDelegate);
 DECLARE_DELEGATE(FOnPlayEquipSoundDelegate);
 DECLARE_DELEGATE(FOnPlayUnequipSoundDelegate);
@@ -51,6 +53,8 @@ public:
 	FOnHitEndDelegate OnHitEnd;
 
 	FOnRetreatEndDelegate OnRetreatEnd;
+
+	FOnGroggyAttackPointImpactDelegate OnGroggyAttackPointImpact;
 
 	/* Reaction Montages */
 	void SetReactionMontages(TMap<FString, UAnimMontage*> AnimMontages);

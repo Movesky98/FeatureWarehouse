@@ -37,6 +37,23 @@ void ASwordShield::PostInitializeComponents()
 	SlashFX->SetNiagaraVariableFloat(FString("Slash_Width"), 80.0f);
 }
 
+void ASwordShield::EquipInstantly()
+{
+	// 무기 장착
+	BladeMesh->AttachToComponent(GetWeaponOwner()->GetMesh(), FAttachmentTransformRules::KeepRelativeTransform, Name_SwordEquip);
+	ShieldMesh->AttachToComponent(GetWeaponOwner()->GetMesh(), FAttachmentTransformRules::KeepRelativeTransform, Name_ShieldEquip);
+
+	OnEquipEnded(MontageInfo.m_EquipMontage, false);
+}
+
+void ASwordShield::UnequipInstantly()
+{
+	// 무기 장착 해제
+	BladeMesh->AttachToComponent(GetWeaponOwner()->GetMesh(), FAttachmentTransformRules::KeepRelativeTransform, Name_SwordUnequip);
+	ShieldMesh->AttachToComponent(GetWeaponOwner()->GetMesh(), FAttachmentTransformRules::KeepRelativeTransform, Name_ShieldUnequip);
+
+	OnUnequipEnded(MontageInfo.m_UnequipMontage, false);
+}
 
 void ASwordShield::TakeUp(ACharacter* NewOwner)
 {
@@ -104,7 +121,6 @@ void ASwordShield::HoldMeleeWeapon()
 		}
 	}
 }
-
 
 void ASwordShield::AttackTrace()
 {

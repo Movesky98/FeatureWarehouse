@@ -19,6 +19,12 @@ public:
 protected:
 	virtual void PostInitializeComponents() override;
 
+	/* 장착 애니메이션 없이 바로 무기를 장착하는 함수 */
+	void EquipInstantly() override;
+
+	/* 해제 애니메이션 없이 바로 무기를 해제하는 함수 */
+	void UnequipInstantly() override;
+
 	void AttackTrace() override;
 
 	void DrawAttackTrace(const FVector& LineStart, const FVector& LineEnd, bool IsShield);

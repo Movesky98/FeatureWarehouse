@@ -213,7 +213,22 @@ void AWeapon::Unequip()
 	}
 }
 
-UTexture2D* AWeapon::GetWeaponImage() 
+void AWeapon::EquipInstantly()
+{
+
+}
+
+void AWeapon::UnequipInstantly()
+{
+
+}
+
+USoundCue* AWeapon::GetCriticalHitSound() const
+{
+	return CriticalHitSound;
+}
+
+UTexture2D* AWeapon::GetWeaponImage()
 { 
 	return ItemDescriptionComponent->GetIcon(); 
 }

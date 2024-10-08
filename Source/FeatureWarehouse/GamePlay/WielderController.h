@@ -19,6 +19,10 @@ class FEATUREWAREHOUSE_API AWielderController : public AAIController
 public:
 	AWielderController();
 
+	void StopBehaviorTree();
+
+	void StartBehaviorTree();
+
 protected:
 	virtual void BeginPlay() override;
 
@@ -165,6 +169,7 @@ private:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Pawn", meta = (AllowPrivateAccess = "true"))
 	class AWielder* Wielder;
 
+	
 
 public:
 	FORCEINLINE class UAIPerceptionComponent* GetPerception() { return AIPerception; }

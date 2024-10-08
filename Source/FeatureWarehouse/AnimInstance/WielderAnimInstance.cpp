@@ -3,7 +3,9 @@
 
 #include "WielderAnimInstance.h"
 #include "Characters/WielderBase.h"
+
 #include "Enums/PoseType.h"
+#include "Enums/ActionState.h"
 
 #include "GameFramework/Character.h"
 #include "GameFramework/CharacterMovementComponent.h"
@@ -111,7 +113,7 @@ void UWielderAnimInstance::PlayReactionMontage(EMontageType MontageType)
 		break;
 	case EMontageType::EMT_GroggyHitDeath:
 		PlayMontage = GroggyHitDeathMontage;
-		MontageEndFunction = &UWielderAnimInstance::OnGetGroggyHitEnded;
+		MontageEndFunction = &UWielderAnimInstance::OnDeath;
 		break;
 	case EMontageType::EMT_GetUpFromFront:
 		PlayMontage = GetUpFromFrontMontage;
@@ -155,7 +157,7 @@ EPoseType UWielderAnimInstance::GetPoseType()
 
 void UWielderAnimInstance::OnDeath(UAnimMontage* Montage, bool bInterrupted)
 {
-	if (DeathMontage != Montage) return;
+	if (DeathMontage != Montage && GroggyHitDeathMontage != Montage) return;
 
 	AWielderBase* WielderBase = Cast<AWielderBase>(TryGetPawnOwner());
 	if (IsValid(WielderBase))
@@ -178,17 +180,16 @@ void UWielderAnimInstance::OnRetreatEnded(UAnimMontage* Montage, bool bInterrupt
 {
 	if (RetreatMontage != Montage) return;
 
-	if (!Montage_IsPlaying(RetreatMontage))
+	AWielderBase* WielderBase = Cast<AWielderBase>(TryGetPawnOwner());
+	if (IsValid(WielderBase))
 	{
-		if (OnRetreatEnd.IsBound()) OnRetreatEnd.Execute();
+		WielderBase->HandleWielderState(EActionState::EAS_Idle);
 	}
 }
 
 void UWielderAnimInstance::OnGetGroggyHitEnded(UAnimMontage* Montage, bool bInterrupted)
 {
-	// 일단 뭘 할지는 보류
-
-	GEngine->AddOnScreenDebugMessage(-1, 3.0f, FColor::Green, FString("GetGroggyHit montage is ended."));
+	if (OnHitEnd.IsBound()) OnHitEnd.Execute();
 }
 
 void UWielderAnimInstance::AnimNotify_NextAttackCheck()
@@ -233,8 +234,10 @@ void UWielderAnimInstance::AnimNotify_PlayUnequipSound()
 
 void UWielderAnimInstance::AnimNotify_GroggyAttackPoint()
 {
-	AWielderBase* WielderOwner = Cast<AWielderBase>(TryGetPawnOwner());
-	WielderOwner->ExecuteCriticalHitOnTarget();
+	if (OnGroggyAttackPointImpact.IsBound())
+	{
+		OnGroggyAttackPointImpact.Execute();
+	}
 }
 
 void UWielderAnimInstance::AnimNotify_KnockdownStart()

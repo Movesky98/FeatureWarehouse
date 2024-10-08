@@ -74,6 +74,7 @@ void AMelee::PostInitializeComponents()
 		HeavyAttackInfo.Append(MeleeInfoData->m_HeavyAttackInfo);
 		JumpAttackInfo = MeleeInfoData->m_JumpAttackInfo;
 		SprintAttackInfo = MeleeInfoData->m_SprintAttackInfo;
+		CriticalAttackInfo = MeleeInfoData->m_GroggyAttackInfo;
 		MontageInfo = MeleeInfoData->m_MontageInfo;
 		
 		bHasEquipMontage = true;
@@ -237,7 +238,9 @@ void AMelee::CriticalAttack()
 		// 몽타주는 MontageInfo로 부터 가져오기.
 		UAnimMontage* PlayMontageData = MontageInfo.m_Groggy_Attack_Hit;
 		Wielder->PlayMontage(PlayMontageData);
-
+		Damage = CriticalAttackInfo.m_Damage;
+		StaminaCost = CriticalAttackInfo.m_StaminaCost;
+		CriticalHitSound = CriticalAttackInfo.m_Sound;
 		InvokeExpandStamina(StaminaCost);
 	}
 }

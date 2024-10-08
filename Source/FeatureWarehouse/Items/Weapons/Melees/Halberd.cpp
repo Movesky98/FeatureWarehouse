@@ -53,6 +53,20 @@ void AHalberd::Unequip()
 	}
 }
 
+void AHalberd::EquipInstantly()
+{
+	AttachToComponent(GetWeaponOwner()->GetMesh(), FAttachmentTransformRules::KeepRelativeTransform, EquipSocketName);
+
+	OnEquipEnded(MontageInfo.m_EquipMontage, false);
+}
+
+void AHalberd::UnequipInstantly()
+{
+	AttachToComponent(GetWeaponOwner()->GetMesh(), FAttachmentTransformRules::KeepRelativeTransform, UnequipSocketName);
+
+	OnUnequipEnded(MontageInfo.m_UnequipMontage, false);
+}
+
 void AHalberd::Attach()
 {
 	if (GetWeaponOwner())

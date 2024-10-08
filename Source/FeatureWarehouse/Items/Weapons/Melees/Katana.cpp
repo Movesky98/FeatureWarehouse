@@ -80,6 +80,24 @@ void AKatana::Unequip()
 	}
 }
 
+void AKatana::EquipInstantly()
+{
+	// 몸 왼쪽에 칼집, 오른 손에 칼날.
+	BladeMesh->AttachToComponent(GetWeaponOwner()->GetMesh(), FAttachmentTransformRules::KeepRelativeTransform, Blade_RightHandSocketName);
+	ScabbardMesh->AttachToComponent(GetWeaponOwner()->GetMesh(), FAttachmentTransformRules::KeepRelativeTransform, Scabbard_UnequipSocketName);
+
+	OnEquipEnded(MontageInfo.m_EquipMontage, false);
+}
+
+void AKatana::UnequipInstantly()
+{
+	// 둘 다 몸 왼쪽에 어태치.
+	BladeMesh->AttachToComponent(GetWeaponOwner()->GetMesh(), FAttachmentTransformRules::KeepRelativeTransform, Blade_UnequipSocketName);
+	ScabbardMesh->AttachToComponent(GetWeaponOwner()->GetMesh(), FAttachmentTransformRules::KeepRelativeTransform, Scabbard_UnequipSocketName);
+
+	OnUnequipEnded(MontageInfo.m_UnequipMontage, false);
+}
+
 void AKatana::Attach()
 {
 	if (GetWeaponOwner())

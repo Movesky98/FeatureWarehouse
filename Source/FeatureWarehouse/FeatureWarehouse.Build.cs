@@ -16,7 +16,7 @@ public class FeatureWarehouse : ModuleRules
 		PrivateIncludePaths.Add("FeatureWarehouse/Items");
 		PrivateIncludePaths.Add("FeatureWarehouse/Items/Weapons");
 
-		// 전처리기 매크로 정의
+        // 전처리기 매크로 정의
         PublicDefinitions.Add("GAME_TESTING=1");
 
         // Uncomment if you are using Slate UI

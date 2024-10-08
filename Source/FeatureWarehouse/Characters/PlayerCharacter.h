@@ -7,8 +7,6 @@
 #include "InputAction.h"
 #include "PlayerCharacter.generated.h"
 
-DECLARE_DELEGATE(FOnInputLockDelegate);
-
 enum class EStateOfViews :uint8;
 enum class EMovementState :uint8;
 enum class EActionState :uint8;
@@ -45,11 +43,9 @@ protected:
 
 	virtual void OnMovementModeChanged(EMovementMode PrevMovementMode, uint8 PreviousCustomMode) override;
 
-	void OnReceivePointDamageEvent(AActor* DamagedActor, float Damage, AController* InstigatedBy,
-		FVector HitLocation, UPrimitiveComponent* FHitComponent, FName BoneName,
-		FVector ShotFromDirection, const UDamageType* DamageType, AActor* DamageCauser) override;
-
 	void Die() override;
+
+	void ProcessDeath() override;
 
 	UFUNCTION()
 	void DecreaseStamina(float Stamina);
@@ -102,7 +98,6 @@ protected:
 	void BackStab();
 
 	void HeavyAttack() override;
-	
 #pragma endregion
 
 protected:
@@ -252,13 +247,6 @@ private:
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = InputAction, meta = (AllowPrivateAccess = "true"))
 	UInputAction* LockOnAction;
-#pragma endregion
-
-#pragma region Delegates
-public:
-	FOnInputLockDelegate OnInputLock;
-
-
 #pragma endregion
 
 #pragma region Movement

@@ -398,45 +398,15 @@ bool AWielder::CheckEnemyWielder(AWielderBase* DetectedWielder)
 	return Faction != DetectedWielder->GetFaction() ? true : false;
 }
 
-void AWielder::OnReceivePointDamageEvent(AActor* DamagedActor, float Damage, AController* InstigatedBy,
-	FVector HitLocation, UPrimitiveComponent* FHitComponent, FName BoneName,
-	FVector ShotFromDirection, const UDamageType* DamageType, AActor* DamageCauser)
-{	
-	if (bIsDead) return;
-
-	AWielderBase* WielderBase = Cast<AWielderBase>(InstigatedBy->GetPawn());
-	if (WielderBase && WielderBase->GetGenericTeamId() == TeamId) return;
-
-	UWielderAnimInstance* WielderAnim = Cast<UWielderAnimInstance>(GetMesh()->GetAnimInstance());
-	if (!WielderAnim) return;
-
-	ActionState = EActionState::EAS_GetDamaged;
-
-	StatComponent->DecreaseHP(Damage);
-
-	bool IsDead = StatComponent->CheckDeathStatus();
-
-	if (IsDead)
-	{
-		bIsDead = true;
-		KilledByWielder = Cast<AWielderBase>(InstigatedBy->GetPawn());
-
-		WielderAnim->PlayReactionMontage(EMontageType::EMT_Death);
-		return;
-	}
-	else
-	{
-		WielderAnim->PlayReactionMontage(EMontageType::EMT_GetHit);
-
-		FRotator ImpactRotation = UKismetMathLibrary::MakeRotFromZ(ShotFromDirection);
-		StatComponent->ShowBloodEffect(HitLocation, ImpactRotation);
-	}
+void AWielder::OnReceiveAnyDamageEvent(AActor* DamagedActor, float Damage, const UDamageType* DamageType, AController* InstigatedBy, AActor* DamageCauser)
+{
+	Super::OnReceiveAnyDamageEvent(DamagedActor, Damage, DamageType, InstigatedBy, DamageCauser);
 
 	if (!StatBarComponent->IsShowing())
 	{
 		StatBarComponent->ShowUI();
 	}
-	
+
 	// 공격 받았을 때, 공격한 대상을 타겟으로 지정.
 	AWielderController* WielderController = Cast<AWielderController>(GetController());
 	if (IsValid(WielderController))
@@ -445,6 +415,14 @@ void AWielder::OnReceivePointDamageEvent(AActor* DamagedActor, float Damage, ACo
 		WielderController->StopMovement();
 		WielderController->NotifyUnderAttack(true);
 	}
+}
+
+void AWielder::OnReceivePointDamageEvent(AActor* DamagedActor, float Damage, AController* InstigatedBy,
+	FVector HitLocation, UPrimitiveComponent* FHitComponent, FName BoneName,
+	FVector ShotFromDirection, const UDamageType* DamageType, AActor* DamageCauser)
+{	
+	Super::OnReceivePointDamageEvent(DamagedActor, Damage, InstigatedBy, HitLocation, FHitComponent, BoneName, ShotFromDirection, DamageType, DamageCauser);
+
 }
 
 void AWielder::OnGetDamaged(bool IsRetreat)
@@ -565,10 +543,11 @@ void AWielder::RetreatFromEnemy()
 		else
 		{
 			// 타겟이 회피 최소 거리보다 가까이 있을 경우 실행
-			if (GetDistanceTo(GetSeeingPawn()) <= RetreatDistanceMin)
+			if (GetDistanceTo(GetSeeingPawn()) <= RetreatDistanceMin && ActionState == EActionState::EAS_Idle)
 			{
 				UE_LOG(LogTemp, Warning, TEXT("Wielder || Target is %s, and The Distance with Target is %f / Retreat Distance Min is %f"), *UKismetSystemLibrary::GetDisplayName(GetSeeingPawn()), GetDistanceTo(GetSeeingPawn()), RetreatDistanceMin);
 				
+				HandleWielderState(EActionState::EAS_Retreating);
 				WielderAnim->PlayReactionMontage(EMontageType::EMT_Retreat);
 			}
 			else
@@ -840,6 +819,39 @@ void AWielder::Die()
 	GetMesh()->SetSimulatePhysics(true);
 
 	SetLifeSpan(5.0f);
+}
+
+void AWielder::ProcessDeath()
+{
+	Super::ProcessDeath();
+
+	AWielderController* WielderController = Cast<AWielderController>(GetController());
+	if (WielderController)
+	{
+		WielderController->StopBehaviorTree();
+	}
+
+	UWielderAnimInstance* WielderAnim = Cast<UWielderAnimInstance>(GetMesh()->GetAnimInstance());
+	if (!IsValid(WielderAnim)) return;
+
+	// Play Death Montage.
+	WielderAnim->PlayReactionMontage(EMontageType::EMT_Death);
+}
+
+void AWielder::EnterCriticalHit()
+{
+	AWielderController* WielderController = Cast<AWielderController>(GetController());
+	if (!IsValid(WielderController)) return;
+
+	WielderController->StopBehaviorTree();
+}
+
+void AWielder::ExitCriticalHit()
+{
+	AWielderController* WielderController = Cast<AWielderController>(GetController());
+	if (!IsValid(WielderController)) return;
+
+	WielderController->StartBehaviorTree();
 }
 
 void AWielder::ShowStatBar()

@@ -61,6 +61,12 @@ public:
 
 	virtual void Unequip();
 
+	/* 장착 애니메이션 없이 바로 무기를 장착하는 함수 */
+	virtual void EquipInstantly();
+
+	/* 해제 애니메이션 없이 바로 무기를 해제하는 함수 */
+	virtual void UnequipInstantly();
+
 protected:
 	virtual void EndPlay(const EEndPlayReason::Type EndPlayReason) override;
 
@@ -101,6 +107,9 @@ protected:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Attack|Info", meta = (AllowPrivateAccess = "true"))
 	FMeleeAttackInfo SprintAttackInfo;
 
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Attack|Info", meta = (AllowPrivateAccess = "true"))
+	FMeleeAttackInfo CriticalAttackInfo;
+
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "State")
 	bool bIsEquip;
 
@@ -115,6 +124,16 @@ protected:
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Montage|Sound", meta = (AllowPrivateAccess = "true"))
 	class USoundCue* UnequipSound;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Attack")
+	float Damage;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Attack")
+	float StaminaCost;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Attack")
+	class USoundCue* CriticalHitSound;
+
 private:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "State", meta = (AllowPrivateAccess = "true"))
 	ACharacter* WeaponOwner;
@@ -133,6 +152,15 @@ private:
 
 #pragma region GetterSetter
 public:
+	UFUNCTION(BlueprintGetter)
+	float GetDamage() { return Damage; }
+
+	UFUNCTION(BlueprintGetter)
+	float GetStaminaCost() { return StaminaCost; }
+
+	UFUNCTION(BlueprintGetter)
+	class USoundCue* GetCriticalHitSound() const;
+
 	FORCEINLINE ACharacter* GetWeaponOwner() { return WeaponOwner; }
 	FORCEINLINE void SetWeaponOwner(ACharacter* NewOwner) { WeaponOwner = NewOwner; }
 

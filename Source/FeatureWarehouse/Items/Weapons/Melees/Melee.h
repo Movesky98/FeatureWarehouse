@@ -97,12 +97,6 @@ protected:
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Montage")
 	TArray<AActor*> IgnoreActor;
-	
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Attack")
-	float Damage;
-
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Attack")
-	float StaminaCost;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Attack")
 	class USoundCue* SlashSound;

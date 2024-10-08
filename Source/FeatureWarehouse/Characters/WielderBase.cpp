@@ -5,6 +5,9 @@
 #include "AnimInstance/WielderAnimInstance.h"
 #include "GamePlay/FW_GameMode.h"
 
+#include "DamageTypes/CustomDamageType.h"
+#include "DamageTypes/CriticalDamageType.h"
+
 #include "Enums/ActionState.h"
 #include "Enums/MovementState.h"
 #include "Enums/Direction.h"
@@ -61,7 +64,8 @@ AWielderBase::AWielderBase()
 void AWielderBase::PostInitializeComponents()
 {
 	Super::PostInitializeComponents();
-
+	
+	this->OnTakeAnyDamage.AddDynamic(this, &AWielderBase::OnReceiveAnyDamageEvent);
 	this->OnTakePointDamage.AddDynamic(this, &AWielderBase::OnReceivePointDamageEvent);
 
 	TeamId = FGenericTeamId((uint8)Faction);
@@ -70,6 +74,7 @@ void AWielderBase::PostInitializeComponents()
 	if (WielderAnim)
 	{
 		WielderAnim->OnHitEnd.BindUObject(this, &AWielderBase::OnHitEnded);
+		WielderAnim->OnGroggyAttackPointImpact.BindUObject(this, &AWielderBase::ExecuteCriticalHitOnTarget);
 	}
 
 	CriticalTriggerVolume->OnComponentBeginOverlap.AddDynamic(this, &AWielderBase::CriticalTriggerVolumeBeginOverlap);
@@ -138,32 +143,79 @@ void AWielderBase::NotifyToGameMode()
 	}
 }
 
-void AWielderBase::OnReceivePointDamageEvent(AActor* DamagedActor, float Damage, AController* InstigatedBy, 
-	FVector HitLocation, UPrimitiveComponent* FHitComponent, FName BoneName, 
-	FVector ShotFromDirection, const UDamageType* DamageType, AActor* DamageCauser)
+void AWielderBase::OnReceiveAnyDamageEvent(AActor* DamagedActor, float Damage, const class UDamageType* DamageType, AController* InstigatedBy, AActor* DamageCauser)
 {
-	UWielderAnimInstance* WielderAnim = Cast<UWielderAnimInstance>(GetMesh()->GetAnimInstance());
-	if (!WielderAnim) return;
+	// TODO : 일반적인 데미지 처리.
+#if GAME_TESTING
+	GEngine->AddOnScreenDebugMessage(-1, 3.0f, FColor::Green, FString("Wielder's ReceiveAnyDamageEvent is called."));
+#endif
+	// 같은 팀 번호이면 처리하지 않음.
+	AWielderBase* WielderBase = Cast<AWielderBase>(InstigatedBy->GetPawn());
+	if (WielderBase && WielderBase->GetGenericTeamId() == TeamId) return;
 
 	HandleWielderState(EActionState::EAS_GetDamaged);
 
 	StatComponent->DecreaseHP(Damage);
 
-	bool IsDead = StatComponent->CheckDeathStatus();
-	
-	if (IsDead)
+	bIsDead = StatComponent->CheckDeathStatus();
+
+	// PointDamage, RadiaDamage로 전달되지 않는 커스텀 데미지 타입인지 체크.
+	if (DamageType->IsA<UCustomDamageType>())
 	{
-		bIsDead = true;
+		ProcessCustomDamageType(DamageType);
+		return;
+	}
+
+	if (bIsDead)
+	{
 		KilledByWielder = Cast<AWielderBase>(InstigatedBy->GetPawn());
+		ProcessDeath();
+	}
+}
+
+void AWielderBase::OnReceivePointDamageEvent(AActor* DamagedActor, float Damage, AController* InstigatedBy,
+	FVector HitLocation, UPrimitiveComponent* FHitComponent, FName BoneName, 
+	FVector ShotFromDirection, const UDamageType* DamageType, AActor* DamageCauser)
+{
+	// TODO : 타격 위치 정보에 따른 후처리 (캐릭터 애니메이션, 회피 등)
+#if GAME_TESTING
+	GEngine->AddOnScreenDebugMessage(-1, 3.0f, FColor::Green, FString("Wielder's ReceivePointDamageEvent is called."));
+#endif
+	
+	AWielderBase* WielderBase = Cast<AWielderBase>(InstigatedBy->GetPawn());
+	if (WielderBase && WielderBase->GetGenericTeamId() == TeamId) return;
+
+	UWielderAnimInstance* WielderAnim = Cast<UWielderAnimInstance>(GetMesh()->GetAnimInstance());
+	if (!IsValid(WielderAnim)) return;
+	
+	if (!bIsDead)
+	{
+		WielderAnim->PlayReactionMontage(EMontageType::EMT_GetHit);
+	}
+
+	FRotator ImpactRotation = UKismetMathLibrary::MakeRotFromZ(ShotFromDirection);
+	StatComponent->ShowBloodEffect(HitLocation, ImpactRotation);
+}
+
+void AWielderBase::ProcessCustomDamageType(const UDamageType* DamageType)
+{
+#if GAME_TESTING
+	GEngine->AddOnScreenDebugMessage(-1, 3.0f, FColor::Green, FString("Wielder's ProcessCustomDamageType is called."));
+#endif
+
+	UWielderAnimInstance* WielderAnim = Cast<UWielderAnimInstance>(GetMesh()->GetAnimInstance());
+	if (!IsValid(WielderAnim)) return;
+
+	if (const UCriticalDamageType* CustomDamage = Cast<UCriticalDamageType>(DamageType))
+	{
+		// 우선 GroggyHitReaction, GroggyHitDeath 몽타주를 통일했기에 이렇게 작성함.
+		EMontageType MontageType = bIsDead ? EMontageType::EMT_GroggyHitDeath : EMontageType::EMT_GroggyHitReaction;
 		
-		WielderAnim->PlayReactionMontage(EMontageType::EMT_Death);
+		WielderAnim->PlayReactionMontage(MontageType);
 	}
 	else
 	{
-		WielderAnim->PlayReactionMontage(EMontageType::EMT_GetHit);
-
-		FRotator ImpactRotation = UKismetMathLibrary::MakeRotFromZ(ShotFromDirection);
-		StatComponent->ShowBloodEffect(HitLocation, ImpactRotation);
+		// DamageType is UCustomDamageType class.
 	}
 }
 
@@ -190,17 +242,25 @@ void AWielderBase::SetCanCriticalHit(bool CanCriticalHit)
 
 void AWielderBase::ExecuteCriticalHitOnTarget()
 {
-	if (!IsValid(CriticalHitTarget)) return;
+	if (!IsValid(CriticalHitTarget) || !IsValid(EquipWeapon)) return;
+	
+	TSubclassOf<UCriticalDamageType> DamageType = UCriticalDamageType::StaticClass();
 
-	CriticalHitTarget->GetCriticalHit();
+	// Apply damage.
+	UGameplayStatics::ApplyDamage(CriticalHitTarget, EquipWeapon->GetDamage(), GetController(), EquipWeapon, DamageType);
+
+	// Play sound.
+	UGameplayStatics::PlaySoundAtLocation(GetWorld(), EquipWeapon->GetCriticalHitSound(), GetActorLocation());
 }
 
-void AWielderBase::GetCriticalHit()
+void AWielderBase::EnterCriticalHit()
 {
-	UWielderAnimInstance* WielderAnim = Cast<UWielderAnimInstance>(GetMesh()->GetAnimInstance());
-	if (!IsValid(WielderAnim)) return;
+	
+}
 
-	WielderAnim->PlayReactionMontage(EMontageType::EMT_GroggyHitReaction);
+void AWielderBase::ExitCriticalHit()
+{
+
 }
 
 void AWielderBase::StopAttack()
@@ -262,6 +322,15 @@ void AWielderBase::Unequip()
 
 }
 
+void AWielderBase::ProcessDeath()
+{
+	if (!bIsDead)
+		return;
+	
+	// 모든 몽타주 정지.
+	GetMesh()->GetAnimInstance()->StopAllMontages(0.2f);
+}
+
 void AWielderBase::OnMovementModeChanged(EMovementMode PrevMovementMode, uint8 PreviousCustomMode)
 {
 	Super::OnMovementModeChanged(PrevMovementMode, PreviousCustomMode);
@@ -297,7 +366,7 @@ void AWielderBase::Die()
 	GetMesh()->SetCollisionProfileName(FName("Ragdoll"));
 	GetMesh()->SetSimulatePhysics(true);
 
-	SetLifeSpan(3.0f);
+	SetLifeSpan(4.0f);
 }
 
 bool AWielderBase::CheckDamageable()

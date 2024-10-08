@@ -40,6 +40,26 @@ AWielderController::AWielderController()
 	AIPerception->ConfigureSense(*Hearing);
 }
 
+void AWielderController::StopBehaviorTree()
+{
+	UBehaviorTreeComponent* BehaviorTreeComp = FindComponentByClass<UBehaviorTreeComponent>();
+	if (BehaviorTreeComp)
+	{
+		BehaviorTreeComp->StopTree(EBTStopMode::Safe);
+	}
+}
+
+void AWielderController::StartBehaviorTree()
+{
+	UBehaviorTreeComponent* BehaviorTreeComp = FindComponentByClass<UBehaviorTreeComponent>();
+	if (!BehaviorTreeComp) return;
+
+	if (BT_Wielder)
+	{
+		BehaviorTreeComp->StartTree(*BT_Wielder);
+	}
+}
+
 void AWielderController::OnPossess(APawn* InPawn)
 {
 	Super::OnPossess(InPawn);

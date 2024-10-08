@@ -104,12 +104,19 @@ public:
 	void HandleWielderState(EActionState State);
 
 protected:
+	virtual void ProcessDeath();
+
 	virtual void OnMovementModeChanged(EMovementMode PrevMovementMode, uint8 PreviousCustomMode) override;
 
-	/* Receive Point Damage Function */
-	UFUNCTION() virtual void OnReceivePointDamageEvent(AActor* DamagedActor, float Damage, AController* InstigatedBy,
+	UFUNCTION()
+	virtual void OnReceiveAnyDamageEvent(AActor* DamagedActor, float Damage, const class UDamageType* DamageType, class AController* InstigatedBy, AActor* DamageCauser);
+	
+	UFUNCTION() 
+	virtual void OnReceivePointDamageEvent(AActor* DamagedActor, float Damage, AController* InstigatedBy,
 		FVector HitLocation, UPrimitiveComponent* FHitComponent, FName BoneName,
 		FVector ShotFromDirection, const UDamageType* DamageType, AActor* DamageCauser);
+
+	void ProcessCustomDamageType(const UDamageType* DamageType);
 
 	/* 액션을 취할 수 있는지 체크하는 함수. */
 	bool CheckTakeAction(EActionState SpecificAction, bool bCanTakeContinuously);
@@ -134,7 +141,7 @@ protected:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Team")
 	FGenericTeamId TeamId;
 
-#pragma endregion State
+#pragma endregion
 
 
 #pragma region Attack
@@ -145,9 +152,12 @@ public:
 	UFUNCTION(BlueprintSetter)
 	void SetCanCriticalHit(bool CanCriticalHit);
 
-	void ExecuteCriticalHitOnTarget();
+	UFUNCTION()
+	virtual void ExecuteCriticalHitOnTarget();
 
-	void GetCriticalHit();
+	virtual void EnterCriticalHit();
+
+	virtual void ExitCriticalHit();
 
 protected:
 	virtual void Attack();

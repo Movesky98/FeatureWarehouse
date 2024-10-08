@@ -123,19 +123,6 @@ void UStatComponent::DecreaseHP(float Damage)
 bool UStatComponent::CheckDeathStatus()
 {
 	return CurrentHP <= 0.0f ? true : false;
-
-	if (CurrentHP <= 0.0f)
-	{
-		return true;
-
-	}
-	else
-	{
-		// 피격 몽타주가 없으면 바로 상태 변경
-		// IsValid(GetDamagedMontage) ? PlayMontage(GetDamagedMontage) : WielderBase->HandleWielderState(EActionState::EAS_Idle);
-
-		return false;
-	}
 }
 
 bool UStatComponent::CheckShouldEvade()

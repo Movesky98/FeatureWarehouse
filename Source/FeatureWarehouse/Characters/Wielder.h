@@ -47,7 +47,7 @@ public:
 	AActor* GetSeeingPawn();
 
 	/* 타겟을 지정하는 함수 */
-	UFUNCTION() 
+	UFUNCTION()
 	void DesignateEnemy(AActor* Enemy);
 
 	/* AI의 스피드를 설정하는 함수 */
@@ -80,8 +80,16 @@ protected:
 
 	void Die() override;
 
+	void ProcessDeath() override;
+
+	void EnterCriticalHit() override;
+
+	void ExitCriticalHit() override;
+
 	UFUNCTION(BlueprintCallable)
 	virtual void Attack() override;
+
+	void OnReceiveAnyDamageEvent(AActor* DamagedActor, float Damage, const class UDamageType* DamageType, class AController* InstigatedBy, AActor* DamageCauser) override;
 
 	void OnReceivePointDamageEvent(AActor* DamagedActor, float Damage, AController* InstigatedBy,
 		FVector HitLocation, UPrimitiveComponent* FHitComponent, FName BoneName,

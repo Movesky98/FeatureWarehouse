@@ -648,16 +648,18 @@ void APlayerCharacter::Attack()
 				if (!Wielder || !Wielder->IsCriticallyHittable()) continue;
 
 				ActionState = EActionState::EAS_CriticalHitting;
+				
+				DisableInput(PlayerController);
 
-				// 입력 잠금
-				OnInputLock.ExecuteIfBound();
 				CriticalHitTarget = Wielder;
+				CriticalHitTarget->EnterCriticalHit();
 
 				FVector TargetLocation = Wielder->GetActorLocation() - Wielder->GetActorForwardVector() * 200.0f;
 				MoveToLocation(TargetLocation);
 				break;
 			}
 
+			bCanCriticalHit = false;
 			return;
 		}
 	}
@@ -1189,35 +1191,6 @@ void APlayerCharacter::FindNearbyLockTarget(float DeltaYaw, float DeltaPitch)
 	}
 }
 
-void APlayerCharacter::OnReceivePointDamageEvent(AActor* DamagedActor, float Damage, AController* InstigatedBy, 
-	FVector HitLocation, UPrimitiveComponent* FHitComponent, FName BoneName, 
-	FVector ShotFromDirection, const UDamageType* DamageType, AActor* DamageCauser)
-{
-	UWielderAnimInstance* WielderAnim = Cast<UWielderAnimInstance>(GetMesh()->GetAnimInstance());
-	if (!WielderAnim) return;
-
-	HandleWielderState(EActionState::EAS_GetDamaged);
-
-	StatComponent->DecreaseHP(Damage);
-
-	bool IsDead = StatComponent->CheckDeathStatus();
-
-	if (IsDead)
-	{
-		bIsDead = true;
-		KilledByWielder = Cast<AWielderBase>(InstigatedBy->GetPawn());
-
-		WielderAnim->PlayReactionMontage(EMontageType::EMT_Death);
-	}
-	else
-	{
-		WielderAnim->PlayReactionMontage(EMontageType::EMT_GetHit);
-
-		FRotator ImpactRotation = UKismetMathLibrary::MakeRotFromZ(ShotFromDirection);
-		StatComponent->ShowBloodEffect(HitLocation, ImpactRotation);
-	}
-}
-
 void APlayerCharacter::Die()
 {
 	if (OnKilled.IsBound())
@@ -1238,6 +1211,22 @@ void APlayerCharacter::Die()
 	GetMesh()->SetSimulatePhysics(true);
 
 	SetLifeSpan(5.0f);
+}
+
+void APlayerCharacter::ProcessDeath()
+{
+	Super::ProcessDeath();
+
+	if (IsValid(PlayerController))
+	{
+		DisableInput(PlayerController);
+	}
+
+	UWielderAnimInstance* WielderAnim = Cast<UWielderAnimInstance>(GetMesh()->GetAnimInstance());
+	if (!IsValid(WielderAnim)) return;
+
+	// Play Death Animation.
+	WielderAnim->PlayReactionMontage(EMontageType::EMT_Death);
 }
 
 #pragma region Movement_State
@@ -1278,6 +1267,9 @@ void APlayerCharacter::CheckReachDestination()
 		OnMoveCompleted();
 
 		GetWorldTimerManager().ClearTimer(MoveTimerHandle);
+
+		EnableInput(PlayerController);
+		CriticalHitTarget->ExitCriticalHit();
 	}
 }
 
