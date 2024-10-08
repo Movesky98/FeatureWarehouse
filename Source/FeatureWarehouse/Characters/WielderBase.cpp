@@ -37,7 +37,8 @@ AWielderBase::AWielderBase()
 
 	CriticalTriggerVolume = CreateDefaultSubobject<UBoxComponent>(TEXT("CriticalTriggerVolume"));
 	CriticalTriggerVolume->SetupAttachment(RootComponent);
-	CriticalTriggerVolume->SetRelativeScale3D(FVector(2.75f, 1.35f, 3.25f));
+	CriticalTriggerVolume->SetRelativeLocation(FVector(-57.0f, 0.0f, 0.0f));
+	CriticalTriggerVolume->SetRelativeScale3D(FVector(1.35f, 1.35f, 3.25f));
 	CriticalTriggerVolume->SetCollisionProfileName(FName("Trigger"));
 	CriticalTriggerVolume->SetActive(true);
 

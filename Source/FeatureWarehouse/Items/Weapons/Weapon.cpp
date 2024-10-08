@@ -75,7 +75,9 @@ void AWeapon::SaveDodgeMontages(TMap<EDirection, UAnimMontage*>& Montages)
 
 void AWeapon::OnEquipEnded(class UAnimMontage* Montage, bool bInterrupted)
 {
-	if (Montage == MontageInfo.m_EquipMontage)
+	if (Montage != MontageInfo.m_EquipMontage) return;
+
+	if(!bInterrupted)
 	{
 		bIsEquip = true;
 

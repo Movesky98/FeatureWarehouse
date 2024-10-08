@@ -46,8 +46,6 @@ void UWeaponComponent::EquipMainWeapon()
 	EquipState = EEquipState::MainWeapon;
 
 	WielderBase->SetWeapon(MainWeapon);
-	
-	UE_LOG(LogTemp, Warning, TEXT("WeaponComponent :: Called EquipMainWeapon."));
 
 	NotifyToAnimInstance();
 }
@@ -59,8 +57,6 @@ void UWeaponComponent::EquipSubWeapon()
 	EquipState = EEquipState::SubWeapon;
 
 	WielderBase->SetWeapon(SubWeapon);
-
-	UE_LOG(LogTemp, Warning, TEXT("WeaponComponent :: Called EquipSubWeapon."));
 
 	NotifyToAnimInstance();
 }

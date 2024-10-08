@@ -25,8 +25,10 @@ public:
 	// Sets default values for this component's properties
 	UWeaponComponent();
 
+	/** 메인 무기를 장착하는 함수 */
 	void EquipMainWeapon();
 
+	/** 서브 무기를 장착하는 함수 */
 	void EquipSubWeapon();
 
 	void EquipOtherWeapon();
